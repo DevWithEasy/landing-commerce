@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Orders\Models;
 
+use App\Models\User;
+use App\Modules\Orders\Services\OrderStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -64,5 +66,21 @@ class Order extends Model
     public function histories(): HasMany
     {
         return $this->hasMany(OrderHistory::class)->orderBy('created_at');
+    }
+
+    /**
+     * Transition the order to a new status using the OrderStateMachine.
+     */
+    public function transitionTo(
+        string $toStatus,
+        ?string $comment = null,
+        User|int|null $user = null
+    ): self {
+        return app(OrderStateMachine::class)->transition(
+            $this,
+            $toStatus,
+            $comment,
+            $user
+        );
     }
 }
