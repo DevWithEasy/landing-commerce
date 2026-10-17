@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,5 +56,35 @@ class ProductVariant extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'variant_id')->orderBy('sort_order');
+    }
+
+    /**
+     * @param  Builder<ProductVariant>  $query
+     */
+    public function scopeInStock(Builder $query): void
+    {
+        $query->where(function (Builder $q) {
+            $q->where('manage_stock', false)
+                ->orWhere('stock_quantity', '>', 0);
+        });
+    }
+
+    /**
+     * @param  Builder<ProductVariant>  $query
+     */
+    public function scopeOutOfStock(Builder $query): void
+    {
+        $query->where('manage_stock', true)
+            ->where('stock_quantity', '<=', 0);
+    }
+
+    /**
+     * @param  Builder<ProductVariant>  $query
+     */
+    public function scopeLowStock(Builder $query, int $threshold = 5): void
+    {
+        $query->where('manage_stock', true)
+            ->where('stock_quantity', '>', 0)
+            ->where('stock_quantity', '<=', $threshold);
     }
 }

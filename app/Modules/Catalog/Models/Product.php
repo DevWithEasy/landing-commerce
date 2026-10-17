@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Catalog\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -65,5 +66,37 @@ class Product extends Model
         ], function ($query) {
             $query->where('is_primary', true);
         });
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('status', 'active');
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     */
+    public function scopeInStock(Builder $query): void
+    {
+        $query->whereHas('variants', fn (Builder $q) => $q->inStock());
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     */
+    public function scopeOutOfStock(Builder $query): void
+    {
+        $query->whereDoesntHave('variants', fn (Builder $q) => $q->inStock());
+    }
+
+    /**
+     * @param  Builder<Product>  $query
+     */
+    public function scopeLowStock(Builder $query, int $threshold = 5): void
+    {
+        $query->whereHas('variants', fn (Builder $q) => $q->lowStock($threshold));
     }
 }
