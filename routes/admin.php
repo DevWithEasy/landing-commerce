@@ -3,6 +3,7 @@
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
 use App\Modules\Orders\Controllers\OrderController;
+use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::post('orders/bulk-transition', [OrderController::class, 'bulkTransition'])->name('orders.bulk-transition');
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::post('orders/{order}/transition', [OrderController::class, 'transition'])->name('orders.transition');
+    Route::post('orders/{order}/courier/dispatch', [OrderCourierController::class, 'dispatchOrder'])->name('orders.courier.dispatch');
+    Route::post('orders/{order}/courier/track', [OrderCourierController::class, 'trackOrder'])->name('orders.courier.track');
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
 
     // Page Builder & Landing Pages

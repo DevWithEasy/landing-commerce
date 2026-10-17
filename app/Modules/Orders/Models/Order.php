@@ -36,6 +36,7 @@ class Order extends Model
         'status',
         'courier_name',
         'courier_tracking_id',
+        'courier_tracking_url',
         'notes',
         'ip_address',
     ];

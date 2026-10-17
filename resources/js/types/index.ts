@@ -142,6 +142,9 @@ export interface Order {
     shipping_fee: string | number;
     discount: string | number;
     total: string | number;
+    courier_name?: string | null;
+    courier_tracking_id?: string | null;
+    courier_tracking_url?: string | null;
     notes: string | null;
     idempotency_key: string;
     created_at: string;
@@ -192,6 +195,12 @@ export interface ThankYouProps extends SharedProps {
     merchantWhatsapp: string | null;
 }
 
+export interface CourierConfig {
+    default: string;
+    drivers: Record<string, string>;
+    configured: Record<string, boolean>;
+}
+
 export interface OrderIndexProps extends SharedProps {
     orders: PaginatedData<Order>;
     filters: {
@@ -202,6 +211,7 @@ export interface OrderIndexProps extends SharedProps {
     };
     statusCounts: Record<string, number>;
     allowedTransitions: Record<string, string[]>;
+    courierConfig?: CourierConfig;
 }
 
 export * from './builder';

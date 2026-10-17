@@ -1,10 +1,12 @@
 import { Head, router } from '@inertiajs/react';
 import {
+    AlertCircle,
     Check,
     CheckCircle2,
     ChevronRight,
     Clock,
     Download,
+    ExternalLink,
     Eye,
     FileText,
     Filter,
@@ -18,6 +20,7 @@ import {
     Search,
     Shield,
     ShoppingBag,
+    Truck,
     User as UserIcon,
     X,
 } from 'lucide-react';
@@ -63,6 +66,7 @@ export default function Index({
     filters,
     statusCounts,
     allowedTransitions,
+    courierConfig,
 }: OrderIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [currentStatus, setCurrentStatus] = useState(filters.status || 'all');
@@ -85,6 +89,26 @@ export default function Index({
     const [targetTransitionStatus, setTargetTransitionStatus] = useState<string | null>(null);
     const [transitionComment, setTransitionComment] = useState('');
     const [isTransitioning, setIsTransitioning] = useState(false);
+
+    // Courier dispatch & live tracking state
+    const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
+    const [selectedCourierDriver, setSelectedCourierDriver] = useState(
+        courierConfig?.default || 'mock'
+    );
+    const [dispatchRecipientName, setDispatchRecipientName] = useState('');
+    const [dispatchRecipientPhone, setDispatchRecipientPhone] = useState('');
+    const [dispatchRecipientAddress, setDispatchRecipientAddress] = useState('');
+    const [dispatchCodAmount, setDispatchCodAmount] = useState<string | number>('');
+    const [dispatchNote, setDispatchNote] = useState('');
+    const [dispatchWeight, setDispatchWeight] = useState<string | number>('0.5');
+    const [isDispatching, setIsDispatching] = useState(false);
+    const [dispatchError, setDispatchError] = useState<string | null>(null);
+    const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+    const [trackingFeedback, setTrackingFeedback] = useState<{
+        status: string;
+        message: string;
+        rawStatus?: string;
+    } | null>(null);
 
     // Sync search and filter changes
     const applyFilters = (statusOverride?: string) => {
@@ -148,6 +172,20 @@ export default function Index({
         setTransitionComment('');
         setLoadingTimeline(true);
 
+        // Prepopulate courier fields
+        setSelectedCourierDriver(order.courier_name || courierConfig?.default || 'mock');
+        setDispatchRecipientName(order.customer_name);
+        setDispatchRecipientPhone(order.customer_phone);
+        const destination = order.upazila
+            ? `${order.delivery_address}, ${order.upazila}, ${order.district}`
+            : `${order.delivery_address}, ${order.district}`;
+        setDispatchRecipientAddress(destination);
+        setDispatchCodAmount(order.total);
+        setDispatchNote(order.notes || '');
+        setDispatchWeight('0.5');
+        setDispatchError(null);
+        setTrackingFeedback(null);
+
         fetch(`/admin/orders/${order.id}`, {
             headers: {
                 Accept: 'application/json',
@@ -172,6 +210,73 @@ export default function Index({
         setDetailOrder(null);
         setTimeline([]);
         setTargetTransitionStatus(null);
+        setDispatchModalOpen(false);
+        setDispatchError(null);
+        setTrackingFeedback(null);
+    };
+
+    // Execute courier consignment booking
+    const executeCourierDispatch = (e: FormEvent) => {
+        e.preventDefault();
+        if (!detailOrder) return;
+        setIsDispatching(true);
+        setDispatchError(null);
+
+        router.post(
+            `/admin/orders/${detailOrder.id}/courier/dispatch`,
+            {
+                driver: selectedCourierDriver,
+                recipient_name: dispatchRecipientName,
+                recipient_phone: dispatchRecipientPhone,
+                recipient_address: dispatchRecipientAddress,
+                cod_amount: dispatchCodAmount,
+                note: dispatchNote || undefined,
+                weight: dispatchWeight ? parseFloat(String(dispatchWeight)) : 0.5,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDispatching(false);
+                    setDispatchModalOpen(false);
+                    openOrderDetail(detailOrder);
+                },
+                onError: (errors) => {
+                    setIsDispatching(false);
+                    const errorMsg =
+                        Object.values(errors).join(', ') || 'Failed to dispatch order to courier.';
+                    setDispatchError(errorMsg);
+                },
+            }
+        );
+    };
+
+    // Execute live courier tracking lookup
+    const executeCourierTrack = () => {
+        if (!detailOrder || !detailOrder.courier_tracking_id) return;
+        setIsTrackingLoading(true);
+        setTrackingFeedback(null);
+
+        router.post(
+            `/admin/orders/${detailOrder.id}/courier/track`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsTrackingLoading(false);
+                    openOrderDetail(detailOrder);
+                },
+                onError: (errors) => {
+                    setIsTrackingLoading(false);
+                    const errorMsg =
+                        Object.values(errors).join(', ') ||
+                        'Failed to retrieve live courier tracking.';
+                    setTrackingFeedback({
+                        status: 'error',
+                        message: errorMsg,
+                    });
+                },
+            }
+        );
     };
 
     // Single order transition execution
@@ -529,6 +634,26 @@ export default function Index({
                                                         }
                                                     )}
                                                 </div>
+                                                {order.courier_tracking_id && (
+                                                    <div className="mt-1 flex items-center text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 w-fit">
+                                                        <Truck className="w-2.5 h-2.5 mr-1 text-indigo-600" />
+                                                        <span className="font-semibold uppercase mr-1">
+                                                            {order.courier_name || 'Courier'}:
+                                                        </span>
+                                                        {order.courier_tracking_url ? (
+                                                            <a
+                                                                href={order.courier_tracking_url}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="underline hover:text-indigo-900"
+                                                            >
+                                                                {order.courier_tracking_id}
+                                                            </a>
+                                                        ) : (
+                                                            <span>{order.courier_tracking_id}</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </td>
 
                                             {/* Customer & Location */}
@@ -721,6 +846,106 @@ export default function Index({
 
                             {/* Drawer Content Scrollable Area */}
                             <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                                {/* Courier Consignment & Dispatch Action Card */}
+                                <div className="p-4 bg-indigo-50/70 border border-indigo-200 rounded-xl space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2.5">
+                                            <span className="p-2 bg-indigo-600 text-white rounded-lg shadow-xs">
+                                                <Truck className="w-4 h-4" />
+                                            </span>
+                                            <div>
+                                                <div className="text-xs font-bold text-indigo-950 uppercase tracking-wide flex items-center gap-1.5">
+                                                    <span>
+                                                        {detailOrder.courier_name
+                                                            ? `${detailOrder.courier_name.toUpperCase()} COURIER`
+                                                            : 'COURIER DISPATCH'}
+                                                    </span>
+                                                    {detailOrder.courier_tracking_id && (
+                                                        <span className="inline-block px-1.5 py-0.2 text-[10px] bg-emerald-100 text-emerald-800 rounded font-semibold border border-emerald-300">
+                                                            Booked
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className="text-[11px] text-indigo-700">
+                                                    {detailOrder.courier_tracking_id
+                                                        ? `Tracking ID: ${detailOrder.courier_tracking_id}`
+                                                        : 'Ready to book parcel consignment with local courier'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2">
+                                            {detailOrder.courier_tracking_id ? (
+                                                <>
+                                                    {detailOrder.courier_tracking_url && (
+                                                        <a
+                                                            href={detailOrder.courier_tracking_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors shadow-2xs"
+                                                            title="Track on Courier Portal"
+                                                        >
+                                                            <ExternalLink className="w-3.5 h-3.5 mr-1" />
+                                                            Track Online
+                                                        </a>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        disabled={isTrackingLoading}
+                                                        onClick={executeCourierTrack}
+                                                        className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-2xs disabled:opacity-50"
+                                                        title="Sync live status from courier"
+                                                    >
+                                                        <RefreshCw
+                                                            className={`w-3.5 h-3.5 mr-1 ${isTrackingLoading ? 'animate-spin' : ''}`}
+                                                        />
+                                                        {isTrackingLoading
+                                                            ? 'Syncing...'
+                                                            : 'Sync Status'}
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <Button
+                                                    type="button"
+                                                    variant="primary"
+                                                    size="sm"
+                                                    onClick={() => setDispatchModalOpen(true)}
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+                                                >
+                                                    <Truck className="w-3.5 h-3.5 mr-1" />
+                                                    Send to Courier
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Tracking Feedback alert if present */}
+                                    {trackingFeedback && (
+                                        <div className="p-2.5 bg-white border border-indigo-200 rounded-lg text-xs text-indigo-900 flex items-start space-x-2">
+                                            <AlertCircle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="font-semibold">
+                                                    {trackingFeedback.message}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Re-dispatch link if already dispatched */}
+                                    {detailOrder.courier_tracking_id && (
+                                        <div className="pt-2 border-t border-indigo-100 flex items-center justify-between text-[11px] text-indigo-600">
+                                            <span>Consignment details booked</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDispatchModalOpen(true)}
+                                                className="underline hover:text-indigo-800"
+                                            >
+                                                Re-dispatch or change courier &rarr;
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Next Status Transition Action Bar */}
                                 {currentAllowedTransitions.length > 0 && (
                                     <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
@@ -1034,6 +1259,242 @@ export default function Index({
                                     )}
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* COURIER DISPATCH MODAL */}
+            {dispatchModalOpen && detailOrder && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                        <div
+                            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+                            onClick={() => setDispatchModalOpen(false)}
+                        />
+
+                        <div className="relative inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
+                            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                                <div className="flex items-center space-x-2">
+                                    <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                        <Truck className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold text-gray-900">
+                                            Send Order to Courier
+                                        </h3>
+                                        <p className="text-xs text-gray-500 font-mono">
+                                            #{detailOrder.order_number}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setDispatchModalOpen(false)}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {dispatchError && (
+                                <div className="p-3 mb-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-center space-x-2">
+                                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                                    <span>{dispatchError}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={executeCourierDispatch} className="space-y-4">
+                                {/* Courier Driver Selection */}
+                                <div>
+                                    <label
+                                        htmlFor="courier-driver-select"
+                                        className="block text-xs font-semibold text-gray-700 mb-1"
+                                    >
+                                        Select Courier Gateway
+                                    </label>
+                                    <select
+                                        id="courier-driver-select"
+                                        value={selectedCourierDriver}
+                                        onChange={(e) => setSelectedCourierDriver(e.target.value)}
+                                        className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                    >
+                                        {courierConfig?.drivers ? (
+                                            Object.entries(courierConfig.drivers).map(
+                                                ([key, label]) => {
+                                                    const isConfigured =
+                                                        courierConfig.configured?.[key] ?? true;
+                                                    return (
+                                                        <option key={key} value={key}>
+                                                            {label}{' '}
+                                                            {isConfigured
+                                                                ? ''
+                                                                : '(Credentials Not Set)'}
+                                                        </option>
+                                                    );
+                                                }
+                                            )
+                                        ) : (
+                                            <>
+                                                <option value="mock">
+                                                    Mock Courier (Testing/Offline)
+                                                </option>
+                                                <option value="steadfast">Steadfast Courier</option>
+                                                <option value="pathao">Pathao Courier</option>
+                                                <option value="redx">RedX Courier</option>
+                                            </>
+                                        )}
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Recipient Name */}
+                                    <div>
+                                        <label
+                                            htmlFor="recipient-name"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Customer Name
+                                        </label>
+                                        <input
+                                            id="recipient-name"
+                                            type="text"
+                                            required
+                                            value={dispatchRecipientName}
+                                            onChange={(e) =>
+                                                setDispatchRecipientName(e.target.value)
+                                            }
+                                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                    </div>
+
+                                    {/* Recipient Phone */}
+                                    <div>
+                                        <label
+                                            htmlFor="recipient-phone"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Customer Phone
+                                        </label>
+                                        <input
+                                            id="recipient-phone"
+                                            type="text"
+                                            required
+                                            value={dispatchRecipientPhone}
+                                            onChange={(e) =>
+                                                setDispatchRecipientPhone(e.target.value)
+                                            }
+                                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Delivery Address */}
+                                <div>
+                                    <label
+                                        htmlFor="recipient-address"
+                                        className="block text-xs font-semibold text-gray-700 mb-1"
+                                    >
+                                        Delivery Address & District
+                                    </label>
+                                    <textarea
+                                        id="recipient-address"
+                                        rows={2}
+                                        required
+                                        value={dispatchRecipientAddress}
+                                        onChange={(e) =>
+                                            setDispatchRecipientAddress(e.target.value)
+                                        }
+                                        className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* COD Collection Amount */}
+                                    <div>
+                                        <label
+                                            htmlFor="cod-amount"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            COD Collection (৳ BDT)
+                                        </label>
+                                        <input
+                                            id="cod-amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            required
+                                            value={dispatchCodAmount}
+                                            onChange={(e) => setDispatchCodAmount(e.target.value)}
+                                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 font-mono"
+                                        />
+                                    </div>
+
+                                    {/* Weight in kg */}
+                                    <div>
+                                        <label
+                                            htmlFor="parcel-weight"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Weight (kg)
+                                        </label>
+                                        <input
+                                            id="parcel-weight"
+                                            type="number"
+                                            step="0.1"
+                                            min="0.1"
+                                            value={dispatchWeight}
+                                            onChange={(e) => setDispatchWeight(e.target.value)}
+                                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Special Notes */}
+                                <div>
+                                    <label
+                                        htmlFor="dispatch-note"
+                                        className="block text-xs font-semibold text-gray-700 mb-1"
+                                    >
+                                        Delivery Instructions / Note (Optional)
+                                    </label>
+                                    <input
+                                        id="dispatch-note"
+                                        type="text"
+                                        placeholder="e.g. Call before delivery, fragile package"
+                                        value={dispatchNote}
+                                        onChange={(e) => setDispatchNote(e.target.value)}
+                                        className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                    />
+                                </div>
+
+                                <div className="pt-3 border-t border-gray-100 flex items-center justify-end space-x-2">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => setDispatchModalOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        variant="primary"
+                                        size="sm"
+                                        disabled={isDispatching}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    >
+                                        {isDispatching ? (
+                                            'Booking Consignment...'
+                                        ) : (
+                                            <>
+                                                <Truck className="w-3.5 h-3.5 mr-1" />
+                                                Confirm & Dispatch
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

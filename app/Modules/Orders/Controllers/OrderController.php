@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Orders\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Couriers\Services\CourierManager;
 use App\Modules\Orders\Exceptions\InvalidOrderStateTransitionException;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Models\OrderItem;
@@ -27,7 +28,8 @@ class OrderController extends Controller
 {
     public function __construct(
         protected OrderStateMachine $stateMachine,
-        protected BarcodeGeneratorService $barcodeGenerator
+        protected BarcodeGeneratorService $barcodeGenerator,
+        protected CourierManager $courierManager
     ) {}
 
     /**
@@ -65,6 +67,16 @@ class OrderController extends Controller
             ],
             'statusCounts' => $statusCounts,
             'allowedTransitions' => OrderStateMachine::ALLOWED_TRANSITIONS,
+            'courierConfig' => [
+                'default' => config('courier.default', 'mock'),
+                'drivers' => $this->courierManager->getSupportedDrivers(),
+                'configured' => [
+                    'mock' => $this->courierManager->isConfigured('mock'),
+                    'steadfast' => $this->courierManager->isConfigured('steadfast'),
+                    'pathao' => $this->courierManager->isConfigured('pathao'),
+                    'redx' => $this->courierManager->isConfigured('redx'),
+                ],
+            ],
         ]);
     }
 
