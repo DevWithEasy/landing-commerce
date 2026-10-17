@@ -12,10 +12,11 @@
 - **Laravel 13 Core Scaffolding:** Laravel 13.37.0 scaffolded successfully at `I:\coding_world\laragon\www\landing-commerce`.
 - **Default Database Migrations:** Default Laravel migrations executed and completed successfully using SQLite.
 - **Git Repository Initialized (Phase 0, Task 2):** Verified `.gitignore` (ignoring `.env`, `.env.*`, `vendor/`, `node_modules/`, `database/*.sqlite*`, storage sensitive files), initialized git repository on `main`, and created baseline initial commit (`7d27746`).
+- **Scaffold Boilerplate Cleanup (Phase 0, Task 3):** Removed default `resources/views/welcome.blade.php`, configured minimal JSON health check route at `/` in `routes/web.php`, and verified all tests pass (`bb300c4`). Left `resources/js/app.js` and `ExampleTest.php` for later phases.
 - **Feature Status:** Pure foundation stage; no custom commerce features, modules, or builder components have been implemented yet.
 
 ### Remaining Roadmap (Phased Implementation)
-- **Phase 0:** Review/align scaffold structure, configure database connections, configure Inertia.js + React + TypeScript, TailwindCSS tokens, and Pest PHP 3 (Current focus).
+- **Phase 0:** Configure database connections, configure Inertia.js + React + TypeScript, TailwindCSS tokens, and Pest PHP 3 (Current focus).
 - **Phase 1:** Product catalog, variants matrix, and WebP media engine.
 - **Phase 2:** COD checkout engine, Bangladesh geographic dataset, and concurrency protection.
 - **Phase 3:** Order management dashboard, fulfillment pipeline, and thermal invoice printing.
@@ -27,18 +28,18 @@
 - **OS:** Windows (Laragon development environment)
 - **Planning Files Directory:** `I:\coding_world\laravel\landing-commerce`
 - **Application Workspace:** `I:\coding_world\laragon\www\landing-commerce` (Laravel 13.37.0 scaffolded)
-- **PHP CLI:** Laragon PHP 8.3.33 (verified active, `zip` extension enabled)
+- **PHP CLI Executable:** Laragon PHP 8.3.33 at `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` (must use this full path or ensure it precedes system PHP in PATH)
 - **Composer:** 2.10.2
 - **MySQL Community Server:** 8.4.3
 - **Node.js / npm:** 24.19.0 / 11.17.0
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Phase 0, Task 3 & Task 4: Inspect boilerplate cleanup requirements and configure database connections (SQLite for isolated tests, MySQL for development & concurrency test harness).
-- **Permission Boundary:** Report findings and proposed changes before editing application code or database configuration.
+- **Action:** Phase 0, Task 4: Configure database connections (verify SQLite in `phpunit.xml` for automated unit tests, and configure MySQL connection in `.env` / `config/database.php` for local development and concurrency race-condition test harnesses).
+- **Permission Boundary:** Report planned database configuration parameters before modifying `.env` or running migrations.
 
 ## 5. Important Unresolved Issues & Prerequisites
-1. **PHP CLI `zip` Extension:** Resolved (verified enabled in Laragon PHP 8.3.33).
+1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).
 2. **Local HTTP Server for Concurrency Testing:** When executing future multi-process MySQL concurrency tests (`runParallelHttpRequests`), Laragon's local web server (or `php artisan serve`) must be running to receive parallel incoming HTTP requests.
 
 ---
