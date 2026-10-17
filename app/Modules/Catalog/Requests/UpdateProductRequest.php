@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Modules\Catalog\Requests;
+
+use App\Modules\Catalog\Models\Product;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateProductRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        $product = $this->route('product');
+
+        if (! $product instanceof Product) {
+            $productId = is_numeric($product) ? (int) $product : 0;
+            $product = Product::find($productId);
+        }
+
+        return $product !== null && ($this->user()?->can('update', $product) ?? false);
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'title' => ['sometimes', 'required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'regular_price' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'sale_price' => ['nullable', 'numeric', 'min:0'],
+            'has_variants' => ['boolean'],
+            'status' => ['nullable', 'string', 'in:draft,active,archived'],
+            'variants' => ['nullable', 'array'],
+            'variants.*.id' => ['nullable', 'integer'],
+            'variants.*.sku' => ['nullable', 'string', 'max:100'],
+            'variants.*.name' => ['nullable', 'string', 'max:255'],
+            'variants.*.attributes' => ['nullable', 'array'],
+            'variants.*.regular_price' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.sale_price' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.stock_quantity' => ['nullable', 'integer', 'min:0'],
+            'variants.*.manage_stock' => ['nullable', 'boolean'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['file', 'mimes:jpeg,png,webp', 'max:10240'],
+        ];
+    }
+}

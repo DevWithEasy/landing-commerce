@@ -21,10 +21,11 @@
 - **Catalog Database Migrations & Models (Phase 1, Task 1):** Created and migrated tables `products`, `product_variants`, and `product_images` with strict `decimal(12, 2)` monetary handling, JSON variant attributes, and cascading foreign keys. Created Eloquent models in `app/Modules/Catalog/Models/` (`Product`, `ProductVariant`, `ProductImage`) with typed relationship declarations and attribute casts. Verified via 6 comprehensive Pest tests covering decimal prices, slug/SKU uniqueness, primary image resolution, and cascade deletion (`fce7d1f`).
 - **Catalog Domain Logic & Actions (Phase 1, Task 2):** Implemented `VariantMatrixGenerator` for Cartesian product attribute generation, `CreateProductAction` and `UpdateProductAction` with transaction safety, automatic slug/SKU collision handling, and standalone/variant support. Added inventory query scopes on `ProductVariant` (`inStock`, `outOfStock`, `lowStock`) and `Product` (`active`, `inStock`, `outOfStock`, `lowStock`). Verified via 8 comprehensive Pest tests (`tests/Feature/CatalogDomainTest.php`) covering matrix generation, default variant auto-generation, duplicate slug suffixing, price validations, and stock scopes (`3e624ca`). All 16 suite tests passing 100%.
 - **Media & Image Optimization Engine (Phase 1, Task 3):** Installed and verified `intervention/image` v4.4.0 with GD driver. Configured storage symlink (`artisan storage:link`). Created `MediaUploadService` with strict binary MIME inspection via `finfo_file` (allowing only raster formats WebP, PNG, JPEG; rejecting SVGs and disguised payloads), 40-character random filename generation, automatic WebP conversion (quality 85), responsive variant generation (`thumb` 300px, `medium` 800px), and automated cleanup of main and variant assets on deletion. Verified via 6 comprehensive Pest tests (`tests/Feature/MediaUploadServiceTest.php`). All 22 suite tests passing 100% (`a7de40e`).
+- **Admin UI for Catalog (Phase 1, Task 4):** Built complete Inertia.js React + TypeScript catalog admin interface with server-side authorization and fullstack validation. Created `AdminLayout` with responsive mobile drawer, brand navigation, user RBAC role display, and flash message toasts. Built `ProductController` and `ProductImageController` supporting product listing with multi-parameter filtering (search across title, slug, and variant SKU; status tabs; stock level scopes), statistics metrics grid, standalone and multi-variant product creation, in-place variant row editor, Cartesian matrix preview generator, drag-and-drop raster image uploader with responsive WebP conversion, primary thumbnail assignment, and cascading deletion. Verified via 14 comprehensive feature tests (`tests/Feature/CatalogAdminTest.php`). All 36 suite tests passing 100% with 247 assertions, Pint code formatting passing, TypeScript type-check passing (0 errors), ESLint passing (0 errors), Prettier passing, and production bundle built in 4.12s.
+- **Phase 1 Status:** **100% COMPLETE.** Product Catalog, Variants, and Inventory Engine established and fully functional.
 
 ### Remaining Roadmap (Phased Implementation)
-- **Phase 1:** Admin UI for catalog (Inertia + React) (Current focus).
-- **Phase 2:** COD checkout engine, Bangladesh geographic dataset, and concurrency protection.
+- **Phase 2:** Cash on Delivery (COD) Checkout & Bangladesh Localization (Next focus: geographic datasets, 64-district delivery rates, pessimistic row locking on MySQL, UUID checkout idempotency).
 - **Phase 3:** Order management dashboard, fulfillment pipeline, and thermal invoice printing.
 - **Phase 4:** Visual drag-and-drop page builder canvas and Blade AST renderer.
 - **Phase 5:** Steadfast, Pathao, RedX courier and Greenweb/SSL Wireless SMS drivers (with offline mocks).
@@ -41,8 +42,8 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Phase 1, Task 4: Admin UI for Catalog (Products & Variants management interface with Inertia.js + React + TypeScript, form requests, and image upload integration).
-- **Scope Boundary:** Keep UI strictly focused on catalog admin workflows without premature checkout or page builder features.
+- **Action:** Phase 2, Task 1: Bangladesh Geographic Data & Shipping Matrix (Seed 64 districts & upazilas/thanas, shipping zones and calculation service).
+- **Scope Boundary:** Keep implementation strictly focused on Phase 2 deliverables without prematurely jumping ahead.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).

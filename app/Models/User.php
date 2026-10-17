@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,5 +28,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isStoreManager(): bool
+    {
+        return $this->role === 'store_manager';
+    }
+
+    public function isFulfillmentAgent(): bool
+    {
+        return $this->role === 'fulfillment_agent';
+    }
+
+    public function canManageCatalog(): bool
+    {
+        return in_array($this->role, ['super_admin', 'store_manager'], true);
     }
 }

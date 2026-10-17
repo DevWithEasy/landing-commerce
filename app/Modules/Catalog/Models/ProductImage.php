@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
 {
@@ -24,6 +25,11 @@ class ProductImage extends Model
         'alt_text',
     ];
 
+    protected $appends = [
+        'url',
+        'thumb_url',
+    ];
+
     /**
      * @return array<string, string>
      */
@@ -33,6 +39,25 @@ class ProductImage extends Model
             'sort_order' => 'integer',
             'is_primary' => 'boolean',
         ];
+    }
+
+    public function getUrlAttribute(): string
+    {
+        return Storage::disk('public')->url($this->file_path);
+    }
+
+    public function getThumbUrlAttribute(): string
+    {
+        $path = $this->file_path;
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        $base = substr($path, 0, -(strlen($ext) + 1));
+        $thumbPath = "{$base}-thumb.{$ext}";
+
+        if (Storage::disk('public')->exists($thumbPath)) {
+            return Storage::disk('public')->url($thumbPath);
+        }
+
+        return $this->getUrlAttribute();
     }
 
     /**

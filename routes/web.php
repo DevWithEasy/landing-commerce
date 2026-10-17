@@ -5,3 +5,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return response()->json(['status' => 'ok', 'app' => 'Landing Commerce']);
 });
+
+require __DIR__.'/admin.php';
