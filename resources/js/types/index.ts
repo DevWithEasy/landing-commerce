@@ -98,3 +98,65 @@ export interface VariantMatrixCombination {
     sku_suffix: string;
     attributes: Record<string, string>;
 }
+
+export interface Upazila {
+    id: number;
+    district_id: number;
+    name: string;
+    bn_name: string | null;
+    shipping_zone_id: number | null;
+}
+
+export interface District {
+    id: number;
+    name: string;
+    bn_name: string | null;
+    shipping_zone_id: number | null;
+    upazilas?: Upazila[];
+}
+
+export interface OrderItem {
+    id: number;
+    order_id: number;
+    product_id: number;
+    variant_id: number;
+    product_title: string;
+    variant_name: string;
+    unit_price: string | number;
+    quantity: number;
+    total_price: string | number;
+    is_restocked: boolean;
+}
+
+export interface Order {
+    id: number;
+    order_number: string;
+    customer_name: string;
+    customer_phone: string;
+    delivery_address: string;
+    district: string;
+    upazila: string | null;
+    status: string;
+    payment_method: string;
+    subtotal: string | number;
+    shipping_fee: string | number;
+    discount: string | number;
+    total: string | number;
+    notes: string | null;
+    idempotency_key: string;
+    created_at: string;
+    updated_at: string;
+    items: OrderItem[];
+}
+
+export interface CheckoutShowProps extends SharedProps {
+    product: Product;
+    districts: District[];
+    defaultShippingFee: number;
+    defaultZoneName: string;
+}
+
+export interface ThankYouProps extends SharedProps {
+    order: Order;
+    merchantWhatsapp: string | null;
+}
