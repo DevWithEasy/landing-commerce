@@ -3,6 +3,7 @@
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
 use App\Modules\Orders\Controllers\OrderController;
+use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
 use Illuminate\Support\Facades\Route;
 
 // Login placeholder endpoint to prevent undefined route errors for unauthenticated requests
@@ -35,4 +36,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::post('orders/{order}/transition', [OrderController::class, 'transition'])->name('orders.transition');
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
+
+    // Page Builder & Landing Pages
+    Route::post('landing-pages/{landing_page}/revisions', [LandingPageRevisionController::class, 'store'])
+        ->name('landing-pages.revisions.store');
 });

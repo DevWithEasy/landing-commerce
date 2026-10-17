@@ -57,6 +57,11 @@ class User extends Authenticatable
         return in_array($this->role, ['super_admin', 'store_manager', 'fulfillment_agent'], true);
     }
 
+    public function canManageLandingPages(): bool
+    {
+        return in_array($this->role, ['super_admin', 'store_manager'], true);
+    }
+
     /**
      * @return HasMany<OrderHistory, $this>
      */
