@@ -9,6 +9,7 @@ use App\Modules\Orders\Services\OrderStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -65,7 +66,41 @@ class Order extends Model
      */
     public function histories(): HasMany
     {
-        return $this->hasMany(OrderHistory::class)->orderBy('created_at');
+        return $this->hasMany(OrderHistory::class)->orderBy('created_at')->orderBy('id');
+    }
+
+    /**
+     * @return HasOne<OrderHistory, $this>
+     */
+    public function latestHistory(): HasOne
+    {
+        return $this->hasOne(OrderHistory::class)->latestOfMany();
+    }
+
+    /**
+     * Retrieve the structured chronological audit timeline for this order.
+     *
+     * @return list<array{
+     *     id: int,
+     *     order_id: int,
+     *     from_status: string|null,
+     *     to_status: string,
+     *     comment: string|null,
+     *     user_id: int|null,
+     *     user_name: string|null,
+     *     is_system: bool,
+     *     created_at: string|null,
+     *     created_at_human: string|null
+     * }>
+     */
+    public function getTimeline(): array
+    {
+        return $this->histories()
+            ->with('user')
+            ->get()
+            ->map(fn (OrderHistory $history) => $history->toTimelineArray())
+            ->values()
+            ->all();
     }
 
     /**

@@ -3,10 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Modules\Orders\Models\OrderHistory;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -48,5 +50,13 @@ class User extends Authenticatable
     public function canManageCatalog(): bool
     {
         return in_array($this->role, ['super_admin', 'store_manager'], true);
+    }
+
+    /**
+     * @return HasMany<OrderHistory, $this>
+     */
+    public function orderHistories(): HasMany
+    {
+        return $this->hasMany(OrderHistory::class);
     }
 }

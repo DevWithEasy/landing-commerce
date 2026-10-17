@@ -147,6 +147,37 @@ export interface Order {
     created_at: string;
     updated_at: string;
     items: OrderItem[];
+    histories?: OrderHistory[];
+    timeline?: OrderTimelineNode[];
+}
+
+export interface OrderHistory {
+    id: number;
+    order_id: number;
+    from_status: string | null;
+    to_status: string;
+    comment: string | null;
+    user_id: number | null;
+    created_at: string;
+    updated_at: string;
+    user?: {
+        id: number;
+        name: string;
+        email: string;
+    } | null;
+}
+
+export interface OrderTimelineNode {
+    id: number;
+    order_id: number;
+    from_status: string | null;
+    to_status: string;
+    comment: string | null;
+    user_id: number | null;
+    user_name: string | null;
+    is_system: boolean;
+    created_at: string | null;
+    created_at_human: string | null;
 }
 
 export interface CheckoutShowProps extends SharedProps {
