@@ -18,6 +18,7 @@
 - **CSS & UI Design System Configured (Phase 0, Task 6):** Installed `@tailwindcss/forms`, `@tailwindcss/typography`, and `lucide-react`. Configured design tokens (brand primary palette, accent conversion palette, border radii tokens, typography) in `resources/css/app.css`. Created typed reusable UI and layout primitives in `resources/js/Shared/` (`Button.tsx`, `Card.tsx`, `Container.tsx`). Verified `npm run type-check` (exit code 0), `npm run build` (exit code 0), and PHP test suite passing 100% (`2f03b61`).
 - **Quality Tooling Configured & Phase 0 Exit Criteria Met (Phase 0, Task 7):** Installed Pest PHP (`pestphp/pest ^4.7.8` & `pestphp/pest-plugin-laravel ^4.1.0` supporting Laravel 13). Replaced default ExampleTest files with Pest smoke tests. Verified Laravel Pint code styling (`./vendor/bin/pint --test` passed). Installed and configured ESLint 9 flat config (`eslint.config.js`) and Prettier (`.prettierrc`, `.prettierignore`). Verified all quality gates: `php artisan test` (100% pass, 2 tests, 3 assertions), `npm run type-check` (0 errors), `npm run lint` (0 errors), `npm run format:check` (passed), and `npm run build` (passed in 6.71s) (`0a4e789`).
 - **Phase 0 Status:** **100% COMPLETE.** Pure foundation established with verified automated tooling gates.
+- **Catalog Database Migrations & Models (Phase 1, Task 1):** Created and migrated tables `products`, `product_variants`, and `product_images` with strict `decimal(12, 2)` monetary handling, JSON variant attributes, and cascading foreign keys. Created Eloquent models in `app/Modules/Catalog/Models/` (`Product`, `ProductVariant`, `ProductImage`) with typed relationship declarations and attribute casts. Verified via 6 comprehensive Pest tests covering decimal prices, slug/SKU uniqueness, primary image resolution, and cascade deletion (`fce7d1f`). All 8 suite tests passing 100%.
 
 ### Remaining Roadmap (Phased Implementation)
 - **Phase 1:** Product catalog, variants matrix, and WebP media engine (Current focus).
@@ -38,8 +39,8 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Phase 1, Task 1: Design and review database migrations for the Product Catalog (`products`, `product_variants`, `product_images`).
-- **Permission Boundary:** Report planned migration schema definitions before executing `make:migration` or database modifications.
+- **Action:** Phase 1, Task 2: Catalog Domain Logic & Actions (`CreateProductAction`, `UpdateProductAction`, variant generator matrix, low-stock and out-of-stock query scopes).
+- **Permission Boundary:** Report planned action signatures and query scope definitions before implementation.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).
