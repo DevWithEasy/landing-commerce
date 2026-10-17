@@ -20,9 +20,10 @@
 - **Phase 0 Status:** **100% COMPLETE.** Pure foundation established with verified automated tooling gates.
 - **Catalog Database Migrations & Models (Phase 1, Task 1):** Created and migrated tables `products`, `product_variants`, and `product_images` with strict `decimal(12, 2)` monetary handling, JSON variant attributes, and cascading foreign keys. Created Eloquent models in `app/Modules/Catalog/Models/` (`Product`, `ProductVariant`, `ProductImage`) with typed relationship declarations and attribute casts. Verified via 6 comprehensive Pest tests covering decimal prices, slug/SKU uniqueness, primary image resolution, and cascade deletion (`fce7d1f`).
 - **Catalog Domain Logic & Actions (Phase 1, Task 2):** Implemented `VariantMatrixGenerator` for Cartesian product attribute generation, `CreateProductAction` and `UpdateProductAction` with transaction safety, automatic slug/SKU collision handling, and standalone/variant support. Added inventory query scopes on `ProductVariant` (`inStock`, `outOfStock`, `lowStock`) and `Product` (`active`, `inStock`, `outOfStock`, `lowStock`). Verified via 8 comprehensive Pest tests (`tests/Feature/CatalogDomainTest.php`) covering matrix generation, default variant auto-generation, duplicate slug suffixing, price validations, and stock scopes (`3e624ca`). All 16 suite tests passing 100%.
+- **Media & Image Optimization Engine (Phase 1, Task 3):** Installed and verified `intervention/image` v4.4.0 with GD driver. Configured storage symlink (`artisan storage:link`). Created `MediaUploadService` with strict binary MIME inspection via `finfo_file` (allowing only raster formats WebP, PNG, JPEG; rejecting SVGs and disguised payloads), 40-character random filename generation, automatic WebP conversion (quality 85), responsive variant generation (`thumb` 300px, `medium` 800px), and automated cleanup of main and variant assets on deletion. Verified via 6 comprehensive Pest tests (`tests/Feature/MediaUploadServiceTest.php`). All 22 suite tests passing 100% (`a7de40e`).
 
 ### Remaining Roadmap (Phased Implementation)
-- **Phase 1:** Media & image optimization engine, Admin UI for catalog (Current focus).
+- **Phase 1:** Admin UI for catalog (Inertia + React) (Current focus).
 - **Phase 2:** COD checkout engine, Bangladesh geographic dataset, and concurrency protection.
 - **Phase 3:** Order management dashboard, fulfillment pipeline, and thermal invoice printing.
 - **Phase 4:** Visual drag-and-drop page builder canvas and Blade AST renderer.
@@ -40,8 +41,8 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Phase 1, Task 3: Media & Image Optimization (Setup local public storage disk and symlink, restrict uploads to approved raster formats WebP/PNG/JPEG, create `MediaUploadService` with MIME verification via `finfo_file` and automated WebP conversion).
-- **Permission Boundary:** Report planned image manipulation dependencies (e.g., Intervention Image version compatibility with Laravel 13) before installation.
+- **Action:** Phase 1, Task 4: Admin UI for Catalog (Products & Variants management interface with Inertia.js + React + TypeScript, form requests, and image upload integration).
+- **Scope Boundary:** Keep UI strictly focused on catalog admin workflows without premature checkout or page builder features.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).
