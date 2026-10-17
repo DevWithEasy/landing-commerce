@@ -3,6 +3,7 @@
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Checkout\Actions\ProcessCodOrderAction;
+use App\Modules\Checkout\Services\OrderRateLimiter;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Models\OrderStatus;
 use Database\Seeders\BangladeshGeographicSeeder;
@@ -14,6 +15,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->seed(BangladeshGeographicSeeder::class);
     $this->action = app(ProcessCodOrderAction::class);
+    RateLimiter::clear(app(OrderRateLimiter::class)->ipKey('127.0.0.1'));
 
     $this->product = Product::create([
         'title' => 'Executive Leather Bag',
@@ -231,6 +233,9 @@ test('calculates accurate shipping fees across all Bangladeshi shipping zones', 
     ]);
     $resGazipur->assertStatus(201)
         ->assertJsonPath('order.shipping_fee', '100.00');
+
+    // Clear IP rate limit counter for next zone check
+    RateLimiter::clear(app(OrderRateLimiter::class)->ipKey('127.0.0.1'));
 
     // 4. Outside Dhaka (Sylhet district): 130.00
     $resSylhet = $this->postJson(route('checkout.cod.store'), [

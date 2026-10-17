@@ -7,6 +7,7 @@ namespace App\Modules\Checkout\Actions;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Checkout\Exceptions\InsufficientStockException;
 use App\Modules\Checkout\Rules\BdPhoneRule;
+use App\Modules\Checkout\Services\BlacklistService;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Models\OrderHistory;
 use App\Modules\Orders\Models\OrderItem;
@@ -20,8 +21,11 @@ use InvalidArgumentException;
 class ProcessCodOrderAction
 {
     public function __construct(
-        protected ShippingCalculatorService $shippingCalculator
-    ) {}
+        protected ShippingCalculatorService $shippingCalculator,
+        protected ?BlacklistService $blacklistService = null
+    ) {
+        $this->blacklistService = $blacklistService ?? app(BlacklistService::class);
+    }
 
     /**
      * @param array{
@@ -53,6 +57,10 @@ class ProcessCodOrderAction
             throw new InvalidArgumentException('A valid 11-digit Bangladeshi mobile number is required.');
         }
         $normalizedPhone = BdPhoneRule::normalize($rawPhone);
+
+        if ($this->blacklistService->isBlacklisted($normalizedPhone)) {
+            throw new InvalidArgumentException('This phone number is blocked from placing orders.');
+        }
 
         if (empty(trim($data['delivery_address'] ?? ''))) {
             throw new InvalidArgumentException('Delivery address is required.');

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Checkout\Actions\ProcessCodOrderAction;
 use App\Modules\Checkout\Exceptions\InsufficientStockException;
 use App\Modules\Checkout\Requests\StoreCodOrderRequest;
+use App\Modules\Checkout\Services\OrderRateLimiter;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Http\JsonResponse;
 
@@ -18,11 +19,12 @@ class CodCheckoutController extends Controller
      */
     public function store(
         StoreCodOrderRequest $request,
-        ProcessCodOrderAction $action
+        ProcessCodOrderAction $action,
+        OrderRateLimiter $rateLimiter
     ): JsonResponse {
         $idempotencyKey = (string) $request->input('idempotency_key');
 
-        // Check for existing order by idempotency key (returns 200 without duplicate deduction)
+        // Check for existing order by idempotency key (returns 200 without duplicate deduction or throttling)
         $existing = Order::with('items')->where('idempotency_key', $idempotencyKey)->first();
         if ($existing) {
             return response()->json([
@@ -31,9 +33,37 @@ class CodCheckoutController extends Controller
             ], 200);
         }
 
+        $ip = (string) $request->ip();
+        $phone = (string) ($request->input('customer_phone') ?? $request->input('phone') ?? '');
+
+        // 1. Enforce IP rate limiting: Maximum 3 checkout requests per IP per 15 minutes
+        if ($rateLimiter->tooManyIpAttempts($ip)) {
+            $retryAfter = $rateLimiter->ipAvailableIn($ip);
+
+            return response()->json([
+                'message' => "Too many checkout requests from this IP. Please try again in {$retryAfter} seconds.",
+                'error' => 'rate_limit_exceeded',
+                'retry_after' => $retryAfter,
+            ], 429)->header('Retry-After', (string) $retryAfter);
+        }
+
+        // 2. Enforce Phone rate limiting: Maximum 1 checkout request per normalized phone per 5 minutes
+        if ($rateLimiter->tooManyPhoneAttempts($phone)) {
+            $retryAfter = $rateLimiter->phoneAvailableIn($phone);
+
+            return response()->json([
+                'message' => "Too many checkout requests for this phone number. Please try again in {$retryAfter} seconds.",
+                'error' => 'rate_limit_exceeded',
+                'retry_after' => $retryAfter,
+            ], 429)->header('Retry-After', (string) $retryAfter);
+        }
+
         try {
             $payload = $request->toOrderPayload();
-            $order = $action->execute($payload, $request->ip());
+            $order = $action->execute($payload, $ip);
+
+            // Record rate limit hits on successful order placement
+            $rateLimiter->hit($ip, $phone);
 
             return response()->json([
                 'message' => 'Order placed successfully.',
