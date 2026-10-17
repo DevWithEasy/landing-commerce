@@ -11,7 +11,8 @@ const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm',
     secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-400',
     accent: 'bg-accent-600 text-white hover:bg-accent-700 focus:ring-accent-500 shadow-sm',
-    outline: 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-primary-500',
+    outline:
+        'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-primary-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm',
 };
 
