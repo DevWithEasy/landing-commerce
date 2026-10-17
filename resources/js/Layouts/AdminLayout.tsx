@@ -46,10 +46,9 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         },
         {
             name: 'Orders & COD',
-            href: '#',
+            href: '/admin/orders',
             icon: ShoppingCart,
-            current: false,
-            badge: 'Phase 2',
+            current: window.location.pathname.startsWith('/admin/orders'),
         },
     ];
 

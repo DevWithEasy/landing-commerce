@@ -191,3 +191,15 @@ export interface ThankYouProps extends SharedProps {
     order: Order;
     merchantWhatsapp: string | null;
 }
+
+export interface OrderIndexProps extends SharedProps {
+    orders: PaginatedData<Order>;
+    filters: {
+        search: string | null;
+        status: string | null;
+        date_from: string | null;
+        date_to: string | null;
+    };
+    statusCounts: Record<string, number>;
+    allowedTransitions: Record<string, string[]>;
+}

@@ -2,6 +2,7 @@
 
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
+use App\Modules\Orders\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 
 // Login placeholder endpoint to prevent undefined route errors for unauthenticated requests
@@ -27,4 +28,11 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         ->name('products.images.destroy');
     Route::post('products/{product}/images/{image}/primary', [ProductImageController::class, 'setPrimary'])
         ->name('products.images.primary');
+
+    // Orders & Fulfillment Pipeline
+    Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
+    Route::post('orders/bulk-transition', [OrderController::class, 'bulkTransition'])->name('orders.bulk-transition');
+    Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+    Route::post('orders/{order}/transition', [OrderController::class, 'transition'])->name('orders.transition');
+    Route::resource('orders', OrderController::class)->only(['index', 'show']);
 });
