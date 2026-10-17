@@ -16,11 +16,11 @@
 - **Database Connections Configured (Phase 0, Task 4):** Verified SQLite as working default (`database/database.sqlite`, 9 foundation tables) via `artisan db:show`. Verified automated testing isolation via SQLite `:memory:` in `phpunit.xml` (all tests passing). Verified MySQL 8.4.3 service availability on `127.0.0.1:3306` with PDO authentication. Updated `.env.example` with `# DB_DATABASE=landing_commerce` placeholder (`c9577d4`).
 - **Inertia.js + React + TypeScript Configured (Phase 0, Task 5):** Installed `inertiajs/inertia-laravel v3.5.1`, configured `HandleInertiaRequests` middleware in `bootstrap/app.php`, created minimal root template `resources/views/app.blade.php`. Installed `@inertiajs/react 3.9.1`, `react 19.3.1`, `react-dom 19.3.1`, `typescript 7.0.2`, `@vitejs/plugin-react 6.1.2`. Configured `tsconfig.json` with strict type-checking and `@/*` aliases, configured `vite.config.js` with React plugin and `import.meta.dirname`. Verified `npm run type-check` (exit code 0), `npm run build` (exit code 0), and PHP test suite passing 100% (`1298ff0`).
 - **CSS & UI Design System Configured (Phase 0, Task 6):** Installed `@tailwindcss/forms`, `@tailwindcss/typography`, and `lucide-react`. Configured design tokens (brand primary palette, accent conversion palette, border radii tokens, typography) in `resources/css/app.css`. Created typed reusable UI and layout primitives in `resources/js/Shared/` (`Button.tsx`, `Card.tsx`, `Container.tsx`). Verified `npm run type-check` (exit code 0), `npm run build` (exit code 0), and PHP test suite passing 100% (`2f03b61`).
-- **Feature Status:** Pure foundation stage; no custom commerce features, modules, or builder components have been implemented yet.
+- **Quality Tooling Configured & Phase 0 Exit Criteria Met (Phase 0, Task 7):** Installed Pest PHP (`pestphp/pest ^4.7.8` & `pestphp/pest-plugin-laravel ^4.1.0` supporting Laravel 13). Replaced default ExampleTest files with Pest smoke tests. Verified Laravel Pint code styling (`./vendor/bin/pint --test` passed). Installed and configured ESLint 9 flat config (`eslint.config.js`) and Prettier (`.prettierrc`, `.prettierignore`). Verified all quality gates: `php artisan test` (100% pass, 2 tests, 3 assertions), `npm run type-check` (0 errors), `npm run lint` (0 errors), `npm run format:check` (passed), and `npm run build` (passed in 6.71s) (`0a4e789`).
+- **Phase 0 Status:** **100% COMPLETE.** Pure foundation established with verified automated tooling gates.
 
 ### Remaining Roadmap (Phased Implementation)
-- **Phase 0:** Setup Quality tooling (Pest PHP 3, Pint, ESLint, Prettier) (Current focus).
-- **Phase 1:** Product catalog, variants matrix, and WebP media engine.
+- **Phase 1:** Product catalog, variants matrix, and WebP media engine (Current focus).
 - **Phase 2:** COD checkout engine, Bangladesh geographic dataset, and concurrency protection.
 - **Phase 3:** Order management dashboard, fulfillment pipeline, and thermal invoice printing.
 - **Phase 4:** Visual drag-and-drop page builder canvas and Blade AST renderer.
@@ -38,8 +38,8 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Phase 0, Task 7: Setup Quality Tooling (Install Pest PHP 3 for backend testing, verify Laravel Pint for PSR-12/Laravel backend code style, install ESLint and Prettier for TypeScript/React code quality).
-- **Permission Boundary:** Report planned tooling dependencies and configurations before installing packages.
+- **Action:** Phase 1, Task 1: Design and review database migrations for the Product Catalog (`products`, `product_variants`, `product_images`).
+- **Permission Boundary:** Report planned migration schema definitions before executing `make:migration` or database modifications.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).
