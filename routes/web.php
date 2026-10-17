@@ -2,6 +2,7 @@
 
 use App\Modules\Checkout\Controllers\CheckoutPageController;
 use App\Modules\Checkout\Controllers\CodCheckoutController;
+use App\Modules\PageBuilder\Controllers\PublicLandingPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,3 +15,8 @@ Route::post('/checkout/cod', [CodCheckoutController::class, 'store'])->name('che
 Route::get('/checkout/thank-you/{order:order_number}', [CheckoutPageController::class, 'thankYou'])->name('checkout.thank-you');
 
 require __DIR__.'/admin.php';
+
+// Public dynamic landing page route (must remain at the end to avoid capturing system/admin routes)
+Route::get('/{slug}', [PublicLandingPageController::class, 'show'])
+    ->where('slug', '^(?!admin|checkout|login|api|storage|build|_debugbar).*$')
+    ->name('landing-page.show');
