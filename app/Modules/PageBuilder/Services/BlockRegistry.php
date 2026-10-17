@@ -41,4 +41,234 @@ class BlockRegistry
     {
         return self::APPROVED_BLOCKS;
     }
+
+    /**
+     * Get default properties for a block type.
+     *
+     * @return array<string, mixed>
+     */
+    public static function getDefaultProps(string $blockType): array
+    {
+        return match ($blockType) {
+            'HeroBlock' => [
+                'headline' => 'Exclusive Premium Collection',
+                'subheadline' => '100% authentic quality guaranteed. Cash on delivery available across all 64 districts.',
+                'badgeText' => 'Limited Stock Offer',
+                'ctaText' => 'Order Now - Cash on Delivery',
+                'ctaTarget' => '#cod-checkout',
+                'imageUrl' => '',
+                'imagePosition' => 'right',
+            ],
+            'ProductSelectorBlock' => [
+                'productId' => 0,
+                'showDescription' => true,
+                'showPrice' => true,
+                'displayMode' => 'grid',
+            ],
+            'CodCheckoutBlock' => [
+                'productId' => 0,
+                'variantSelectionType' => 'swatches',
+                'showQuantity' => true,
+                'buttonText' => 'Confirm Order - Cash on Delivery',
+                'highlightColor' => '#16a34a',
+            ],
+            'BenefitsGridBlock' => [
+                'title' => 'Why Order From Us?',
+                'columns' => 3,
+                'items' => [
+                    [
+                        'id' => 'b1',
+                        'icon' => 'ShieldCheck',
+                        'title' => '100% Genuine Quality',
+                        'description' => 'Tested and verified products before shipping.',
+                    ],
+                    [
+                        'id' => 'b2',
+                        'icon' => 'Truck',
+                        'title' => 'Fast COD Delivery',
+                        'description' => '24-48h in Dhaka, 48-72h nationwide.',
+                    ],
+                    [
+                        'id' => 'b3',
+                        'icon' => 'RotateCcw',
+                        'title' => '7-Day Easy Return',
+                        'description' => 'Hassle-free return policy if not satisfied.',
+                    ],
+                ],
+            ],
+            'ReviewsBlock' => [
+                'title' => 'What Our Customers Say',
+                'layout' => 'grid',
+                'items' => [
+                    [
+                        'id' => 'r1',
+                        'authorName' => 'Tanvir Hasan',
+                        'location' => 'Dhaka',
+                        'rating' => 5,
+                        'comment' => 'Received within 24 hours. The packaging and product quality exceeded my expectations!',
+                        'verifiedPurchase' => true,
+                    ],
+                    [
+                        'id' => 'r2',
+                        'authorName' => 'Nusrat Jahan',
+                        'location' => 'Chittagong',
+                        'rating' => 5,
+                        'comment' => 'Very reliable service. Cash on delivery was seamless, highly recommended.',
+                        'verifiedPurchase' => true,
+                    ],
+                ],
+            ],
+            'VideoBlock' => [
+                'videoUrl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                'aspectRatio' => '16:9',
+                'autoplay' => false,
+                'controls' => true,
+            ],
+            'FaqBlock' => [
+                'title' => 'Frequently Asked Questions',
+                'items' => [
+                    [
+                        'id' => 'f1',
+                        'question' => 'How can I pay for my order?',
+                        'answer' => 'You can pay via Cash on Delivery (COD) directly to the delivery rider once you receive and inspect your parcel.',
+                    ],
+                    [
+                        'id' => 'f2',
+                        'question' => 'How long does delivery take?',
+                        'answer' => 'Inside Dhaka delivery takes 24-48 hours. Outside Dhaka takes 48-72 hours via our official courier partners.',
+                    ],
+                    [
+                        'id' => 'f3',
+                        'question' => 'Can I check the product before paying?',
+                        'answer' => 'Yes, our riders allow parcel verification in front of the delivery agent before completing payment.',
+                    ],
+                ],
+            ],
+            'CountdownTimerBlock' => [
+                'targetDate' => date('Y-m-d\TH:i:s\Z', strtotime('+2 days')),
+                'headline' => 'Flash Sale Ending Soon!',
+                'urgencyText' => 'Special discount pricing expires in:',
+                'expiryAction' => 'show_message',
+                'expiryMessage' => 'Offer has concluded. Regular prices now apply.',
+            ],
+            'StickyBarBlock' => [
+                'message' => 'Special Campaign Discount - Order Now & Save ৳200!',
+                'buttonText' => 'Order Now',
+                'buttonTarget' => '#cod-checkout',
+                'placement' => 'bottom',
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Get default styles for a block type.
+     *
+     * @return array<string, string>
+     */
+    public static function getDefaultStyles(string $blockType): array
+    {
+        return match ($blockType) {
+            'HeroBlock' => [
+                'backgroundColor' => '#f8fafc',
+                'paddingTop' => '48px',
+                'paddingBottom' => '48px',
+                'color' => '#0f172a',
+            ],
+            'BenefitsGridBlock' => [
+                'backgroundColor' => '#ffffff',
+                'paddingTop' => '40px',
+                'paddingBottom' => '40px',
+            ],
+            'ReviewsBlock' => [
+                'backgroundColor' => '#f8fafc',
+                'paddingTop' => '48px',
+                'paddingBottom' => '48px',
+            ],
+            'StickyBarBlock' => [
+                'position' => 'fixed',
+                'backgroundColor' => '#0f172a',
+                'color' => '#ffffff',
+                'zIndex' => '40',
+            ],
+            default => [
+                'paddingTop' => '32px',
+                'paddingBottom' => '32px',
+            ],
+        };
+    }
+
+    /**
+     * Get metadata description for all approved blocks.
+     *
+     * @return array<string, array{type: string, name: string, description: string, category: string, icon: string, defaultProps: array<string, mixed>, defaultStyles: array<string, mixed>}>
+     */
+    public static function getAllBlockDefinitions(): array
+    {
+        $definitions = [
+            'HeroBlock' => [
+                'name' => 'Hero Banner',
+                'description' => 'High-converting headline, badge, call-to-action button, and showcase media.',
+                'category' => 'Header',
+                'icon' => 'Sparkles',
+            ],
+            'ProductSelectorBlock' => [
+                'name' => 'Product Showcase',
+                'description' => 'Display selected product with title, pricing, images, and variant swatches.',
+                'category' => 'Commerce',
+                'icon' => 'Package',
+            ],
+            'CodCheckoutBlock' => [
+                'name' => 'COD Checkout Form',
+                'description' => 'Fast 1-step Cash on Delivery checkout form with real-time fee calculations.',
+                'category' => 'Commerce',
+                'icon' => 'ShoppingBag',
+            ],
+            'BenefitsGridBlock' => [
+                'name' => 'Trust & Benefits Grid',
+                'description' => 'Feature badges highlight guarantees like 100% genuine and easy returns.',
+                'category' => 'Content',
+                'icon' => 'ShieldCheck',
+            ],
+            'ReviewsBlock' => [
+                'name' => 'Customer Reviews',
+                'description' => 'Verified buyer testimonials and star ratings for social proof.',
+                'category' => 'Social Proof',
+                'icon' => 'Star',
+            ],
+            'VideoBlock' => [
+                'name' => 'Video Showcase',
+                'description' => 'Embed product demonstrations from YouTube or Vimeo.',
+                'category' => 'Media',
+                'icon' => 'Video',
+            ],
+            'FaqBlock' => [
+                'name' => 'FAQ Accordion',
+                'description' => 'Address common buyer questions about delivery, returns, and payment.',
+                'category' => 'Content',
+                'icon' => 'HelpCircle',
+            ],
+            'CountdownTimerBlock' => [
+                'name' => 'Urgency Countdown',
+                'description' => 'Live countdown timer creating urgency for limited-time flash deals.',
+                'category' => 'Marketing',
+                'icon' => 'Clock',
+            ],
+            'StickyBarBlock' => [
+                'name' => 'Sticky Bottom Bar',
+                'description' => 'Floating mobile-first bar keeping the "Order Now" button always within reach.',
+                'category' => 'Marketing',
+                'icon' => 'Layers',
+            ],
+        ];
+
+        foreach ($definitions as $type => &$def) {
+            $def['type'] = $type;
+            $def['defaultProps'] = self::getDefaultProps($type);
+            $def['defaultStyles'] = self::getDefaultStyles($type);
+        }
+        unset($def);
+
+        return $definitions;
+    }
 }
