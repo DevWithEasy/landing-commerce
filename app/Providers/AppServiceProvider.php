@@ -7,6 +7,8 @@ use App\Modules\Catalog\Policies\ProductPolicy;
 use App\Modules\Couriers\Services\CourierManager;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Policies\OrderPolicy;
+use App\Modules\Sms\Services\SmsManager;
+use App\Modules\Sms\Services\SmsTemplateService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CourierManager::class);
+        $this->app->singleton(SmsTemplateService::class);
+        $this->app->singleton(SmsManager::class);
     }
 
     /**

@@ -12,6 +12,7 @@ import {
     Filter,
     Layers,
     MapPin,
+    MessageSquare,
     Package,
     Phone,
     Printer,
@@ -67,6 +68,7 @@ export default function Index({
     statusCounts,
     allowedTransitions,
     courierConfig,
+    smsConfig,
 }: OrderIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [currentStatus, setCurrentStatus] = useState(filters.status || 'all');
@@ -109,6 +111,14 @@ export default function Index({
         message: string;
         rawStatus?: string;
     } | null>(null);
+
+    // SMS notification state
+    const [smsModalOpen, setSmsModalOpen] = useState(false);
+    const [selectedSmsDriver, setSelectedSmsDriver] = useState(smsConfig?.default || 'mock');
+    const [selectedSmsTemplate, setSelectedSmsTemplate] = useState('order_confirmed');
+    const [smsCustomMessage, setSmsCustomMessage] = useState('');
+    const [isSmsSending, setIsSmsSending] = useState(false);
+    const [smsError, setSmsError] = useState<string | null>(null);
 
     // Sync search and filter changes
     const applyFilters = (statusOverride?: string) => {
@@ -185,6 +195,17 @@ export default function Index({
         setDispatchWeight('0.5');
         setDispatchError(null);
         setTrackingFeedback(null);
+        setSmsModalOpen(false);
+        setSmsError(null);
+        setSelectedSmsDriver(smsConfig?.default || 'mock');
+        setSelectedSmsTemplate(
+            order.status === 'handed_to_courier' || order.status === 'in_transit'
+                ? 'out_for_delivery'
+                : order.status === 'pending'
+                  ? 'order_placed'
+                  : 'order_confirmed'
+        );
+        setSmsCustomMessage('');
 
         fetch(`/admin/orders/${order.id}`, {
             headers: {
@@ -213,6 +234,57 @@ export default function Index({
         setDispatchModalOpen(false);
         setDispatchError(null);
         setTrackingFeedback(null);
+        setSmsModalOpen(false);
+        setSmsError(null);
+    };
+
+    // Get live preview of the SMS text for the active order
+    const getPreviewMessage = (templateKey: string, order: Order | null) => {
+        if (!order) return '';
+        if (templateKey === 'custom') return smsCustomMessage;
+        const template = smsConfig?.templates?.[templateKey];
+        if (!template) return '';
+        return template
+            .replace(/{customer_name}/g, order.customer_name)
+            .replace(/{customer_phone}/g, order.customer_phone)
+            .replace(/{order_number}/g, order.order_number)
+            .replace(/{total}/g, String(order.total))
+            .replace(/{subtotal}/g, String(order.subtotal))
+            .replace(/{shipping_fee}/g, String(order.shipping_fee))
+            .replace(/{courier_name}/g, order.courier_name || 'courier')
+            .replace(/{tracking_id}/g, order.courier_tracking_id || 'N/A')
+            .replace(/{tracking_url}/g, order.courier_tracking_url || '');
+    };
+
+    // Execute SMS notification dispatch
+    const executeSendSms = (e: FormEvent) => {
+        e.preventDefault();
+        if (!detailOrder) return;
+        setIsSmsSending(true);
+        setSmsError(null);
+
+        router.post(
+            `/admin/orders/${detailOrder.id}/sms/send`,
+            {
+                driver: selectedSmsDriver,
+                template: selectedSmsTemplate,
+                message: selectedSmsTemplate === 'custom' ? smsCustomMessage : undefined,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsSmsSending(false);
+                    setSmsModalOpen(false);
+                    openOrderDetail(detailOrder);
+                },
+                onError: (errors) => {
+                    setIsSmsSending(false);
+                    const errorMsg =
+                        Object.values(errors).join(', ') || 'Failed to send SMS notification.';
+                    setSmsError(errorMsg);
+                },
+            }
+        );
     };
 
     // Execute courier consignment booking
@@ -836,6 +908,14 @@ export default function Index({
                                     </a>
                                     <button
                                         type="button"
+                                        onClick={() => setSmsModalOpen(true)}
+                                        className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                                        title="Send Customer SMS Notification"
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        type="button"
                                         onClick={closeOrderDetail}
                                         className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                                     >
@@ -944,6 +1024,34 @@ export default function Index({
                                             </button>
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Customer SMS Notification Bar */}
+                                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="p-1.5 bg-emerald-600 text-white rounded-lg shadow-xs">
+                                            <MessageSquare className="w-3.5 h-3.5" />
+                                        </span>
+                                        <div>
+                                            <p className="text-xs font-bold text-emerald-950">
+                                                Customer SMS Notification
+                                            </p>
+                                            <p className="text-[11px] text-emerald-700">
+                                                Dispatch status SMS directly to customer (
+                                                {detailOrder.customer_phone})
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => setSmsModalOpen(true)}
+                                        className="bg-white border-emerald-300 text-emerald-800 hover:bg-emerald-100/60 shadow-2xs"
+                                    >
+                                        <MessageSquare className="w-3 h-3 mr-1 text-emerald-600" />
+                                        Send SMS
+                                    </Button>
                                 </div>
 
                                 {/* Next Status Transition Action Bar */}
@@ -1490,6 +1598,226 @@ export default function Index({
                                             <>
                                                 <Truck className="w-3.5 h-3.5 mr-1" />
                                                 Confirm & Dispatch
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* SMS NOTIFICATION MODAL */}
+            {smsModalOpen && detailOrder && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                        <div
+                            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+                            onClick={() => {
+                                if (!isSmsSending) setSmsModalOpen(false);
+                            }}
+                        />
+
+                        <div className="relative inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full p-6">
+                            <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+                                <div className="flex items-center space-x-2">
+                                    <span className="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
+                                        <MessageSquare className="w-5 h-5" />
+                                    </span>
+                                    <div>
+                                        <h3 className="text-base font-bold text-gray-900">
+                                            Send SMS Notification
+                                        </h3>
+                                        <p className="text-xs text-gray-500">
+                                            Recipient: {detailOrder.customer_name} (
+                                            {detailOrder.customer_phone})
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setSmsModalOpen(false)}
+                                    className="text-gray-400 hover:text-gray-600 p-1"
+                                    disabled={isSmsSending}
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {smsError && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 flex items-start space-x-2">
+                                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                                    <span>{smsError}</span>
+                                </div>
+                            )}
+
+                            <form onSubmit={executeSendSms}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label
+                                            htmlFor="sms-gateway-driver"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            SMS Gateway Provider
+                                        </label>
+                                        <select
+                                            id="sms-gateway-driver"
+                                            value={selectedSmsDriver}
+                                            onChange={(e) => setSelectedSmsDriver(e.target.value)}
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                                        >
+                                            {smsConfig?.drivers ? (
+                                                Object.entries(smsConfig.drivers).map(
+                                                    ([driverKey, driverLabel]) => {
+                                                        const isConfigured =
+                                                            smsConfig.configured?.[driverKey] ??
+                                                            false;
+                                                        return (
+                                                            <option
+                                                                key={driverKey}
+                                                                value={driverKey}
+                                                            >
+                                                                {driverLabel}
+                                                                {driverKey === 'mock'
+                                                                    ? ' (Simulation)'
+                                                                    : isConfigured
+                                                                      ? ' (Ready)'
+                                                                      : ' (Missing Credentials)'}
+                                                            </option>
+                                                        );
+                                                    }
+                                                )
+                                            ) : (
+                                                <>
+                                                    <option value="mock">
+                                                        Mock SMS (Local Simulation)
+                                                    </option>
+                                                    <option value="greenweb">Greenweb SMS</option>
+                                                    <option value="sslwireless">
+                                                        SSL Wireless SMS
+                                                    </option>
+                                                    <option value="smspoh">SMSPoh</option>
+                                                </>
+                                            )}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="sms-notification-template"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Notification Template
+                                        </label>
+                                        <select
+                                            id="sms-notification-template"
+                                            value={selectedSmsTemplate}
+                                            onChange={(e) => setSelectedSmsTemplate(e.target.value)}
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                                        >
+                                            <option value="order_placed">
+                                                Order Placed Template
+                                            </option>
+                                            <option value="order_confirmed">
+                                                Order Confirmed Template
+                                            </option>
+                                            <option value="out_for_delivery">
+                                                Out For Delivery Template
+                                            </option>
+                                            <option value="custom">Custom Message (Manual)</option>
+                                        </select>
+                                    </div>
+
+                                    {selectedSmsTemplate === 'custom' && (
+                                        <div>
+                                            <label
+                                                htmlFor="sms-custom-message"
+                                                className="block text-xs font-semibold text-gray-700 mb-1"
+                                            >
+                                                Custom Message Content
+                                            </label>
+                                            <textarea
+                                                id="sms-custom-message"
+                                                rows={4}
+                                                value={smsCustomMessage}
+                                                onChange={(e) =>
+                                                    setSmsCustomMessage(e.target.value)
+                                                }
+                                                placeholder="Write custom SMS message for the customer..."
+                                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
+                                                required
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-semibold text-gray-700">
+                                                Message Preview
+                                            </span>
+                                            <span className="text-[11px] text-gray-400 font-mono">
+                                                {
+                                                    getPreviewMessage(
+                                                        selectedSmsTemplate,
+                                                        detailOrder
+                                                    ).length
+                                                }{' '}
+                                                chars (~
+                                                {Math.max(
+                                                    1,
+                                                    Math.ceil(
+                                                        getPreviewMessage(
+                                                            selectedSmsTemplate,
+                                                            detailOrder
+                                                        ).length / 160
+                                                    )
+                                                )}{' '}
+                                                SMS)
+                                            </span>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                            {getPreviewMessage(
+                                                selectedSmsTemplate,
+                                                detailOrder
+                                            ) || (
+                                                <span className="text-gray-400 italic">
+                                                    No message content
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 flex justify-end space-x-3">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => setSmsModalOpen(false)}
+                                        disabled={isSmsSending}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        variant="primary"
+                                        size="sm"
+                                        disabled={
+                                            isSmsSending ||
+                                            !getPreviewMessage(
+                                                selectedSmsTemplate,
+                                                detailOrder
+                                            ).trim()
+                                        }
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    >
+                                        {isSmsSending ? (
+                                            'Dispatching SMS...'
+                                        ) : (
+                                            <>
+                                                <MessageSquare className="w-3.5 h-3.5 mr-1" />
+                                                Send SMS Now
                                             </>
                                         )}
                                     </Button>

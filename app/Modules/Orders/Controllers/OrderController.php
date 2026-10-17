@@ -14,6 +14,7 @@ use App\Modules\Orders\Requests\BulkTransitionOrderRequest;
 use App\Modules\Orders\Requests\TransitionOrderRequest;
 use App\Modules\Orders\Services\BarcodeGeneratorService;
 use App\Modules\Orders\Services\OrderStateMachine;
+use App\Modules\Sms\Services\SmsManager;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -29,7 +30,8 @@ class OrderController extends Controller
     public function __construct(
         protected OrderStateMachine $stateMachine,
         protected BarcodeGeneratorService $barcodeGenerator,
-        protected CourierManager $courierManager
+        protected CourierManager $courierManager,
+        protected SmsManager $smsManager
     ) {}
 
     /**
@@ -76,6 +78,17 @@ class OrderController extends Controller
                     'pathao' => $this->courierManager->isConfigured('pathao'),
                     'redx' => $this->courierManager->isConfigured('redx'),
                 ],
+            ],
+            'smsConfig' => [
+                'default' => config('sms.default', 'mock'),
+                'drivers' => $this->smsManager->getSupportedDrivers(),
+                'configured' => [
+                    'mock' => $this->smsManager->isConfigured('mock'),
+                    'greenweb' => $this->smsManager->isConfigured('greenweb'),
+                    'ssl_wireless' => $this->smsManager->isConfigured('ssl_wireless'),
+                    'smspoh' => $this->smsManager->isConfigured('smspoh'),
+                ],
+                'templates' => $this->smsManager->getTemplateService()->all(),
             ],
         ]);
     }

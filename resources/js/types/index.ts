@@ -201,6 +201,13 @@ export interface CourierConfig {
     configured: Record<string, boolean>;
 }
 
+export interface SmsConfig {
+    default: string;
+    drivers: Record<string, string>;
+    configured: Record<string, boolean>;
+    templates: Record<string, string>;
+}
+
 export interface OrderIndexProps extends SharedProps {
     orders: PaginatedData<Order>;
     filters: {
@@ -212,6 +219,7 @@ export interface OrderIndexProps extends SharedProps {
     statusCounts: Record<string, number>;
     allowedTransitions: Record<string, string[]>;
     courierConfig?: CourierConfig;
+    smsConfig?: SmsConfig;
 }
 
 export * from './builder';

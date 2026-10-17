@@ -6,6 +6,7 @@ use App\Modules\Orders\Controllers\OrderController;
 use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
+use App\Modules\Sms\Controllers\OrderSmsController;
 use Illuminate\Support\Facades\Route;
 
 // Login placeholder endpoint to prevent undefined route errors for unauthenticated requests
@@ -39,6 +40,7 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::post('orders/{order}/transition', [OrderController::class, 'transition'])->name('orders.transition');
     Route::post('orders/{order}/courier/dispatch', [OrderCourierController::class, 'dispatchOrder'])->name('orders.courier.dispatch');
     Route::post('orders/{order}/courier/track', [OrderCourierController::class, 'trackOrder'])->name('orders.courier.track');
+    Route::post('orders/{order}/sms/send', [OrderSmsController::class, 'sendOrderSms'])->name('orders.sms.send');
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
 
     // Page Builder & Landing Pages
