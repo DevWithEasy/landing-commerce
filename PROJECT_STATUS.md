@@ -11,10 +11,11 @@
 - **PHP Environment Readiness:** Verified Laragon PHP 8.3.33 CLI with `extension=zip` enabled.
 - **Laravel 13 Core Scaffolding:** Laravel 13.37.0 scaffolded successfully at `I:\coding_world\laragon\www\landing-commerce`.
 - **Default Database Migrations:** Default Laravel migrations executed and completed successfully using SQLite.
+- **Git Repository Initialized (Phase 0, Task 2):** Verified `.gitignore` (ignoring `.env`, `.env.*`, `vendor/`, `node_modules/`, `database/*.sqlite*`, storage sensitive files), initialized git repository on `main`, and created baseline initial commit (`7d27746`).
 - **Feature Status:** Pure foundation stage; no custom commerce features, modules, or builder components have been implemented yet.
 
 ### Remaining Roadmap (Phased Implementation)
-- **Phase 0:** Review/align scaffold structure, configure Inertia.js + React + TypeScript, TailwindCSS tokens, and Pest PHP 3 (Current focus).
+- **Phase 0:** Review/align scaffold structure, configure database connections, configure Inertia.js + React + TypeScript, TailwindCSS tokens, and Pest PHP 3 (Current focus).
 - **Phase 1:** Product catalog, variants matrix, and WebP media engine.
 - **Phase 2:** COD checkout engine, Bangladesh geographic dataset, and concurrency protection.
 - **Phase 3:** Order management dashboard, fulfillment pipeline, and thermal invoice printing.
@@ -33,8 +34,8 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Inspect the existing Laravel scaffold at `I:\coding_world\laragon\www\landing-commerce` and compare it with `IMPLEMENTATION_PLAN.md` Phase 0 requirements.
-- **Permission Boundary:** **Do NOT install packages or change configuration yet.** Perform inspection only.
+- **Action:** Phase 0, Task 3 & Task 4: Inspect boilerplate cleanup requirements and configure database connections (SQLite for isolated tests, MySQL for development & concurrency test harness).
+- **Permission Boundary:** Report findings and proposed changes before editing application code or database configuration.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI `zip` Extension:** Resolved (verified enabled in Laragon PHP 8.3.33).
