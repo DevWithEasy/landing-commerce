@@ -13,11 +13,12 @@
 - **Default Database Migrations:** Default Laravel migrations executed and completed successfully using SQLite.
 - **Git Repository Initialized (Phase 0, Task 2):** Verified `.gitignore` (ignoring `.env`, `.env.*`, `vendor/`, `node_modules/`, `database/*.sqlite*`, storage sensitive files), initialized git repository on `main`, and created baseline initial commit (`7d27746`).
 - **Scaffold Boilerplate Cleanup (Phase 0, Task 3):** Removed default `resources/views/welcome.blade.php`, configured minimal JSON health check route at `/` in `routes/web.php`, and verified all tests pass (`bb300c4`). Left `resources/js/app.js` and `ExampleTest.php` for later phases.
-- **Database Connections Configured (Phase 0, Task 4):** Verified SQLite as working default (`database/database.sqlite`, 9 foundation tables) via `artisan db:show`. Verified automated testing isolation via SQLite `:memory:` in `phpunit.xml` (all tests passing). Verified MySQL 8.4.3 service availability on `127.0.0.1:3306` with PDO authentication. Updated `.env.example` with `# DB_DATABASE=landing_commerce` placeholder.
+- **Database Connections Configured (Phase 0, Task 4):** Verified SQLite as working default (`database/database.sqlite`, 9 foundation tables) via `artisan db:show`. Verified automated testing isolation via SQLite `:memory:` in `phpunit.xml` (all tests passing). Verified MySQL 8.4.3 service availability on `127.0.0.1:3306` with PDO authentication. Updated `.env.example` with `# DB_DATABASE=landing_commerce` placeholder (`c9577d4`).
+- **Inertia.js + React + TypeScript Configured (Phase 0, Task 5):** Installed `inertiajs/inertia-laravel v3.5.1`, configured `HandleInertiaRequests` middleware in `bootstrap/app.php`, created minimal root template `resources/views/app.blade.php`. Installed `@inertiajs/react 3.9.1`, `react 19.3.1`, `react-dom 19.3.1`, `typescript 7.0.2`, `@vitejs/plugin-react 6.1.2`. Configured `tsconfig.json` with strict type-checking and `@/*` aliases, configured `vite.config.js` with React plugin and `import.meta.dirname`. Verified `npm run type-check` (exit code 0), `npm run build` (exit code 0), and PHP test suite passing 100% (`1298ff0`).
 - **Feature Status:** Pure foundation stage; no custom commerce features, modules, or builder components have been implemented yet.
 
 ### Remaining Roadmap (Phased Implementation)
-- **Phase 0:** Configure Inertia.js + React + TypeScript, TailwindCSS tokens, and Pest PHP 3 (Current focus).
+- **Phase 0:** Setup CSS & UI design system (Tailwind tokens, `@tailwindcss/forms`, `@tailwindcss/typography`, `lucide-react`) and Quality tooling (Pest PHP 3, Pint, ESLint, Prettier).
 - **Phase 1:** Product catalog, variants matrix, and WebP media engine.
 - **Phase 2:** COD checkout engine, Bangladesh geographic dataset, and concurrency protection.
 - **Phase 3:** Order management dashboard, fulfillment pipeline, and thermal invoice printing.
@@ -36,8 +37,8 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Exact Next Step
-- **Action:** Phase 0, Task 5: Configure Inertia.js + React + TypeScript (`@inertiajs/react`, `react`, `react-dom`, TypeScript, `tsconfig.json` with strict type-checking, Vite React plugin, `@/*` aliases, and `resources/views/app.blade.php`).
-- **Permission Boundary:** Report planned packages and config files before running npm install or scaffolding frontend files.
+- **Action:** Phase 0, Task 6: Setup CSS & UI Design System (configure Tailwind tokens, `@tailwindcss/forms`, `@tailwindcss/typography`, and `lucide-react`).
+- **Permission Boundary:** Report planned design system tokens and plugin configurations before installing packages or modifying stylesheet.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).
