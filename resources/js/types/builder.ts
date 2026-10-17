@@ -5,6 +5,8 @@
  * Stores zero raw merchant HTML or arbitrary JavaScript.
  */
 
+export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
+
 export type BlockType =
     | 'HeroBlock'
     | 'ProductSelectorBlock'
@@ -157,4 +159,56 @@ export interface PageAst {
     version: number;
     settings?: PageSettings;
     blocks: Block[];
+}
+
+export interface BlockDefinition {
+    type: BlockType;
+    name: string;
+    description: string;
+    category: string;
+    icon: string;
+    defaultProps: Record<string, unknown>;
+    defaultStyles: BlockStyles;
+}
+
+export interface LandingPageRevisionSummary {
+    id: number;
+    landing_page_id: number;
+    revision_number: number;
+    created_by: string | null;
+    created_at: string;
+}
+
+export interface LandingPageData {
+    id: number;
+    product_id: number | null;
+    title: string;
+    slug: string;
+    is_default: boolean;
+    status: 'draft' | 'published' | 'archived';
+    meta_seo?: Record<string, unknown> | null;
+    published_revision_id?: number | null;
+    created_at: string;
+    updated_at: string;
+    product?: {
+        id: number;
+        title: string;
+        slug: string;
+        regular_price: string | number;
+        sale_price: string | number | null;
+    } | null;
+    revisions?: LandingPageRevisionSummary[];
+}
+
+export interface BuilderEditorProps {
+    landingPage: LandingPageData;
+    initialAst: PageAst;
+    blockDefinitions: Record<BlockType, BlockDefinition>;
+    products: Array<{
+        id: number;
+        title: string;
+        slug: string;
+        regular_price: string | number;
+        sale_price: string | number | null;
+    }>;
 }

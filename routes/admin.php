@@ -3,6 +3,7 @@
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
 use App\Modules\Orders\Controllers\OrderController;
+use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +39,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
 
     // Page Builder & Landing Pages
+    Route::get('landing-pages/{landing_page}/builder', [LandingPageBuilderController::class, 'edit'])
+        ->name('landing-pages.builder');
     Route::post('landing-pages/{landing_page}/revisions', [LandingPageRevisionController::class, 'store'])
         ->name('landing-pages.revisions.store');
 });
