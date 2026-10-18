@@ -1,10 +1,18 @@
 @php
     $buttonText = $props['buttonText'] ?? 'Confirm Order - Cash on Delivery';
+    $nameLabel = $props['nameLabel'] ?? 'আপনার নাম (Your Name)';
+    $namePlaceholder = $props['namePlaceholder'] ?? 'আপনার পুরো নাম লিখুন...';
+    $phoneLabel = $props['phoneLabel'] ?? 'মোবাইল নাম্বার (Mobile Number)';
+    $phonePlaceholder = $props['phonePlaceholder'] ?? '01XXXXXXXXX (১১ ডিজিট)';
+    $addressLabel = $props['addressLabel'] ?? 'সম্পূর্ণ ডেলিভারি ঠিকানা (Full Address)';
+    $addressPlaceholder = $props['addressPlaceholder'] ?? 'বাসা/হোল্ডিং নং, রোড নং, এলাকা, থানা ও জেলা...';
+    $shippingLabel = $props['shippingLabel'] ?? 'শিপিং মেথড (Shipping Method)';
     $mode = $selectionMode ?? ($props['selectionMode'] ?? 'single');
     $defaultSelection = $props['defaultSelection'] ?? 'first';
     $defaultSelectedId = (int) ($props['defaultSelectedId'] ?? 0);
     $showDiscountBadge = $props['showDiscountBadge'] ?? true;
     $badgeText = $props['badgeText'] ?? 'Best Value';
+    $productBadges = $props['productBadges'] ?? [];
     $hasMultiple = isset($products) && $products->count() > 1;
     $firstProduct = $products->first() ?? $product;
     $firstVariant = $firstProduct?->variants?->first();
@@ -64,12 +72,16 @@
                         <div class="space-y-2.5">
                             @foreach($products as $pIndex => $pItem)
                                 @php
-                                    $pVarId = $pItem->variants->first()?->id ?? 0;
-                                    $pEffPrice = (float) ($pItem->sale_price ?? $pItem->regular_price);
-                                    $pRegPrice = (float) $pItem->regular_price;
-                                    $pHasDiscount = ($pItem->sale_price && $pItem->sale_price < $pItem->regular_price);
+                                    $pVar = $pItem->variants->first();
+                                    $pVarId = $pVar?->id ?? 0;
+                                    $pEffPrice = (float) ($pVar?->sale_price ?? ($pVar?->regular_price ?? ($pItem->sale_price ?? $pItem->regular_price)));
+                                    $pRegPrice = (float) ($pVar?->regular_price ?? $pItem->regular_price);
+                                    $pHasDiscount = ($pEffPrice < $pRegPrice);
                                     $pDiscountPct = $pHasDiscount && $pRegPrice > 0 ? round((($pRegPrice - $pEffPrice) / $pRegPrice) * 100) : 0;
-                                    $pImgUrl = $pItem->primaryImage?->url ?? ($pItem->images->first()?->url ?? null);
+                                    $pImgUrl = $pVar?->images?->first()?->url ?? ($pItem->primaryImage?->url ?? ($pItem->images->first()?->url ?? null));
+
+                                    // Per-product badge customization
+                                    $itemBadge = $productBadges[$pItem->id] ?? ($pIndex === 0 ? $badgeText : null);
 
                                     // Determine initial checked state based on defaultSelection
                                     if ($defaultSelection === 'all') {
@@ -77,72 +89,96 @@
                                     } elseif ($defaultSelection === 'specific' && $defaultSelectedId > 0) {
                                         $isItemChecked = ($pItem->id === $defaultSelectedId);
                                     } else {
-                                        // 'first' is default: only first product is pre-selected on load
                                         $isItemChecked = ($pIndex === 0);
                                     }
                                 @endphp
-                                <label class="cod-product-card flex items-center justify-between p-3 rounded-xl border bg-white cursor-pointer transition hover:border-primary-400 {{ $isItemChecked ? 'border-primary-500 ring-2 ring-primary-500/20 bg-primary-50/20' : 'border-slate-200' }}">
-                                    <div class="flex items-center space-x-3 flex-1 min-w-0">
-                                        {{-- Selector Input --}}
-                                        @if($mode === 'multiple')
-                                            <input type="checkbox"
-                                                class="cod-product-toggle rounded text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
-                                                data-product-id="{{ $pItem->id }}"
-                                                data-variant-id="{{ $pVarId }}"
-                                                data-price="{{ $pEffPrice }}"
-                                                data-title="{{ e($pItem->title) }}"
-                                                {{ $isItemChecked ? 'checked' : '' }} />
-                                        @else
-                                            <input type="radio"
-                                                name="cod_radio_product"
-                                                class="cod-product-toggle text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
-                                                data-product-id="{{ $pItem->id }}"
-                                                data-variant-id="{{ $pVarId }}"
-                                                data-price="{{ $pEffPrice }}"
-                                                data-title="{{ e($pItem->title) }}"
-                                                {{ $isItemChecked ? 'checked' : '' }} />
-                                        @endif
-
-                                        {{-- Product Thumbnail --}}
-                                        <div class="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                            @if($pImgUrl)
-                                                <img src="{{ e($pImgUrl) }}" alt="{{ e($pItem->title) }}" class="w-full h-full object-cover" />
+                                <div class="cod-product-card relative flex flex-col p-3 rounded-xl border bg-white transition hover:border-primary-400 {{ $isItemChecked ? 'border-primary-500 ring-2 ring-primary-500/20 bg-primary-50/20' : 'border-slate-200' }}">
+                                    <label class="flex items-center justify-between cursor-pointer w-full">
+                                        <div class="flex items-center space-x-3 flex-1 min-w-0">
+                                            {{-- Selector Input --}}
+                                            @if($mode === 'multiple')
+                                                <input type="checkbox"
+                                                    class="cod-product-toggle rounded text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
+                                                    data-product-id="{{ $pItem->id }}"
+                                                    data-variant-id="{{ $pVarId }}"
+                                                    data-price="{{ $pEffPrice }}"
+                                                    data-title="{{ e($pItem->title) }}"
+                                                    {{ $isItemChecked ? 'checked' : '' }} />
                                             @else
-                                                <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                                <input type="radio"
+                                                    name="cod_radio_product"
+                                                    class="cod-product-toggle text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
+                                                    data-product-id="{{ $pItem->id }}"
+                                                    data-variant-id="{{ $pVarId }}"
+                                                    data-price="{{ $pEffPrice }}"
+                                                    data-title="{{ e($pItem->title) }}"
+                                                    {{ $isItemChecked ? 'checked' : '' }} />
                                             @endif
-                                        </div>
 
-                                        {{-- Title & Badge --}}
-                                        <div class="min-w-0 flex-1">
-                                            <div class="flex items-center space-x-1.5 mb-0.5">
-                                                <span class="text-xs font-bold text-slate-800 truncate block">
-                                                    {{ $pItem->title }}
-                                                </span>
-                                                @if(!empty($badgeText) && $pIndex === 0)
-                                                    <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white flex-shrink-0">
-                                                        {{ $badgeText }}
-                                                    </span>
+                                            {{-- Product Thumbnail --}}
+                                            <div class="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                                @if($pImgUrl)
+                                                    <img src="{{ e($pImgUrl) }}" alt="{{ e($pItem->title) }}" class="cod-card-img w-full h-full object-cover" />
+                                                @else
+                                                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                                 @endif
                                             </div>
 
-                                            <div class="flex items-baseline space-x-2">
-                                                <span class="text-xs font-extrabold text-primary-600">
-                                                    ৳{{ number_format($pEffPrice, 0) }}
-                                                </span>
-                                                @if($pHasDiscount)
-                                                    <span class="text-[10px] text-gray-400 line-through">
-                                                        ৳{{ number_format($pRegPrice, 0) }}
+                                            {{-- Title & Badge --}}
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center space-x-1.5 mb-0.5">
+                                                    <span class="text-xs font-bold text-slate-800 truncate block">
+                                                        {{ $pItem->title }}
                                                     </span>
-                                                    @if($showDiscountBadge)
-                                                        <span class="text-[10px] font-bold text-rose-600">
-                                                            ({{ $pDiscountPct }}% OFF)
+                                                    @if(!empty($itemBadge))
+                                                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white flex-shrink-0">
+                                                            {{ $itemBadge }}
                                                         </span>
                                                     @endif
-                                                @endif
+                                                </div>
+
+                                                <div class="flex items-baseline space-x-2">
+                                                    <span class="cod-card-price text-xs font-extrabold text-primary-600">
+                                                        ৳{{ number_format($pEffPrice, 0) }}
+                                                    </span>
+                                                    @if($pHasDiscount)
+                                                        <span class="text-[10px] text-gray-400 line-through">
+                                                            ৳{{ number_format($pRegPrice, 0) }}
+                                                        </span>
+                                                        @if($showDiscountBadge)
+                                                            <span class="text-[10px] font-bold text-rose-600">
+                                                                ({{ $pDiscountPct }}% OFF)
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </label>
+                                    </label>
+
+                                    {{-- WooCommerce style variants selector inside card --}}
+                                    @if($pItem->variants->count() > 1)
+                                        <div class="cod-variant-container mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
+                                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mr-1">ভ্যারিয়েন্ট:</span>
+                                            @foreach($pItem->variants as $vIdx => $vObj)
+                                                @php
+                                                    $vItemPrice = (float) ($vObj->sale_price ?? $vObj->regular_price);
+                                                    $vItemImg = $vObj->images->first()?->url ?? $pImgUrl;
+                                                    $isVActive = ($vIdx === 0);
+                                                @endphp
+                                                <button type="button"
+                                                    class="cod-variant-btn px-2 py-0.5 text-[11px] font-medium rounded-md border transition {{ $isVActive ? 'border-primary-600 bg-primary-50 text-primary-900 ring-1 ring-primary-500 font-bold' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50' }}"
+                                                    data-product-id="{{ $pItem->id }}"
+                                                    data-variant-id="{{ $vObj->id }}"
+                                                    data-price="{{ $vItemPrice }}"
+                                                    data-image="{{ $vItemImg }}"
+                                                    data-name="{{ e($vObj->name) }}">
+                                                    {{ $vObj->name }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
                             @endforeach
                         </div>
                     </div>
@@ -154,7 +190,7 @@
                         @foreach($products as $idx => $item)
                             @php
                                 $varId = $item->variants->first()?->id ?? 0;
-                                $effectivePrice = (float) ($item->sale_price ?? $item->regular_price);
+                                $effectivePrice = (float) ($item->variants->first()?->sale_price ?? ($item->variants->first()?->regular_price ?? ($item->sale_price ?? $item->regular_price)));
                                 if ($defaultSelection === 'all') {
                                     $isChecked = true;
                                 } elseif ($defaultSelection === 'specific' && $defaultSelectedId > 0) {
@@ -177,32 +213,32 @@
                 {{-- Alert Box for Errors --}}
                 <div id="cod-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
 
-                {{-- Customer Fields (Name, Phone, Address) --}}
+                {{-- Customer Fields (Name, Phone, Address) - Fully Customizable --}}
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        আপনার নাম (Full Name) <span class="text-rose-500">*</span>
+                        {{ $nameLabel }} <span class="text-rose-500">*</span>
                     </label>
-                    <input type="text" name="customer_name" required placeholder="e.g. Tanvir Hasan" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white" />
+                    <input type="text" name="customer_name" required placeholder="{{ $namePlaceholder }}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        মোবাইল নম্বর (11-digit Mobile Number) <span class="text-rose-500">*</span>
+                        {{ $phoneLabel }} <span class="text-rose-500">*</span>
                     </label>
-                    <input type="tel" name="customer_phone" required placeholder="01XXXXXXXXX" pattern="01[3-9][0-9]{8}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-mono" />
+                    <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}" pattern="01[3-9][0-9]{8}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-mono" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        সম্পূর্ণ ডেলিভারি ঠিকানা (Full Address) <span class="text-rose-500">*</span>
+                        {{ $addressLabel }} <span class="text-rose-500">*</span>
                     </label>
-                    <textarea name="delivery_address" required rows="2" placeholder="বাসা/হোল্ডিং নং, রোড নং, এলাকা, থানা ও জেলা..." class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white"></textarea>
+                    <textarea name="delivery_address" required rows="2" placeholder="{{ $addressPlaceholder }}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white"></textarea>
                 </div>
 
                 {{-- Shipping Method Dropdown --}}
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        শিপিং মেথড (Shipping Method) <span class="text-rose-500">*</span>
+                        {{ $shippingLabel }} <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
                         <select name="shipping_method_id" id="cod_shipping_method" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-medium">
@@ -266,6 +302,58 @@
         var toggles = form.querySelectorAll('.cod-product-toggle');
         var shippingSelect = document.getElementById('cod_shipping_method');
         var districtInput = document.getElementById('cod_district');
+        var variantBtns = form.querySelectorAll('.cod-variant-btn');
+
+        // Variant button click handler
+        variantBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var vid = btn.getAttribute('data-variant-id');
+                var vPrice = parseFloat(btn.getAttribute('data-price') || '0');
+                var vImg = btn.getAttribute('data-image');
+                var card = btn.closest('.cod-product-card');
+                if (!card) return;
+
+                // Update toggle attributes and ensure checked
+                var toggle = card.querySelector('.cod-product-toggle');
+                if (toggle) {
+                    toggle.setAttribute('data-variant-id', vid);
+                    toggle.setAttribute('data-price', vPrice);
+                    if (!toggle.checked) {
+                        toggle.checked = true;
+                    }
+                }
+
+                // Update active state in container
+                var container = card.querySelector('.cod-variant-container');
+                if (container) {
+                    container.querySelectorAll('.cod-variant-btn').forEach(function(b) {
+                        b.classList.remove('border-primary-600', 'bg-primary-50', 'text-primary-900', 'ring-1', 'ring-primary-500', 'font-bold');
+                        b.classList.add('border-gray-200', 'bg-white', 'text-gray-700');
+                    });
+                    btn.classList.add('border-primary-600', 'bg-primary-50', 'text-primary-900', 'ring-1', 'ring-primary-500', 'font-bold');
+                    btn.classList.remove('border-gray-200', 'bg-white', 'text-gray-700');
+                }
+
+                // Update card price text
+                var priceEl = card.querySelector('.cod-card-price');
+                if (priceEl) {
+                    priceEl.innerText = '৳' + Math.round(vPrice).toLocaleString();
+                }
+
+                // Update variant image if provided (WooCommerce style)
+                if (vImg) {
+                    var imgEl = card.querySelector('.cod-card-img');
+                    if (imgEl) {
+                        imgEl.src = vImg;
+                    }
+                }
+
+                calculateFromToggles();
+            });
+        });
 
         var currentSubtotal = 0;
 

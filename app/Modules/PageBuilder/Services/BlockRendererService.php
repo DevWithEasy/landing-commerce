@@ -82,7 +82,7 @@ class BlockRendererService
             $productIds = array_values(array_filter(array_map('intval', $rawProductIds)));
 
             if (! empty($productIds)) {
-                $products = Product::with(['variants', 'images', 'primaryImage'])
+                $products = Product::with(['variants.images', 'images', 'primaryImage'])
                     ->whereIn('id', $productIds)
                     ->get()
                     ->sortBy(function ($p) use ($productIds) {

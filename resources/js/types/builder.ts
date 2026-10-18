@@ -62,6 +62,8 @@ export interface ProductSelectorBlockProps {
     showPrice?: boolean;
     showDiscountBadge?: boolean;
     badgeText?: string;
+    productBadges?: Record<string | number, string>;
+    orderButtonText?: string;
     displayMode?: 'grid' | 'carousel';
 }
 
@@ -73,9 +75,17 @@ export interface CodCheckoutBlockProps {
     defaultSelectedId?: number;
     showDiscountBadge?: boolean;
     badgeText?: string;
+    productBadges?: Record<string | number, string>;
     variantSelectionType?: 'swatches' | 'dropdown' | 'radio';
     showQuantity?: boolean;
     buttonText?: string;
+    nameLabel?: string;
+    namePlaceholder?: string;
+    phoneLabel?: string;
+    phonePlaceholder?: string;
+    addressLabel?: string;
+    addressPlaceholder?: string;
+    shippingLabel?: string;
     highlightColor?: string;
 }
 

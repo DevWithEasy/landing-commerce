@@ -250,9 +250,23 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         defaultSelectedId={p.defaultSelectedId}
                         showDiscountBadge={p.showDiscountBadge}
                         badgeText={p.badgeText}
+                        productBadges={p.productBadges}
                         products={products}
                         onChange={onChange}
                     />
+
+                    <div className="pt-2 border-t border-gray-100">
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Order Button Text (প্রতিটি কার্ডের বাটন টেক্সট)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.orderButtonText || ''}
+                            onChange={(e) => onChange('orderButtonText', e.target.value)}
+                            placeholder="অর্ডার করুন — ক্যাশ অন ডেলিভারি"
+                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
+                        />
+                    </div>
 
                     <div className="flex items-center space-x-2 pt-1 border-t border-gray-100">
                         <input
@@ -294,20 +308,113 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         defaultSelectedId={p.defaultSelectedId}
                         showDiscountBadge={p.showDiscountBadge}
                         badgeText={p.badgeText}
+                        productBadges={p.productBadges}
                         products={products}
                         onChange={onChange}
                     />
 
-                    <div className="pt-2 border-t border-gray-100">
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Submit Button Text
-                        </label>
-                        <input
-                            type="text"
-                            value={p.buttonText || ''}
-                            onChange={(e) => onChange('buttonText', e.target.value)}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        />
+                    {/* Form Fields Customization (Labels & Placeholders) */}
+                    <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-3">
+                        <div className="text-xs font-bold text-gray-800 border-b border-gray-200 pb-1.5 flex items-center justify-between">
+                            <span>Form Fields (লেবেল ও প্লেসহোল্ডার)</span>
+                        </div>
+
+                        {/* Customer Name Field */}
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold text-gray-700">
+                                Name Field Label & Placeholder:
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                                <input
+                                    type="text"
+                                    value={p.nameLabel ?? ''}
+                                    placeholder="আপনার নাম (Your Name)"
+                                    onChange={(e) => onChange('nameLabel', e.target.value)}
+                                    className="text-xs rounded border-gray-300 bg-white p-1.5"
+                                />
+                                <input
+                                    type="text"
+                                    value={p.namePlaceholder ?? ''}
+                                    placeholder="আপনার পুরো নাম লিখুন..."
+                                    onChange={(e) => onChange('namePlaceholder', e.target.value)}
+                                    className="text-xs rounded border-gray-300 bg-white p-1.5"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Mobile Phone Field */}
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold text-gray-700">
+                                Phone Field Label & Placeholder:
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                                <input
+                                    type="text"
+                                    value={p.phoneLabel ?? ''}
+                                    placeholder="মোবাইল নাম্বার"
+                                    onChange={(e) => onChange('phoneLabel', e.target.value)}
+                                    className="text-xs rounded border-gray-300 bg-white p-1.5"
+                                />
+                                <input
+                                    type="text"
+                                    value={p.phonePlaceholder ?? ''}
+                                    placeholder="01XXXXXXXXX"
+                                    onChange={(e) => onChange('phonePlaceholder', e.target.value)}
+                                    className="text-xs rounded border-gray-300 bg-white p-1.5"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Address Field */}
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold text-gray-700">
+                                Address Field Label & Placeholder:
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                                <input
+                                    type="text"
+                                    value={p.addressLabel ?? ''}
+                                    placeholder="সম্পূর্ণ ডেলিভারি ঠিকানা"
+                                    onChange={(e) => onChange('addressLabel', e.target.value)}
+                                    className="text-xs rounded border-gray-300 bg-white p-1.5"
+                                />
+                                <input
+                                    type="text"
+                                    value={p.addressPlaceholder ?? ''}
+                                    placeholder="বাসা/রোড/এলাকা..."
+                                    onChange={(e) => onChange('addressPlaceholder', e.target.value)}
+                                    className="text-xs rounded border-gray-300 bg-white p-1.5"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Shipping Method Label */}
+                        <div className="space-y-1">
+                            <label className="block text-[11px] font-semibold text-gray-700">
+                                Shipping Dropdown Label:
+                            </label>
+                            <input
+                                type="text"
+                                value={p.shippingLabel ?? ''}
+                                placeholder="শিপিং মেথড (Shipping Method)"
+                                onChange={(e) => onChange('shippingLabel', e.target.value)}
+                                className="w-full text-xs rounded border-gray-300 bg-white p-1.5"
+                            />
+                        </div>
+
+                        {/* Submit Button Text */}
+                        <div className="space-y-1 pt-1 border-t border-gray-200">
+                            <label className="block text-[11px] font-semibold text-gray-700">
+                                Submit Button Text (অর্ডার বাটন):
+                            </label>
+                            <input
+                                type="text"
+                                value={p.buttonText || ''}
+                                onChange={(e) => onChange('buttonText', e.target.value)}
+                                placeholder="অর্ডার কনফার্ম করুন — ক্যাশ অন ডেলিভারি"
+                                className="w-full text-xs rounded border-gray-300 bg-white p-1.5 font-medium"
+                            />
+                        </div>
                     </div>
                 </div>
             );
@@ -883,6 +990,7 @@ interface ProductPickerSectionProps {
     defaultSelectedId?: number;
     showDiscountBadge?: boolean;
     badgeText?: string;
+    productBadges?: Record<string | number, string>;
     products: Array<{ id: number; title: string }>;
     onChange: (key: string, value: unknown) => void;
 }
@@ -895,6 +1003,7 @@ function ProductPickerSection({
     defaultSelectedId = 0,
     showDiscountBadge = true,
     badgeText = '',
+    productBadges = {},
     products,
     onChange,
 }: ProductPickerSectionProps) {
@@ -1062,16 +1171,48 @@ function ProductPickerSection({
 
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                        Highlight Badge Text (e.g. Popular / Hot Deal)
+                        Default Highlight Badge (ডিফল্ট ব্যাজ টেক্সট)
                     </label>
                     <input
                         type="text"
                         value={badgeText || ''}
                         onChange={(e) => onChange('badgeText', e.target.value)}
-                        placeholder="e.g. Most Popular"
+                        placeholder="e.g. 🔥 Most Popular"
                         className="w-full text-xs rounded-lg border-gray-300 bg-white p-1.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                     />
                 </div>
+
+                {/* Individual Product Badges */}
+                {selectedIds.length > 0 && (
+                    <div className="pt-2 border-t border-gray-200 space-y-2">
+                        <label className="block text-[11px] font-bold text-gray-700">
+                            Custom Product Badges (আলাদা আলাদা প্রোডাক্টের ব্যাজ):
+                        </label>
+                        <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                            {selectedIds.map((pid) => {
+                                const prod = products.find((p) => p.id === pid);
+                                const currentBadge = (productBadges || {})[pid] || '';
+                                return (
+                                    <div key={pid} className="flex items-center space-x-2 text-xs">
+                                        <span className="w-28 truncate text-[11px] text-gray-600 shrink-0 font-medium" title={prod?.title}>
+                                            {prod?.title || `Product #${pid}`}:
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={currentBadge}
+                                            placeholder="যেমন: 🔥 Hot Deal"
+                                            onChange={(e) => {
+                                                const next = { ...(productBadges || {}), [pid]: e.target.value };
+                                                onChange('productBadges', next);
+                                            }}
+                                            className="flex-1 text-xs rounded border-gray-300 bg-white p-1"
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Product Checkbox Selection List */}

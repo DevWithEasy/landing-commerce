@@ -26,6 +26,7 @@ export interface ProductVariant {
     sale_price: string | number | null;
     stock_quantity: number;
     manage_stock: boolean;
+    images?: ProductImage[];
     created_at?: string;
     updated_at?: string;
 }
@@ -55,6 +56,8 @@ export interface Product {
     updated_at: string;
     variants: ProductVariant[];
     images: ProductImage[];
+    primaryImage?: ProductImage | null;
+    primary_image?: ProductImage | null;
 }
 
 export interface PaginationLink {

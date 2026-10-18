@@ -24,7 +24,7 @@ export default function Editor({
     blockDefinitions,
     products,
 }: BuilderEditorProps) {
-    const { ast, setAst, addBlock, reorderBlocks, undo, redo, canUndo, canRedo } =
+    const { ast, setAst, setAvailableProducts, addBlock, reorderBlocks, undo, redo, canUndo, canRedo } =
         useBuilderStore();
 
     const [isSaving, setIsSaving] = useState(false);
@@ -32,12 +32,15 @@ export default function Editor({
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isRevisionsOpen, setIsRevisionsOpen] = useState(false);
 
-    // Initialize AST into Zustand store on mount
+    // Initialize AST and products into Zustand store on mount
     useEffect(() => {
         if (initialAst) {
             setAst(initialAst);
         }
-    }, [initialAst, setAst]);
+        if (products) {
+            setAvailableProducts(products as unknown as import('@/types').Product[]);
+        }
+    }, [initialAst, products, setAst, setAvailableProducts]);
 
     // Handle saving current AST to backend revision endpoint
     const handleSave = useCallback(async () => {

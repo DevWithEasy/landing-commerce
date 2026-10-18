@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Product } from '@/types';
 import type { Block, BlockProps, BlockStyles, PageAst } from '@/types/builder';
 
 export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
@@ -13,6 +14,9 @@ export interface BuilderState {
     // Viewport Mode
     viewport: ViewportMode;
 
+    // Available Products for previewing real items
+    availableProducts: Product[];
+
     // History (Undo / Redo stacks)
     history: PageAst[];
     historyIndex: number;
@@ -21,6 +25,7 @@ export interface BuilderState {
     setAst: (ast: PageAst) => void;
     setSelectedBlockId: (id: string | null) => void;
     setViewport: (viewport: ViewportMode) => void;
+    setAvailableProducts: (products: Product[]) => void;
 
     // Block manipulations
     addBlock: (block: Block, index?: number) => void;
@@ -50,8 +55,11 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     ast: DEFAULT_AST,
     selectedBlockId: null,
     viewport: 'desktop',
+    availableProducts: [],
     history: [DEFAULT_AST],
     historyIndex: 0,
+
+    setAvailableProducts: (products: Product[]) => set({ availableProducts: products }),
 
     setAst: (ast: PageAst) => {
         set({

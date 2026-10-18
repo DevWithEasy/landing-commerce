@@ -1,5 +1,6 @@
 import { CheckCircle2, MapPin, Phone, ShieldCheck, ShoppingCart, User } from 'lucide-react';
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
+import { useBuilderStore } from '../stores/useBuilderStore';
 import type { BlockStyles, CodCheckoutBlockProps } from '@/types/builder';
 
 export interface CodCheckoutBlockComponentProps {
@@ -13,6 +14,9 @@ export function CodCheckoutBlock({
     styles = {},
     isEditor = false,
 }: CodCheckoutBlockComponentProps) {
+    const availableProducts = useBuilderStore((state) => state.availableProducts);
+    const [selectedVariantMap, setSelectedVariantMap] = useState<Record<number, number>>({});
+
     const inlineStyles: CSSProperties = {
         backgroundColor: styles.backgroundColor,
         paddingTop: styles.paddingTop,
@@ -26,6 +30,20 @@ export function CodCheckoutBlock({
         borderWidth: styles.borderWidth,
         borderStyle: styles.borderStyle,
     };
+
+    const productIds = props.productIds && props.productIds.length > 0
+        ? props.productIds
+        : (props.productId ? [props.productId] : []);
+
+    const nameLabel = props.nameLabel || 'আপনার নাম (Your Name)';
+    const namePlaceholder = props.namePlaceholder || 'আপনার পুরো নাম লিখুন...';
+    const phoneLabel = props.phoneLabel || 'মোবাইল নাম্বার (Mobile Number)';
+    const phonePlaceholder = props.phonePlaceholder || '01XXXXXXXXX (১১ ডিজিট)';
+    const addressLabel = props.addressLabel || 'সম্পূর্ণ ডেলিভারি ঠিকানা (Full Address)';
+    const addressPlaceholder = props.addressPlaceholder || 'বাসা/হোল্ডিং নং, রোড নং, এলাকা, থানা ও জেলা...';
+    const shippingLabel = props.shippingLabel || 'শিপিং মেথড (Shipping Method)';
+    const buttonText = props.buttonText || 'অর্ডার কনফার্ম করুন — ক্যাশ অন ডেলিভারি';
+    const productBadges = props.productBadges || {};
 
     return (
         <section id="cod-checkout" style={inlineStyles} className="w-full py-10 bg-slate-50">
@@ -47,7 +65,7 @@ export function CodCheckoutBlock({
 
                     {/* Preview Form Controls */}
                     <div className="pt-6 space-y-4">
-                        {Boolean(props.productIds && props.productIds.length > 1) && (
+                        {productIds.length > 0 && (
                             <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-2">
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-700">
                                     <span>Selected Products:</span>
@@ -56,52 +74,98 @@ export function CodCheckoutBlock({
                                     </span>
                                 </div>
                                 <div className="space-y-2">
-                                    {props.productIds!.map((pid, idx) => {
+                                    {productIds.map((pid, idx) => {
+                                        const realProd = availableProducts.find((p) => p.id === pid);
                                         const isSelected = props.defaultSelection === 'all'
                                             ? true
                                             : props.defaultSelection === 'specific'
                                                 ? props.defaultSelectedId === pid
                                                 : idx === 0;
 
+                                        const activeVariantId = selectedVariantMap[pid] || realProd?.variants?.[0]?.id || 0;
+                                        const activeVariant = realProd?.variants?.find((v) => v.id === activeVariantId) || realProd?.variants?.[0];
+
+                                        const regPrice = activeVariant ? Number(activeVariant.regular_price) : (realProd ? Number(realProd.regular_price) : 1500);
+                                        const salePrice = activeVariant?.sale_price ? Number(activeVariant.sale_price) : (realProd?.sale_price ? Number(realProd.sale_price) : 1250);
+                                        const effPrice = salePrice || regPrice;
+                                        const hasDiscount = salePrice && salePrice < regPrice;
+                                        const discountPct = hasDiscount && regPrice > 0 ? Math.round(((regPrice - salePrice) / regPrice) * 100) : 0;
+
+                                        const imgUrl = activeVariant?.images?.[0]?.url || realProd?.primaryImage?.url || realProd?.images?.[0]?.url;
+                                        const customBadge = productBadges[pid] || (idx === 0 ? props.badgeText : '');
+
                                         return (
                                             <div
                                                 key={pid}
-                                                className={`flex items-center justify-between p-2.5 rounded-xl border text-xs transition ${
+                                                className={`flex flex-col p-2.5 rounded-xl border text-xs transition ${
                                                     isSelected
                                                         ? 'bg-emerald-50/70 border-emerald-500 shadow-xs'
                                                         : 'bg-white border-gray-200 opacity-80'
                                                 }`}
                                             >
-                                                <div className="flex items-center space-x-2.5">
-                                                    <span className={`w-4 h-4 ${props.selectionMode === 'multiple' ? 'rounded' : 'rounded-full'} border ${
-                                                        isSelected ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-gray-300 bg-white'
-                                                    } flex items-center justify-center text-[10px] font-bold`}>
-                                                        {isSelected ? '✓' : ''}
-                                                    </span>
-                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-                                                        <span className="text-[10px] font-bold text-gray-400">IMG</span>
-                                                    </div>
-                                                    <div>
-                                                        <div className="flex items-center space-x-1.5">
-                                                            <span className="font-bold text-gray-900">Product #{pid}</span>
-                                                            {props.badgeText && idx === 0 && (
-                                                                <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                                                                    {props.badgeText}
-                                                                </span>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-2.5 min-w-0">
+                                                        <span className={`w-4 h-4 shrink-0 ${props.selectionMode === 'multiple' ? 'rounded' : 'rounded-full'} border ${
+                                                            isSelected ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-gray-300 bg-white'
+                                                        } flex items-center justify-center text-[10px] font-bold`}>
+                                                            {isSelected ? '✓' : ''}
+                                                        </span>
+                                                        <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                                                            {imgUrl ? (
+                                                                <img src={imgUrl} alt={realProd?.title || `Product #${pid}`} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="text-[10px] font-bold text-gray-400">IMG</span>
                                                             )}
                                                         </div>
-                                                        <span className="text-[10px] text-gray-500 block">In Stock & Verified</span>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center space-x-1.5">
+                                                                <span className="font-bold text-gray-900 truncate">
+                                                                    {realProd?.title || `Product #${pid}`}
+                                                                </span>
+                                                                {customBadge && (
+                                                                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+                                                                        {customBadge}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-[10px] text-gray-500 block">
+                                                                {realProd ? 'In Stock & Verified' : 'Placeholder Preview'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right shrink-0 pl-2">
+                                                        <div className="font-extrabold text-emerald-600 text-sm">৳{effPrice.toLocaleString()}</div>
+                                                        <div className="flex items-center justify-end space-x-1">
+                                                            {hasDiscount && (
+                                                                <span className="text-[10px] text-gray-400 line-through">৳{regPrice.toLocaleString()}</span>
+                                                            )}
+                                                            {props.showDiscountBadge !== false && hasDiscount && (
+                                                                <span className="text-[9px] font-bold text-rose-600 bg-rose-50 px-1 rounded">{discountPct}% OFF</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <div className="font-extrabold text-emerald-600 text-sm">৳1,250.00</div>
-                                                    <div className="flex items-center justify-end space-x-1">
-                                                        <span className="text-[10px] text-gray-400 line-through">৳1,500.00</span>
-                                                        {props.showDiscountBadge !== false && (
-                                                            <span className="text-[9px] font-bold text-rose-600 bg-rose-50 px-1 rounded">17% OFF</span>
-                                                        )}
+
+                                                {/* Variants Selector */}
+                                                {realProd?.variants && realProd.variants.length > 1 && (
+                                                    <div className="mt-2 pt-1.5 border-t border-gray-100 flex flex-wrap items-center gap-1">
+                                                        <span className="text-[9px] font-bold text-gray-500 uppercase">Variant:</span>
+                                                        {realProd.variants.map((v) => (
+                                                            <button
+                                                                key={v.id}
+                                                                type="button"
+                                                                onClick={() => setSelectedVariantMap((prev) => ({ ...prev, [pid]: v.id }))}
+                                                                className={`px-2 py-0.5 text-[10px] rounded-md border font-medium transition ${
+                                                                    activeVariantId === v.id
+                                                                        ? 'bg-emerald-600 border-emerald-600 text-white font-bold'
+                                                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                                                }`}
+                                                            >
+                                                                {v.name}
+                                                            </button>
+                                                        ))}
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -112,14 +176,14 @@ export function CodCheckoutBlock({
                         {/* 1. Customer Name */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                আপনার নাম (Your Name) <span className="text-rose-500">*</span>
+                                {nameLabel} <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative">
                                 <User className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                                 <input
                                     type="text"
                                     disabled={isEditor}
-                                    placeholder="আপনার পুরো নাম লিখুন..."
+                                    placeholder={namePlaceholder}
                                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                                 />
                             </div>
@@ -128,14 +192,14 @@ export function CodCheckoutBlock({
                         {/* 2. Customer Phone */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                মোবাইল নাম্বার (Mobile Number) <span className="text-rose-500">*</span>
+                                {phoneLabel} <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative">
                                 <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                                 <input
                                     type="tel"
                                     disabled={isEditor}
-                                    placeholder="01XXXXXXXXX (১১ ডিজিট)"
+                                    placeholder={phonePlaceholder}
                                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white font-mono"
                                 />
                             </div>
@@ -144,14 +208,14 @@ export function CodCheckoutBlock({
                         {/* 3. Detailed Address */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                সম্পূর্ণ ঠিকানা (Full Delivery Address) <span className="text-rose-500">*</span>
+                                {addressLabel} <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative">
                                 <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                                 <textarea
                                     rows={2}
                                     disabled={isEditor}
-                                    placeholder="বাসা নং, রোড নং, থানা, জেলা সহ বিস্তারিত ঠিকানা..."
+                                    placeholder={addressPlaceholder}
                                     className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                                 />
                             </div>
@@ -160,7 +224,7 @@ export function CodCheckoutBlock({
                         {/* 4. Shipping Method Dropdown */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                শিপিং মেথড (Shipping Method) <span className="text-rose-500">*</span>
+                                {shippingLabel} <span className="text-rose-500">*</span>
                             </label>
                             <select
                                 disabled={isEditor}
@@ -179,9 +243,7 @@ export function CodCheckoutBlock({
                                 className="w-full py-4 px-6 text-base sm:text-lg font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer"
                             >
                                 <ShoppingCart className="w-5 h-5" />
-                                <span>
-                                    {props.buttonText || 'অর্ডার কনফার্ম করুন — ক্যাশ অন ডেলিভারি'}
-                                </span>
+                                <span>{buttonText}</span>
                             </button>
                         </div>
 
