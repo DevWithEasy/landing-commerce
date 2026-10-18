@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Modules\Backup\Commands\CommerceBackupCommand;
+use App\Modules\Backup\Commands\CommerceRestoreCommand;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Policies\ProductPolicy;
 use App\Modules\Couriers\Services\CourierManager;
@@ -46,5 +48,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Apply decrypted database settings to runtime configuration
         $this->app->make(SettingsService::class)->applyRuntimeOverrides();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                CommerceBackupCommand::class,
+                CommerceRestoreCommand::class,
+            ]);
+        }
     }
 }
