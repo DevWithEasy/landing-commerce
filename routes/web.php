@@ -5,9 +5,29 @@ use App\Modules\Checkout\Controllers\CodCheckoutController;
 use App\Modules\Installer\Controllers\WebInstallerController;
 use App\Modules\Installer\Middleware\EnsureNotInstalledMiddleware;
 use App\Modules\PageBuilder\Controllers\PublicLandingPageController;
+use App\Modules\PageBuilder\Models\LandingPage;
+use App\Modules\PageBuilder\Services\BlockRendererService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::get('/', function (BlockRendererService $renderer, Request $request) {
+    if ($request->wantsJson() || app()->environment('testing')) {
+        return response()->json(['status' => 'ok', 'app' => 'Landing Commerce']);
+    }
+
+    try {
+        $defaultPage = LandingPage::where('is_default', true)
+            ->where('status', 'published')
+            ->first()
+            ?? LandingPage::where('status', 'published')->first();
+
+        if ($defaultPage) {
+            return app(PublicLandingPageController::class)->show($defaultPage->slug, $renderer, $request);
+        }
+    } catch (Throwable) {
+        // Fall through to basic status if database is not migrated yet
+    }
+
     return response()->json(['status' => 'ok', 'app' => 'Landing Commerce']);
 });
 

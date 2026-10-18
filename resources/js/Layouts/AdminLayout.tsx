@@ -43,10 +43,9 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                   },
                   {
                       name: 'Landing Pages',
-                      href: '#',
+                      href: '/admin/landing-pages',
                       icon: Layers,
-                      current: false,
-                      badge: 'Phase 4',
+                      current: window.location.pathname.startsWith('/admin/landing-pages'),
                   },
               ]
             : []),

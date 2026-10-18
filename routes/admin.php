@@ -3,10 +3,12 @@
 use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
+use App\Modules\Catalog\Models\Product;
 use App\Modules\Orders\Controllers\OrderController;
 use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
+use App\Modules\PageBuilder\Models\LandingPage;
 use App\Modules\Settings\Controllers\SettingController;
 use App\Modules\Sms\Controllers\OrderSmsController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +55,27 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
 
     // Page Builder & Landing Pages
+    Route::get('landing-pages', function () {
+        $landingPage = LandingPage::where('is_default', true)->first()
+            ?? LandingPage::first();
+
+        if (! $landingPage) {
+            $product = Product::first();
+            if (! $product) {
+                return redirect()->route('admin.products.create')->with('info', 'Please create a product before designing a landing page.');
+            }
+            $landingPage = LandingPage::create([
+                'product_id' => $product->id,
+                'title' => $product->title.' Landing Page',
+                'slug' => $product->slug.'-deal',
+                'is_default' => true,
+                'status' => 'published',
+            ]);
+        }
+
+        return redirect()->route('admin.landing-pages.builder', $landingPage);
+    })->name('landing-pages.index');
+
     Route::get('landing-pages/{landing_page}/builder', [LandingPageBuilderController::class, 'edit'])
         ->name('landing-pages.builder');
     Route::post('landing-pages/{landing_page}/revisions', [LandingPageRevisionController::class, 'store'])
