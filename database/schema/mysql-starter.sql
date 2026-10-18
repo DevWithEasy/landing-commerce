@@ -300,7 +300,7 @@ CREATE TABLE `phone_blacklists` (
 DROP TABLE IF EXISTS `landing_pages`;
 CREATE TABLE `landing_pages` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `product_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned DEFAULT NULL,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `is_default` tinyint(1) NOT NULL DEFAULT '0',
@@ -319,7 +319,7 @@ CREATE TABLE `landing_page_revisions` (
   `landing_page_id` bigint unsigned NOT NULL,
   `revision_number` int NOT NULL DEFAULT '1',
   `ast_content` json NOT NULL,
-  `created_by` bigint unsigned DEFAULT NULL,
+  `created_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
