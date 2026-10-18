@@ -99,6 +99,44 @@ export interface VariantMatrixCombination {
     attributes: Record<string, string>;
 }
 
+export interface ShippingZone {
+    id: number;
+    name: string;
+    code: string;
+    rate: string | number;
+    delivery_time?: string | null;
+    is_active: boolean;
+    is_default: boolean;
+}
+
+export interface ShippingMethod {
+    id: number;
+    name: string;
+    code: string;
+    description: string | null;
+    shipping_zone_id: number | null;
+    zone_code: string | null;
+    rate: string | number;
+    delivery_time: string | null;
+    is_active: boolean;
+    is_default: boolean;
+    sort_order: number;
+    zone?: ShippingZone | null;
+}
+
+export interface PaymentMethod {
+    id: number;
+    name: string;
+    code: string;
+    description: string | null;
+    instructions: string | null;
+    account_number: string | null;
+    is_active: boolean;
+    is_online: boolean;
+    requires_transaction_id: boolean;
+    sort_order: number;
+}
+
 export interface Upazila {
     id: number;
     district_id: number;
@@ -138,6 +176,11 @@ export interface Order {
     upazila: string | null;
     status: string;
     payment_method: string;
+    payment_status?: string;
+    payment_transaction_id?: string | null;
+    payment_details?: Record<string, unknown> | null;
+    shipping_method_id?: number | null;
+    shipping_method_name?: string | null;
     subtotal: string | number;
     shipping_fee: string | number;
     discount: string | number;
@@ -188,6 +231,8 @@ export interface CheckoutShowProps extends SharedProps {
     districts: District[];
     defaultShippingFee: number;
     defaultZoneName: string;
+    defaultShippingMethods?: ShippingMethod[];
+    paymentMethods?: PaymentMethod[];
 }
 
 export interface ThankYouProps extends SharedProps {

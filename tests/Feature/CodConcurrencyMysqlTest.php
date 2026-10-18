@@ -5,8 +5,8 @@ use App\Modules\Catalog\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 
 test('prevents overselling under high concurrency on MySQL with pessimistic row locking', function () {
-    // Ensure MySQL database name is not ':memory:' from phpunit.xml
-    if (config('database.connections.mysql.database') === ':memory:' || empty(config('database.connections.mysql.database'))) {
+    $currentDb = (string) config('database.connections.mysql.database');
+    if ($currentDb === ':memory:' || empty($currentDb) || str_contains($currentDb, 'sqlite')) {
         config(['database.connections.mysql.database' => 'laravel']);
     }
 

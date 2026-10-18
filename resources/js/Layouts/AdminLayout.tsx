@@ -2,6 +2,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     CheckCircle,
+    CreditCard,
     Layers,
     LogOut,
     Menu,
@@ -10,11 +11,21 @@ import {
     Shield,
     ShoppingCart,
     Store,
+    Truck,
     X,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { SharedProps } from '@/types';
+
+interface NavigationItem {
+    name: string;
+    href: string;
+    icon: LucideIcon;
+    current: boolean;
+    badge?: string;
+}
 
 export interface AdminLayoutProps {
     children: ReactNode;
@@ -30,7 +41,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
 
     const user = auth.user;
 
-    const navigation = [
+    const navigation: NavigationItem[] = [
         ...(user?.role !== 'fulfillment_agent'
             ? [
                   {
@@ -55,6 +66,22 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
             icon: ShoppingCart,
             current: window.location.pathname.startsWith('/admin/orders'),
         },
+        ...(user?.role !== 'fulfillment_agent'
+            ? [
+                  {
+                      name: 'Shipping Methods',
+                      href: '/admin/shipping-methods',
+                      icon: Truck,
+                      current: window.location.pathname.startsWith('/admin/shipping-methods'),
+                  },
+                  {
+                      name: 'Payment Methods',
+                      href: '/admin/payment-methods',
+                      icon: CreditCard,
+                      current: window.location.pathname.startsWith('/admin/payment-methods'),
+                  },
+              ]
+            : []),
         ...(user?.role === 'super_admin'
             ? [
                   {

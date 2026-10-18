@@ -9,7 +9,9 @@ use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
 use App\Modules\PageBuilder\Models\LandingPage;
+use App\Modules\Payments\Controllers\PaymentMethodController;
 use App\Modules\Settings\Controllers\SettingController;
+use App\Modules\Shipping\Controllers\ShippingMethodController;
 use App\Modules\Sms\Controllers\OrderSmsController;
 use Illuminate\Support\Facades\Route;
 
@@ -84,4 +86,14 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+
+    // Shipping Methods Management
+    Route::post('shipping-methods/{shipping_method}/toggle', [ShippingMethodController::class, 'toggle'])
+        ->name('shipping-methods.toggle');
+    Route::resource('shipping-methods', ShippingMethodController::class)->except(['create', 'show', 'edit']);
+
+    // Payment Methods Management
+    Route::post('payment-methods/{payment_method}/toggle', [PaymentMethodController::class, 'toggle'])
+        ->name('payment-methods.toggle');
+    Route::resource('payment-methods', PaymentMethodController::class)->except(['create', 'show', 'edit']);
 });

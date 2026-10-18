@@ -7,6 +7,7 @@ namespace App\Modules\Checkout\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Orders\Models\Order;
+use App\Modules\Payments\Models\PaymentMethod;
 use App\Modules\Shipping\Models\District;
 use App\Modules\Shipping\Services\ShippingCalculatorService;
 use Illuminate\Http\JsonResponse;
@@ -40,12 +41,15 @@ class CheckoutPageController extends Controller
         ])->orderBy('name')->get();
 
         $defaultCalc = $calculator->calculate('Dhaka');
+        $paymentMethods = PaymentMethod::forCheckout()->get();
 
         return Inertia::render('Checkout/Show', [
             'product' => $product,
             'districts' => $districts,
             'defaultShippingFee' => $defaultCalc->shippingFee,
             'defaultZoneName' => $defaultCalc->zoneName,
+            'defaultShippingMethods' => $defaultCalc->availableMethods,
+            'paymentMethods' => $paymentMethods,
         ]);
     }
 
@@ -57,11 +61,13 @@ class CheckoutPageController extends Controller
         $validated = $request->validate([
             'district' => ['required', 'string', 'max:100'],
             'upazila' => ['nullable', 'string', 'max:100'],
+            'shipping_method_id' => ['nullable', 'integer'],
         ]);
 
         $result = $calculator->calculate(
             $validated['district'],
-            $validated['upazila'] ?? null
+            $validated['upazila'] ?? null,
+            isset($validated['shipping_method_id']) ? (int) $validated['shipping_method_id'] : null
         );
 
         return response()->json([
@@ -69,6 +75,9 @@ class CheckoutPageController extends Controller
             'zone_code' => $result->zoneCode,
             'zone_name' => $result->zoneName,
             'delivery_time' => $result->deliveryTime,
+            'shipping_method_id' => $result->shippingMethodId,
+            'shipping_method_name' => $result->shippingMethodName,
+            'available_methods' => $result->availableMethods,
         ]);
     }
 

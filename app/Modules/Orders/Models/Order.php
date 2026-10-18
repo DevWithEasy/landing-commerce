@@ -6,8 +6,10 @@ namespace App\Modules\Orders\Models;
 
 use App\Models\User;
 use App\Modules\Orders\Services\OrderStateMachine;
+use App\Modules\Shipping\Models\ShippingMethod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -30,9 +32,14 @@ class Order extends Model
         'upazila',
         'subtotal',
         'shipping_fee',
+        'shipping_method_id',
+        'shipping_method_name',
         'discount',
         'total',
         'payment_method',
+        'payment_status',
+        'payment_transaction_id',
+        'payment_details',
         'status',
         'courier_name',
         'courier_tracking_id',
@@ -51,7 +58,16 @@ class Order extends Model
             'shipping_fee' => 'decimal:2',
             'discount' => 'decimal:2',
             'total' => 'decimal:2',
+            'payment_details' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<ShippingMethod, $this>
+     */
+    public function shippingMethod(): BelongsTo
+    {
+        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id')->withTrashed();
     }
 
     /**

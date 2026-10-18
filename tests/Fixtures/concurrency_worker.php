@@ -14,7 +14,8 @@ $kernel->bootstrap();
 
 // Ensure MySQL connection for true pessimistic row locking
 config(['database.default' => 'mysql']);
-if (config('database.connections.mysql.database') === ':memory:' || empty(config('database.connections.mysql.database'))) {
+$currentDb = (string) config('database.connections.mysql.database');
+if ($currentDb === ':memory:' || empty($currentDb) || str_contains($currentDb, 'sqlite')) {
     config(['database.connections.mysql.database' => 'laravel']);
 }
 

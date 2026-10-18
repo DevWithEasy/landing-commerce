@@ -37,6 +37,8 @@ export default function CheckoutShow({
     districts,
     defaultShippingFee,
     defaultZoneName,
+    defaultShippingMethods = [],
+    paymentMethods = [],
 }: CheckoutShowProps) {
     // 1. Variant & Quantity selection
     const availableVariants = useMemo(() => {
@@ -61,13 +63,48 @@ export default function CheckoutShow({
     const [notes, setNotes] = useState<string>('');
     const [honeypot, setHoneypot] = useState<string>('');
 
-    // 4. Dynamic Shipping State
+    // 4. Dynamic Shipping Methods State
+    const [availableShippingMethods, setAvailableShippingMethods] = useState<any[]>(defaultShippingMethods || []);
+    const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<number | null>(() => {
+        if (defaultShippingMethods && defaultShippingMethods.length > 0) {
+            const def = defaultShippingMethods.find((m) => m.is_default);
+            return def ? def.id : defaultShippingMethods[0].id;
+        }
+        return null;
+    });
     const [shippingFee, setShippingFee] = useState<number>(defaultShippingFee || 70);
     const [zoneName, setZoneName] = useState<string>(defaultZoneName || 'Inside Dhaka');
+    const [selectedMethodName, setSelectedMethodName] = useState<string>('');
     const [deliveryTime, setDeliveryTime] = useState<string>('24-48 hours');
     const [isCalculatingShipping, setIsCalculatingShipping] = useState<boolean>(false);
 
-    // 5. Submission & Error States
+    // 5. Payment Methods State
+    const activePaymentMethods = useMemo(() => {
+        if (paymentMethods && paymentMethods.length > 0) {
+            return paymentMethods.filter((p) => p.is_active);
+        }
+        return [
+            {
+                id: 1,
+                name: 'Cash on Delivery',
+                code: 'cod',
+                description: 'Pay cash upon delivery at your doorstep.',
+                instructions: 'Keep the exact cash amount ready for the delivery courier.',
+                account_number: null,
+                is_active: true,
+                is_online: false,
+                requires_transaction_id: false,
+                sort_order: 1,
+            },
+        ];
+    }, [paymentMethods]);
+
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(() => {
+        return activePaymentMethods[0]?.code || 'cod';
+    });
+    const [transactionId, setTransactionId] = useState<string>('');
+
+    // 6. Submission & Error States
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
@@ -81,7 +118,7 @@ export default function CheckoutShow({
         return selectedDistrictObj?.upazilas || [];
     }, [selectedDistrictObj]);
 
-    // Recalculate shipping fee whenever district or upazila changes
+    // Recalculate shipping fee whenever district, upazila, or selectedShippingMethodId changes
     useEffect(() => {
         if (!district) return;
 
@@ -102,6 +139,7 @@ export default function CheckoutShow({
             body: JSON.stringify({
                 district,
                 upazila: upazila || null,
+                shipping_method_id: selectedShippingMethodId || null,
             }),
         })
             .then(async (res) => {
@@ -113,10 +151,20 @@ export default function CheckoutShow({
                     setShippingFee(parseFloat(data.shipping_fee) || 70);
                     setZoneName(data.zone_name || '');
                     setDeliveryTime(data.delivery_time || '24-48 hours');
+                    if (data.available_methods && Array.isArray(data.available_methods)) {
+                        setAvailableShippingMethods(data.available_methods);
+                        if (data.shipping_method_id) {
+                            setSelectedShippingMethodId(data.shipping_method_id);
+                        } else if (data.available_methods.length > 0 && !selectedShippingMethodId) {
+                            setSelectedShippingMethodId(data.available_methods[0].id);
+                        }
+                    }
+                    if (data.shipping_method_name) {
+                        setSelectedMethodName(data.shipping_method_name);
+                    }
                 }
             })
             .catch(() => {
-                // Fallback zone calculation
                 if (isCurrent) {
                     const dLower = district.toLowerCase();
                     const uLower = upazila.toLowerCase();
@@ -144,7 +192,7 @@ export default function CheckoutShow({
         return () => {
             isCurrent = false;
         };
-    }, [district, upazila]);
+    }, [district, upazila, selectedShippingMethodId]);
 
     // Unit price and totals calculation
     const unitPrice = useMemo(() => {
@@ -197,6 +245,9 @@ export default function CheckoutShow({
             district,
             upazila: upazila || null,
             notes: notes || null,
+            shipping_method_id: selectedShippingMethodId || undefined,
+            payment_method: selectedPaymentMethod,
+            payment_transaction_id: transactionId || undefined,
             idempotency_key: idempotencyKey,
             items: [
                 {
@@ -463,6 +514,60 @@ export default function CheckoutShow({
                                 </div>
                             </div>
 
+                            {/* Shipping Method Options */}
+                            {availableShippingMethods.length > 0 && (
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-slate-700">
+                                        ডেলিভারি মেথড নির্বাচন করুন
+                                    </label>
+                                    <div className="space-y-2">
+                                        {availableShippingMethods.map((method: any) => {
+                                            const isSelected = selectedShippingMethodId === method.id;
+                                            return (
+                                                <div
+                                                    key={method.id}
+                                                    onClick={() => setSelectedShippingMethodId(method.id)}
+                                                    className={`p-3 rounded-xl border text-sm cursor-pointer transition-all flex items-center justify-between ${
+                                                        isSelected
+                                                            ? 'border-primary-600 bg-primary-50/40 ring-1 ring-primary-500'
+                                                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div
+                                                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                                                isSelected
+                                                                    ? 'border-primary-600 bg-primary-600'
+                                                                    : 'border-slate-300 bg-white'
+                                                            }`}
+                                                        >
+                                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-semibold text-slate-900">{method.name}</div>
+                                                            {method.description && (
+                                                                <div className="text-xs text-slate-500">{method.description}</div>
+                                                            )}
+                                                            {method.delivery_time && (
+                                                                <div className="text-[11px] text-slate-400">
+                                                                    আনুমানিক সময়: {method.delivery_time}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm font-bold text-slate-900">
+                                                        {formatBdt(method.rate)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    {errors.shipping_method_id && (
+                                        <p className="text-xs text-red-600 mt-1">{errors.shipping_method_id}</p>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Order Notes (Optional) */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -480,19 +585,94 @@ export default function CheckoutShow({
                                 />
                             </div>
 
-                            {/* Payment Method Badge */}
-                            <div className="pt-2">
-                                <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="w-4 h-4 rounded-full border-4 border-emerald-600 bg-white" />
-                                        <span className="text-sm font-bold text-emerald-900">
-                                            ক্যাশ অন ডেলিভারি (Cash on Delivery)
-                                        </span>
-                                    </div>
-                                    <span className="text-xs bg-emerald-200/60 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">
-                                        হাতে পেয়ে টাকা দিন
-                                    </span>
+                            {/* Payment Method Selection */}
+                            <div className="pt-2 space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">
+                                    পেমেন্ট পদ্ধতি নির্বাচন করুন
+                                </label>
+                                <div className="space-y-2">
+                                    {activePaymentMethods.map((pm: any) => {
+                                        const isSelected = selectedPaymentMethod === pm.code;
+                                        return (
+                                            <div
+                                                key={pm.id}
+                                                onClick={() => setSelectedPaymentMethod(pm.code)}
+                                                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                    isSelected
+                                                        ? 'border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500'
+                                                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div
+                                                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                                                isSelected
+                                                                    ? 'border-emerald-600 bg-emerald-600'
+                                                                    : 'border-slate-300 bg-white'
+                                                            }`}
+                                                        >
+                                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                        </div>
+                                                        <span className="text-sm font-bold text-slate-900">
+                                                            {pm.name}
+                                                        </span>
+                                                    </div>
+                                                    {pm.code === 'cod' ? (
+                                                        <span className="text-xs bg-emerald-200/60 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">
+                                                            হাতে পেয়ে টাকা দিন
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-md">
+                                                            ম্যানুয়াল পেমেন্ট
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {pm.description && (
+                                                    <p className="text-xs text-slate-500 mt-1.5 ml-6.5">
+                                                        {pm.description}
+                                                    </p>
+                                                )}
+
+                                                {isSelected && pm.requires_transaction_id && (
+                                                    <div className="mt-3 pt-3 border-t border-emerald-200/60 ml-6.5 space-y-2">
+                                                        {pm.account_number && (
+                                                            <div className="text-xs font-semibold text-slate-800">
+                                                                একাউন্ট নাম্বার: <span className="font-mono text-emerald-700 font-bold">{pm.account_number}</span>
+                                                            </div>
+                                                        )}
+                                                        {pm.instructions && (
+                                                            <div className="text-xs text-slate-600 bg-white/80 p-2 rounded-lg border border-slate-200">
+                                                                {pm.instructions}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                                                                ট্রানজেকশন আইডি (TrxID) <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={transactionId}
+                                                                onChange={(e) => setTransactionId(e.target.value)}
+                                                                placeholder="যেমন: 8N7A6D..."
+                                                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 text-sm font-mono uppercase bg-white"
+                                                            />
+                                                            {errors.payment_transaction_id && (
+                                                                <p className="text-xs text-red-600 mt-1">
+                                                                    {errors.payment_transaction_id}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
+                                {errors.payment_method && (
+                                    <p className="text-xs text-red-600 mt-1">{errors.payment_method}</p>
+                                )}
                             </div>
 
                             {/* Submit Button */}
@@ -655,7 +835,7 @@ export default function CheckoutShow({
                                     <div className="flex items-center gap-1.5">
                                         <span>ডেলিভারি চার্জ</span>
                                         <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
-                                            {zoneName}
+                                            {selectedMethodName || zoneName}
                                         </span>
                                     </div>
                                     <span className="font-semibold text-slate-900">

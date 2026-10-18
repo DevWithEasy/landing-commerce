@@ -6,6 +6,8 @@ namespace App\Modules\Checkout\Requests;
 
 use App\Modules\Checkout\Rules\BdPhoneRule;
 use App\Modules\Checkout\Services\BlacklistService;
+use App\Modules\Payments\Models\PaymentMethod;
+use App\Modules\Shipping\Models\ShippingMethod;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -42,6 +44,9 @@ class StoreCodOrderRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.variant_id' => ['required', 'integer', 'exists:product_variants,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'shipping_method_id' => ['nullable', 'integer', 'exists:shipping_methods,id'],
+            'payment_method' => ['nullable', 'string', 'max:50'],
+            'payment_transaction_id' => ['nullable', 'string', 'max:100'],
             '_hp_trap' => ['nullable', 'prohibited'],
             'fax_number' => ['nullable', 'prohibited'],
             'honeypot' => ['nullable', 'prohibited'],
@@ -59,6 +64,7 @@ class StoreCodOrderRequest extends FormRequest
             '_hp_trap.prohibited' => 'Spam bot submission detected.',
             'fax_number.prohibited' => 'Spam bot submission detected.',
             'honeypot.prohibited' => 'Spam bot submission detected.',
+            'shipping_method_id.exists' => 'The selected shipping method is invalid.',
         ];
     }
 
@@ -71,6 +77,27 @@ class StoreCodOrderRequest extends FormRequest
             $phone = (string) ($this->input('customer_phone') ?? $this->input('phone') ?? '');
             if ($phone !== '' && app(BlacklistService::class)->isBlacklisted($phone)) {
                 $validator->errors()->add('phone', 'This phone number is blocked from placing orders.');
+            }
+
+            // Shipping method validation
+            $shippingMethodId = $this->input('shipping_method_id');
+            if ($shippingMethodId) {
+                $method = ShippingMethod::active()->find($shippingMethodId);
+                if (! $method) {
+                    $validator->errors()->add('shipping_method_id', 'The selected shipping method is inactive or unavailable.');
+                }
+            }
+
+            // Payment method validation
+            $paymentCode = (string) ($this->input('payment_method') ?: 'cod');
+            $paymentMethod = PaymentMethod::where('code', $paymentCode)->first();
+            if ($paymentMethod && ! $paymentMethod->is_active) {
+                $validator->errors()->add('payment_method', 'The selected payment method is unavailable.');
+            } elseif ($paymentMethod && $paymentMethod->requires_transaction_id) {
+                $trx = trim((string) $this->input('payment_transaction_id'));
+                if (empty($trx)) {
+                    $validator->errors()->add('payment_transaction_id', 'Transaction ID (TrxID) is required for '.$paymentMethod->name.'.');
+                }
             }
         });
     }
@@ -87,6 +114,9 @@ class StoreCodOrderRequest extends FormRequest
      *     idempotency_key: string,
      *     notes: string|null,
      *     discount: float|null,
+     *     shipping_method_id: int|null,
+     *     payment_method: string,
+     *     payment_transaction_id: string|null,
      *     items: array<int, array{variant_id: int, quantity: int}>
      * }
      */
@@ -103,6 +133,11 @@ class StoreCodOrderRequest extends FormRequest
             'idempotency_key' => (string) $validated['idempotency_key'],
             'notes' => isset($validated['notes']) ? (string) $validated['notes'] : null,
             'discount' => isset($validated['discount']) ? (float) $validated['discount'] : null,
+            'shipping_method_id' => isset($validated['shipping_method_id']) ? (int) $validated['shipping_method_id'] : null,
+            'payment_method' => (string) ($validated['payment_method'] ?? 'cod'),
+            'payment_transaction_id' => isset($validated['payment_transaction_id']) && trim((string) $validated['payment_transaction_id']) !== ''
+                ? trim((string) $validated['payment_transaction_id'])
+                : null,
             'items' => (array) $validated['items'],
         ];
     }

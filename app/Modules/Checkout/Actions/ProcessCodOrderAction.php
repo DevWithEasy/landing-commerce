@@ -12,6 +12,7 @@ use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Models\OrderHistory;
 use App\Modules\Orders\Models\OrderItem;
 use App\Modules\Orders\Models\OrderStatus;
+use App\Modules\Payments\Models\PaymentMethod;
 use App\Modules\Shipping\Services\ShippingCalculatorService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -109,12 +110,70 @@ class ProcessCodOrderAction
             // 4. Shipping calculation
             $shippingResult = $this->shippingCalculator->calculate(
                 $data['district'],
-                $data['upazila'] ?? null
+                $data['upazila'] ?? null,
+                isset($data['shipping_method_id']) ? (int) $data['shipping_method_id'] : null
             );
             $shippingFee = $shippingResult->shippingFee;
+            $shippingMethodId = $shippingResult->shippingMethodId;
+            $shippingMethodName = $shippingResult->shippingMethodName;
 
-            // 5. Database transaction with pessimistic row locks
-            return DB::transaction(function () use ($data, $normalizedPhone, $idempotencyKey, $shippingFee, $ipAddress): Order {
+            // 5. Payment method resolution & verification
+            $paymentCode = ! empty($data['payment_method']) ? (string) $data['payment_method'] : 'cod';
+            $paymentMethod = PaymentMethod::where('code', $paymentCode)->first();
+
+            if (! $paymentMethod && $paymentCode === 'cod') {
+                $paymentMethod = PaymentMethod::firstOrCreate(
+                    ['code' => 'cod'],
+                    [
+                        'name' => 'Cash on Delivery',
+                        'description' => 'Pay cash upon delivery at your doorstep.',
+                        'instructions' => 'Keep the exact cash amount ready for the delivery courier.',
+                        'is_active' => true,
+                        'is_online' => false,
+                        'requires_transaction_id' => false,
+                        'sort_order' => 1,
+                    ]
+                );
+            }
+
+            if (! $paymentMethod || ! $paymentMethod->is_active) {
+                throw new InvalidArgumentException('Selected payment method is unavailable.');
+            }
+
+            $paymentTrxId = isset($data['payment_transaction_id']) && trim((string) $data['payment_transaction_id']) !== ''
+                ? trim((string) $data['payment_transaction_id'])
+                : null;
+
+            if ($paymentMethod->requires_transaction_id && empty($paymentTrxId)) {
+                throw new InvalidArgumentException("Transaction ID (TrxID) is required for {$paymentMethod->name}.");
+            }
+
+            // Payment status integrity: COD is 'unpaid'. Manual MFS is 'pending_verification'.
+            // Never mark as 'paid' without verified gateway integration.
+            $paymentStatus = $paymentMethod->requires_transaction_id ? 'pending_verification' : 'unpaid';
+
+            $paymentDetails = [
+                'code' => $paymentMethod->code,
+                'name' => $paymentMethod->name,
+                'account_number' => $paymentMethod->account_number,
+                'requires_transaction_id' => $paymentMethod->requires_transaction_id,
+                'is_online' => $paymentMethod->is_online,
+            ];
+
+            // 6. Database transaction with pessimistic row locks
+            return DB::transaction(function () use (
+                $data,
+                $normalizedPhone,
+                $idempotencyKey,
+                $shippingFee,
+                $shippingMethodId,
+                $shippingMethodName,
+                $paymentMethod,
+                $paymentStatus,
+                $paymentTrxId,
+                $paymentDetails,
+                $ipAddress
+            ): Order {
                 // Double check inside transaction for race-condition resilience
                 $existingOrder = Order::with('items')->where('idempotency_key', $idempotencyKey)->first();
                 if ($existingOrder) {
@@ -190,9 +249,14 @@ class ProcessCodOrderAction
                     'upazila' => ! empty($data['upazila']) ? trim($data['upazila']) : null,
                     'subtotal' => $subtotal,
                     'shipping_fee' => $shippingFee,
+                    'shipping_method_id' => $shippingMethodId,
+                    'shipping_method_name' => $shippingMethodName,
                     'discount' => $discount,
                     'total' => $total,
-                    'payment_method' => 'cod',
+                    'payment_method' => $paymentMethod->code,
+                    'payment_status' => $paymentStatus,
+                    'payment_transaction_id' => $paymentTrxId,
+                    'payment_details' => $paymentDetails,
                     'status' => OrderStatus::PENDING,
                     'notes' => $data['notes'] ?? null,
                     'ip_address' => $ipAddress,
@@ -203,11 +267,15 @@ class ProcessCodOrderAction
                     OrderItem::create($itemData);
                 }
 
+                $historyComment = $paymentMethod->code === 'cod'
+                    ? 'Order placed via Cash on Delivery.'
+                    : "Order placed via {$paymentMethod->name} (TrxID: {$paymentTrxId}). Awaiting manual verification.";
+
                 OrderHistory::create([
                     'order_id' => $order->id,
                     'from_status' => null,
                     'to_status' => OrderStatus::PENDING,
-                    'comment' => 'Order placed via Cash on Delivery.',
+                    'comment' => $historyComment,
                     'user_id' => null,
                 ]);
 

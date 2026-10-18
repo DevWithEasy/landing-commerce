@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Modules\Shipping\Services;
 
 use App\Modules\Shipping\Models\District;
+use App\Modules\Shipping\Models\ShippingMethod;
 use App\Modules\Shipping\Models\ShippingZone;
 use App\Modules\Shipping\Models\Upazila;
 
 class ShippingCalculationResult
 {
+    /**
+     * @param  array<int, array<string, mixed>>  $availableMethods
+     */
     public function __construct(
         public readonly ShippingZone $zone,
         public readonly string $zoneCode,
@@ -17,7 +21,11 @@ class ShippingCalculationResult
         public readonly float $shippingFee,
         public readonly string $deliveryTime,
         public readonly ?District $district = null,
-        public readonly ?Upazila $upazila = null
+        public readonly ?Upazila $upazila = null,
+        public readonly ?ShippingMethod $shippingMethod = null,
+        public readonly ?int $shippingMethodId = null,
+        public readonly ?string $shippingMethodName = null,
+        public readonly array $availableMethods = []
     ) {}
 
     public function formattedFee(): string
@@ -39,6 +47,9 @@ class ShippingCalculationResult
             'delivery_time' => $this->deliveryTime,
             'district_name' => $this->district?->name,
             'upazila_name' => $this->upazila?->name,
+            'shipping_method_id' => $this->shippingMethodId,
+            'shipping_method_name' => $this->shippingMethodName,
+            'available_methods' => $this->availableMethods,
         ];
     }
 }

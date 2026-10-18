@@ -5,6 +5,7 @@ import {
     CheckCircle2,
     ChevronRight,
     Clock,
+    CreditCard,
     Download,
     ExternalLink,
     Eye,
@@ -788,9 +789,25 @@ export default function Index({
                                                 <div className="font-bold text-gray-900">
                                                     {formatMoney(order.total)}
                                                 </div>
-                                                <div className="text-[11px] text-gray-400 uppercase tracking-wider">
-                                                    {order.payment_method}
+                                                <div className="text-[11px] text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                                                    <span>{order.payment_method}</span>
+                                                    <span
+                                                        className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
+                                                            order.payment_status === 'paid'
+                                                                ? 'bg-emerald-100 text-emerald-800'
+                                                                : order.payment_status === 'pending_verification'
+                                                                ? 'bg-amber-100 text-amber-800'
+                                                                : 'bg-slate-100 text-slate-600'
+                                                        }`}
+                                                    >
+                                                        {order.payment_status || 'unpaid'}
+                                                    </span>
                                                 </div>
+                                                {order.shipping_method_name && (
+                                                    <div className="text-[10px] text-slate-400 truncate max-w-[140px] mt-0.5" title={order.shipping_method_name}>
+                                                        {order.shipping_method_name}
+                                                    </div>
+                                                )}
                                             </td>
 
                                             {/* Pipeline Status */}
@@ -1178,6 +1195,50 @@ export default function Index({
                                             {detailOrder.upazila ? `${detailOrder.upazila}, ` : ''}
                                             {detailOrder.district}
                                         </p>
+                                    </div>
+                                </div>
+
+                                {/* Payment & Shipping Method Summary */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
+                                        <div className="font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center">
+                                            <CreditCard className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                                            Payment Method
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="font-bold text-gray-900 uppercase">
+                                                {detailOrder.payment_method}
+                                            </span>
+                                            <span
+                                                className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                                                    detailOrder.payment_status === 'paid'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : detailOrder.payment_status === 'pending_verification'
+                                                        ? 'bg-amber-100 text-amber-800'
+                                                        : 'bg-slate-200 text-slate-700'
+                                                }`}
+                                            >
+                                                {detailOrder.payment_status?.toUpperCase() || 'UNPAID'}
+                                            </span>
+                                        </div>
+                                        {detailOrder.payment_transaction_id && (
+                                            <div className="mt-1.5 text-gray-600 font-mono">
+                                                TrxID: <span className="font-bold text-primary-700">{detailOrder.payment_transaction_id}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
+                                        <div className="font-semibold text-gray-500 uppercase tracking-wider mb-1 flex items-center">
+                                            <Truck className="w-3.5 h-3.5 mr-1 text-gray-400" />
+                                            Shipping Method
+                                        </div>
+                                        <div className="font-bold text-gray-900 mt-1">
+                                            {detailOrder.shipping_method_name || 'Standard Delivery'}
+                                        </div>
+                                        <div className="text-gray-500 mt-0.5">
+                                            Delivery Fee: {formatMoney(detailOrder.shipping_fee)}
+                                        </div>
                                     </div>
                                 </div>
 

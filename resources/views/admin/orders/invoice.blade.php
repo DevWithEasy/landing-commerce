@@ -392,8 +392,20 @@
             </div>
             <div class="meta-line">
                 <span>Payment:</span>
-                <strong>COD (Cash on Delivery)</strong>
+                <strong>{{ strtoupper($order->payment_method ?? 'COD') }} ({{ strtoupper($order->payment_status ?? 'unpaid') }})</strong>
             </div>
+            @if($order->payment_transaction_id)
+            <div class="meta-line">
+                <span>TrxID:</span>
+                <strong>{{ $order->payment_transaction_id }}</strong>
+            </div>
+            @endif
+            @if($order->shipping_method_name)
+            <div class="meta-line">
+                <span>Shipping:</span>
+                <span>{{ $order->shipping_method_name }}</span>
+            </div>
+            @endif
             <div class="meta-line">
                 <span>Status:</span>
                 <span>{{ strtoupper($order->status) }}</span>
@@ -482,7 +494,11 @@
                     <div class="order-meta">
                         <div><strong>Order #:</strong> {{ $order->order_number }}</div>
                         <div><strong>Date:</strong> {{ $order->created_at?->format('d M Y, h:i A') }}</div>
-                        <div><strong>Payment Method:</strong> Cash on Delivery</div>
+                        <div><strong>Payment Method:</strong> {{ strtoupper($order->payment_method ?? 'COD') }} ({{ strtoupper($order->payment_status ?? 'unpaid') }})</div>
+                        @if($order->payment_transaction_id)
+                            <div><strong>TrxID:</strong> {{ $order->payment_transaction_id }}</div>
+                        @endif
+                        <div><strong>Shipping Method:</strong> {{ $order->shipping_method_name ?? 'Standard Delivery' }}</div>
                         <div><strong>Status:</strong> <span style="text-transform: uppercase; font-weight: bold;">{{ str_replace('_', ' ', $order->status) }}</span></div>
                     </div>
                 </div>

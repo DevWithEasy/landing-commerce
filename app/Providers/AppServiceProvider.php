@@ -47,6 +47,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-catalog', fn (User $user) => $user->canManageCatalog());
         Gate::define('manage-orders', fn (User $user) => $user->canManageOrders());
         Gate::define('manage-landing-pages', fn (User $user) => $user->canManageLandingPages());
+        Gate::define('manage-shipping-methods', fn (User $user) => $user->canManageShippingAndPayments());
+        Gate::define('manage-payment-methods', fn (User $user) => $user->canManageShippingAndPayments());
 
         // Apply decrypted database settings to runtime configuration
         $this->app->make(SettingsService::class)->applyRuntimeOverrides();
