@@ -49,9 +49,10 @@ export interface InspectorProps {
         regular_price: string | number;
         sale_price: string | number | null;
     }>;
+    width?: number;
 }
 
-export function Inspector({ blockDefinitions, products }: InspectorProps) {
+export function Inspector({ blockDefinitions, products, width }: InspectorProps) {
     const { ast, selectedBlockId, setSelectedBlockId, updateBlockProps, updateBlockStyles } =
         useBuilderStore();
 
@@ -61,7 +62,10 @@ export function Inspector({ blockDefinitions, products }: InspectorProps) {
 
     if (!selectedBlock) {
         return (
-            <aside className="w-80 bg-white border-l border-gray-200 p-6 flex flex-col items-center justify-center text-center text-gray-400 select-none">
+            <aside
+                style={{ width: width ? `${width}px` : undefined }}
+                className="w-80 shrink-0 bg-white border-l border-gray-200 p-6 flex flex-col items-center justify-center text-center text-gray-400 select-none transition-[width] duration-75"
+            >
                 <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-3">
                     <Sliders className="w-6 h-6 text-gray-300" />
                 </div>
@@ -90,7 +94,10 @@ export function Inspector({ blockDefinitions, products }: InspectorProps) {
     };
 
     return (
-        <aside className="w-80 sm:w-88 bg-white border-l border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none">
+        <aside
+            style={{ width: width ? `${width}px` : undefined }}
+            className="w-80 sm:w-88 shrink-0 bg-white border-l border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none transition-[width] duration-75"
+        >
             {/* Inspector Header */}
             <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/70">
                 <div>

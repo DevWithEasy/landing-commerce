@@ -19,13 +19,13 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
     // Viewport styling
     const viewportClasses = {
         desktop: 'w-full max-w-full my-0 shadow-xs border border-gray-200/60',
-        tablet: 'w-[768px] mx-auto my-6 rounded-2xl shadow-2xl border-4 border-slate-700',
-        mobile: 'w-[390px] mx-auto my-6 rounded-3xl shadow-2xl border-8 border-slate-800',
+        tablet: 'w-full max-w-[768px] mx-auto my-6 rounded-2xl shadow-2xl border-4 border-slate-700',
+        mobile: 'w-full max-w-[390px] mx-auto my-6 rounded-3xl shadow-2xl border-8 border-slate-800',
     }[viewport];
 
     return (
         <main
-            className="flex-1 h-full min-h-0 w-full bg-slate-100/90 overflow-y-auto overflow-x-auto p-4 sm:p-6 pb-28"
+            className="flex-1 h-full min-h-0 w-full bg-slate-100/90 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-28"
             onClick={() => setSelectedBlockId(null)}
         >
             <div

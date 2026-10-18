@@ -32,6 +32,80 @@ export default function Editor({
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isRevisionsOpen, setIsRevisionsOpen] = useState(false);
 
+    // Draggable sidebar widths with localStorage persistence
+    const [leftWidth, setLeftWidth] = useState<number>(() => {
+        try {
+            const saved = localStorage.getItem('lc_builder_left_width');
+            return saved ? Math.max(220, Math.min(500, Number(saved))) : 300;
+        } catch {
+            return 300;
+        }
+    });
+
+    const [rightWidth, setRightWidth] = useState<number>(() => {
+        try {
+            const saved = localStorage.getItem('lc_builder_right_width');
+            return saved ? Math.max(260, Math.min(650, Number(saved))) : 340;
+        } catch {
+            return 340;
+        }
+    });
+
+    const [isResizingLeft, setIsResizingLeft] = useState(false);
+    const [isResizingRight, setIsResizingRight] = useState(false);
+
+    // Mouse drag handlers for resizing
+    const startResizingLeft = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizingLeft(true);
+    };
+
+    const startResizingRight = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsResizingRight(true);
+    };
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (isResizingLeft) {
+                const newWidth = Math.max(220, Math.min(520, e.clientX));
+                setLeftWidth(newWidth);
+                try {
+                    localStorage.setItem('lc_builder_left_width', String(newWidth));
+                } catch {
+                    // ignore
+                }
+            } else if (isResizingRight) {
+                const newWidth = Math.max(260, Math.min(650, window.innerWidth - e.clientX));
+                setRightWidth(newWidth);
+                try {
+                    localStorage.setItem('lc_builder_right_width', String(newWidth));
+                } catch {
+                    // ignore
+                }
+            }
+        };
+
+        const handleMouseUp = () => {
+            if (isResizingLeft) setIsResizingLeft(false);
+            if (isResizingRight) setIsResizingRight(false);
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        };
+
+        if (isResizingLeft || isResizingRight) {
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizingLeft, isResizingRight]);
+
     // Initialize AST and products into Zustand store on mount
     useEffect(() => {
         if (initialAst) {
@@ -214,9 +288,22 @@ export default function Editor({
                     onOpenRevisions={() => setIsRevisionsOpen(true)}
                 />
 
-                {/* Main 3-Column Studio Workspace */}
-                <div className="flex-1 flex overflow-hidden">
-                    <LeftSidebar blockDefinitions={blockDefinitions} onAddBlock={handleAddBlock} />
+                {/* Main 3-Column Studio Workspace with Resizable Sidebars */}
+                <div className="flex-1 flex overflow-hidden relative">
+                    <LeftSidebar
+                        width={leftWidth}
+                        blockDefinitions={blockDefinitions}
+                        onAddBlock={handleAddBlock}
+                    />
+
+                    {/* Left Sidebar Resize Handle (Mouse Drag) */}
+                    <div
+                        onMouseDown={startResizingLeft}
+                        title="Drag to resize blocks panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
+                        className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
+                    >
+                        <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
+                    </div>
 
                     <DndContext
                         sensors={sensors}
@@ -226,7 +313,20 @@ export default function Editor({
                         <Canvas blockDefinitions={blockDefinitions} />
                     </DndContext>
 
-                    <Inspector blockDefinitions={blockDefinitions} products={products} />
+                    {/* Right Inspector Resize Handle (Mouse Drag) */}
+                    <div
+                        onMouseDown={startResizingRight}
+                        title="Drag to resize customizer panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
+                        className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
+                    >
+                        <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
+                    </div>
+
+                    <Inspector
+                        width={rightWidth}
+                        blockDefinitions={blockDefinitions}
+                        products={products}
+                    />
                 </div>
 
                 {/* Slide-over Revisions & Restore Drawer */}

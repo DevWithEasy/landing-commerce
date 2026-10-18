@@ -37,9 +37,10 @@ const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
 export interface LeftSidebarProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
     onAddBlock: (blockType: BlockType) => void;
+    width?: number;
 }
 
-export function LeftSidebar({ blockDefinitions, onAddBlock }: LeftSidebarProps) {
+export function LeftSidebar({ blockDefinitions, onAddBlock, width }: LeftSidebarProps) {
     const [activeTab, setActiveTab] = useState<'palette' | 'layers'>('palette');
     const { ast, selectedBlockId, setSelectedBlockId, removeBlock, reorderBlocks } =
         useBuilderStore();
@@ -57,7 +58,10 @@ export function LeftSidebar({ blockDefinitions, onAddBlock }: LeftSidebarProps) 
     });
 
     return (
-        <aside className="w-72 sm:w-80 bg-white border-r border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none">
+        <aside
+            style={{ width: width ? `${width}px` : undefined }}
+            className="w-72 sm:w-80 shrink-0 bg-white border-r border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none transition-[width] duration-75"
+        >
             {/* Sidebar Tabs */}
             <div className="flex border-b border-gray-200 bg-gray-50/70 p-1">
                 <button
