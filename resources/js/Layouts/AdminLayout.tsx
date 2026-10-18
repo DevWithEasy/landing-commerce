@@ -1,10 +1,12 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     AlertCircle,
     CheckCircle,
     Layers,
+    LogOut,
     Menu,
     Package,
+    Settings,
     Shield,
     ShoppingCart,
     Store,
@@ -29,27 +31,41 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
     const user = auth.user;
 
     const navigation = [
-        {
-            name: 'Products & Inventory',
-            href: '/admin/products',
-            icon: Package,
-            current:
-                window.location.pathname.startsWith('/admin/products') ||
-                window.location.pathname === '/admin',
-        },
-        {
-            name: 'Landing Pages',
-            href: '#',
-            icon: Layers,
-            current: false,
-            badge: 'Phase 4',
-        },
+        ...(user?.role !== 'fulfillment_agent'
+            ? [
+                  {
+                      name: 'Products & Inventory',
+                      href: '/admin/products',
+                      icon: Package,
+                      current:
+                          window.location.pathname.startsWith('/admin/products') ||
+                          window.location.pathname === '/admin',
+                  },
+                  {
+                      name: 'Landing Pages',
+                      href: '#',
+                      icon: Layers,
+                      current: false,
+                      badge: 'Phase 4',
+                  },
+              ]
+            : []),
         {
             name: 'Orders & COD',
             href: '/admin/orders',
             icon: ShoppingCart,
             current: window.location.pathname.startsWith('/admin/orders'),
         },
+        ...(user?.role === 'super_admin'
+            ? [
+                  {
+                      name: 'Settings & Integrations',
+                      href: '/admin/settings',
+                      icon: Settings,
+                      current: window.location.pathname.startsWith('/admin/settings'),
+                  },
+              ]
+            : []),
     ];
 
     const roleName = user?.role
@@ -136,6 +152,14 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                                 </p>
                                 <p className="text-xs text-slate-400 truncate">{roleName}</p>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => router.post('/logout')}
+                                className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition-colors"
+                                title="Sign Out"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -1,25 +1,34 @@
 <?php
 
+use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
 use App\Modules\Orders\Controllers\OrderController;
 use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
+use App\Modules\Settings\Controllers\SettingController;
 use App\Modules\Sms\Controllers\OrderSmsController;
 use Illuminate\Support\Facades\Route;
 
-// Login placeholder endpoint to prevent undefined route errors for unauthenticated requests
-Route::get('login', function () {
-    return response()->json([
-        'message' => 'Unauthenticated. Merchant login interface is planned in the upcoming authentication milestone.',
-    ], 401);
-})->name('login');
+// Authentication & Session Routes (with brute-force rate limiting)
+Route::middleware(['web'])->group(function () {
+    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.attempt');
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+});
 
 Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
+        $user = auth()->user();
+        if ($user && $user->isFulfillmentAgent()) {
+            return redirect()->route('admin.orders.index');
+        }
+
         return redirect()->route('admin.products.index');
     })->name('dashboard');
+
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::post('products/matrix-preview', [ProductController::class, 'previewMatrix'])
         ->name('products.matrix-preview');
@@ -48,4 +57,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         ->name('landing-pages.builder');
     Route::post('landing-pages/{landing_page}/revisions', [LandingPageRevisionController::class, 'store'])
         ->name('landing-pages.revisions.store');
+
+    // Settings & Integration Credentials Management
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 });
