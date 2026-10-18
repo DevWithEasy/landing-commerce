@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Checkout\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Cart\Services\CartManagerService;
 use App\Modules\Checkout\Actions\ProcessCodOrderAction;
 use App\Modules\Checkout\Exceptions\InsufficientStockException;
 use App\Modules\Checkout\Requests\StoreCodOrderRequest;
@@ -21,7 +22,8 @@ class CodCheckoutController extends Controller
     public function store(
         StoreCodOrderRequest $request,
         ProcessCodOrderAction $action,
-        OrderRateLimiter $rateLimiter
+        OrderRateLimiter $rateLimiter,
+        CartManagerService $cartManager
     ): JsonResponse {
         $idempotencyKey = (string) $request->input('idempotency_key');
 
@@ -65,6 +67,14 @@ class CodCheckoutController extends Controller
 
             // Record rate limit hits on successful order placement
             $rateLimiter->hit($ip, $phone);
+
+            // Safely clear the purchased cart only when checking out from cart source
+            if ($request->input('checkout_source') === 'cart') {
+                $cart = $cartManager->getCart($request);
+                if ($cart) {
+                    $cartManager->clearCart($cart);
+                }
+            }
 
             return response()->json([
                 'message' => 'Order placed successfully.',

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     AlertCircle,
     CheckCircle2,
@@ -34,6 +34,8 @@ function formatBdt(amount: number | string): string {
 }
 
 export default function CheckoutShow({
+    mode = 'direct',
+    cart = null,
     product,
     districts,
     defaultShippingFee,
@@ -41,12 +43,16 @@ export default function CheckoutShow({
     defaultShippingMethods = [],
     paymentMethods = [],
 }: CheckoutShowProps) {
-    // 1. Variant & Quantity selection
-    const availableVariants = useMemo(() => {
-        return product.variants.filter((v) => !v.manage_stock || v.stock_quantity > 0);
-    }, [product.variants]);
+    const isCartMode = mode === 'cart' && !!cart && cart.items.length > 0;
 
-    const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(() => {
+    // 1. Variant & Quantity selection (for direct mode)
+    const availableVariants = useMemo(() => {
+        if (!product?.variants) return [];
+        return product.variants.filter((v) => !v.manage_stock || v.stock_quantity > 0);
+    }, [product?.variants]);
+
+    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | undefined>(() => {
+        if (!product?.variants || product.variants.length === 0) return undefined;
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const variantId = params.get('variant');
@@ -221,8 +227,11 @@ export default function CheckoutShow({
     }, [selectedVariant]);
 
     const subtotal = useMemo(() => {
+        if (isCartMode && cart) {
+            return cart.subtotal;
+        }
         return unitPrice * quantity;
-    }, [unitPrice, quantity]);
+    }, [isCartMode, cart, unitPrice, quantity]);
 
     const grandTotal = useMemo(() => {
         return subtotal + shippingFee;
@@ -232,19 +241,22 @@ export default function CheckoutShow({
     useEffect(() => {
         trackInitiateCheckout({
             value: grandTotal,
-            contentIds: [String(selectedVariant?.id || product.id)],
-            numItems: quantity,
+            contentIds: isCartMode && cart
+                ? cart.items.map((i) => String(i.variant_id))
+                : [String(selectedVariant?.id || product?.id || '')],
+            numItems: isCartMode && cart ? cart.total_items : quantity,
         });
     }, []);
 
     // Primary image resolution
     const primaryImage = useMemo(() => {
+        if (!product) return null;
         if (selectedVariant?.id) {
             const variantImg = product.images.find((img) => img.variant_id === selectedVariant.id);
             if (variantImg) return variantImg;
         }
         return product.images.find((img) => img.is_primary) || product.images[0];
-    }, [product.images, selectedVariant]);
+    }, [product, selectedVariant]);
 
     // Handle checkout submission
     const handleSubmit = async (e: React.FormEvent) => {
@@ -252,8 +264,13 @@ export default function CheckoutShow({
         setErrors({});
         setRateLimitMessage(null);
 
-        if (!selectedVariant) {
+        if (!isCartMode && !selectedVariant) {
             setErrors({ variant: 'অনুগ্রহ করে একটি ভ্যারিয়েন্ট নির্বাচন করুন।' });
+            return;
+        }
+
+        if (isCartMode && (!cart || cart.items.length === 0)) {
+            setErrors({ general: 'আপনার কার্ট খালি। অর্ডার করার পূর্বে কার্টে পণ্য যোগ করুন।' });
             return;
         }
 
@@ -264,6 +281,7 @@ export default function CheckoutShow({
             ?.getAttribute('content');
 
         const payload = {
+            checkout_source: isCartMode ? 'cart' : 'direct',
             customer_name: customerName,
             customer_phone: customerPhone,
             delivery_address: deliveryAddress,
@@ -274,12 +292,14 @@ export default function CheckoutShow({
             payment_method: selectedPaymentMethod,
             payment_transaction_id: transactionId || undefined,
             idempotency_key: idempotencyKey,
-            items: [
-                {
-                    variant_id: selectedVariant.id,
-                    quantity,
-                },
-            ],
+            items: isCartMode && cart
+                ? cart.items.map((i) => ({ variant_id: i.variant_id, quantity: i.quantity }))
+                : [
+                    {
+                        variant_id: selectedVariant!.id,
+                        quantity,
+                    },
+                ],
             _hp_trap: honeypot || undefined,
         };
 
@@ -731,119 +751,169 @@ export default function CheckoutShow({
 
                     {/* Right Column: Product Card & Order Summary */}
                     <div className="lg:col-span-5 space-y-4">
-                        {/* Product & Variant Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                            <h3 className="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                <Package className="w-4 h-4 text-primary-600" />
-                                <span>পণ্য বিবরণ</span>
-                            </h3>
+                        {/* Product / Cart Items Card */}
+                        {isCartMode && cart ? (
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                                    <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                                        <Package className="w-4 h-4 text-emerald-600" />
+                                        <span>অর্ডারের পণ্যসমূহ ({cart.total_items} টি)</span>
+                                    </h3>
+                                    <Link
+                                        href="/cart"
+                                        className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
+                                    >
+                                        কার্ট পরিবর্তন
+                                    </Link>
+                                </div>
 
-                            <div className="flex gap-3.5 items-start">
-                                {primaryImage ? (
-                                    <img
-                                        src={primaryImage.thumb_url || primaryImage.url}
-                                        alt={primaryImage.alt_text || product.title}
-                                        className="w-20 h-20 object-cover rounded-xl border border-slate-100 shrink-0"
-                                    />
-                                ) : (
-                                    <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                                        <Package className="w-8 h-8" />
+                                <div className="space-y-3 divide-y divide-slate-100">
+                                    {cart.items.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className="pt-3 first:pt-0 flex items-center justify-between gap-3"
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <img
+                                                    src={item.image_url}
+                                                    alt={item.product_title}
+                                                    className="w-14 h-14 object-cover rounded-xl border border-slate-100 shrink-0"
+                                                />
+                                                <div className="min-w-0">
+                                                    <h4 className="text-xs font-bold text-slate-900 truncate">
+                                                        {item.product_title}
+                                                    </h4>
+                                                    {item.variant_name && (
+                                                        <p className="text-[11px] text-slate-500 font-medium">
+                                                            ভ্যারিয়েন্ট: {item.variant_name}
+                                                        </p>
+                                                    )}
+                                                    <p className="text-xs text-slate-600 mt-0.5">
+                                                        {formatBdt(item.unit_price)} × {item.quantity}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="text-xs font-black text-slate-900 shrink-0">
+                                                {formatBdt(item.line_total)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : product ? (
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                                <h3 className="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                    <Package className="w-4 h-4 text-primary-600" />
+                                    <span>পণ্য বিবরণ</span>
+                                </h3>
+
+                                <div className="flex gap-3.5 items-start">
+                                    {primaryImage ? (
+                                        <img
+                                            src={primaryImage.thumb_url || primaryImage.url}
+                                            alt={primaryImage.alt_text || product.title}
+                                            className="w-20 h-20 object-cover rounded-xl border border-slate-100 shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                            <Package className="w-8 h-8" />
+                                        </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-bold text-slate-900 leading-snug truncate">
+                                            {product.title}
+                                        </h4>
+                                        <div className="flex items-baseline gap-2 mt-1">
+                                            <span className="text-base font-extrabold text-emerald-600">
+                                                {formatBdt(unitPrice)}
+                                            </span>
+                                            {selectedVariant?.sale_price && (
+                                                <span className="text-xs text-slate-400 line-through">
+                                                    {formatBdt(selectedVariant.regular_price)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="mt-1">
+                                            <span className="inline-block px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-md">
+                                                স্টকে আছে
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Multi-Variant Selector */}
+                                {product.has_variants && product.variants.length > 1 && (
+                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                        <label className="block text-xs font-semibold text-slate-700 mb-2">
+                                            ভ্যারিয়েন্ট নির্বাচন করুন:
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {product.variants.map((v) => {
+                                                const isSelected = selectedVariant?.id === v.id;
+                                                const isOutOfStock =
+                                                    v.manage_stock && v.stock_quantity <= 0;
+
+                                                return (
+                                                    <button
+                                                        key={v.id}
+                                                        type="button"
+                                                        disabled={isOutOfStock}
+                                                        onClick={() => setSelectedVariant(v)}
+                                                        className={`p-2.5 text-left rounded-xl border text-xs transition-all ${
+                                                            isSelected
+                                                                ? 'border-emerald-600 bg-emerald-50/40 text-emerald-900 ring-2 ring-emerald-500/20 font-bold'
+                                                                : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                                                        } ${isOutOfStock ? 'opacity-40 cursor-not-allowed bg-slate-50' : 'cursor-pointer'}`}
+                                                    >
+                                                        <div className="truncate font-semibold">
+                                                            {v.name}
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-500 mt-0.5">
+                                                            {formatBdt(v.sale_price ?? v.regular_price)}
+                                                        </div>
+                                                        {isOutOfStock && (
+                                                            <div className="text-[10px] text-red-500 font-bold mt-0.5">
+                                                                স্টক শেষ
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 )}
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-bold text-slate-900 leading-snug truncate">
-                                        {product.title}
-                                    </h4>
-                                    <div className="flex items-baseline gap-2 mt-1">
-                                        <span className="text-base font-extrabold text-emerald-600">
-                                            {formatBdt(unitPrice)}
+
+                                {/* Quantity Control */}
+                                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                    <span className="text-sm font-medium text-slate-700">পরিমাণ:</span>
+                                    <div className="inline-flex items-center border border-slate-200 rounded-xl bg-slate-50 p-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                                            disabled={quantity <= 1}
+                                            className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                                        >
+                                            <Minus className="w-3.5 h-3.5" />
+                                        </button>
+                                        <span className="w-10 text-center font-bold text-sm text-slate-800">
+                                            {quantity}
                                         </span>
-                                        {selectedVariant?.sale_price && (
-                                            <span className="text-xs text-slate-400 line-through">
-                                                {formatBdt(selectedVariant.regular_price)}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="mt-1">
-                                        <span className="inline-block px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-md">
-                                            স্টকে আছে
-                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setQuantity((q) => q + 1)}
+                                            disabled={
+                                                selectedVariant?.manage_stock
+                                                    ? quantity >= selectedVariant.stock_quantity
+                                                    : false
+                                            }
+                                            className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Multi-Variant Selector */}
-                            {product.has_variants && product.variants.length > 1 && (
-                                <div className="mt-4 pt-4 border-t border-slate-100">
-                                    <label className="block text-xs font-semibold text-slate-700 mb-2">
-                                        ভ্যারিয়েন্ট নির্বাচন করুন:
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {product.variants.map((v) => {
-                                            const isSelected = selectedVariant.id === v.id;
-                                            const isOutOfStock =
-                                                v.manage_stock && v.stock_quantity <= 0;
-
-                                            return (
-                                                <button
-                                                    key={v.id}
-                                                    type="button"
-                                                    disabled={isOutOfStock}
-                                                    onClick={() => setSelectedVariant(v)}
-                                                    className={`p-2.5 text-left rounded-xl border text-xs transition-all ${
-                                                        isSelected
-                                                            ? 'border-emerald-600 bg-emerald-50/40 text-emerald-900 ring-2 ring-emerald-500/20 font-bold'
-                                                            : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                                                    } ${isOutOfStock ? 'opacity-40 cursor-not-allowed bg-slate-50' : 'cursor-pointer'}`}
-                                                >
-                                                    <div className="truncate font-semibold">
-                                                        {v.name}
-                                                    </div>
-                                                    <div className="text-[11px] text-slate-500 mt-0.5">
-                                                        {formatBdt(v.sale_price ?? v.regular_price)}
-                                                    </div>
-                                                    {isOutOfStock && (
-                                                        <div className="text-[10px] text-red-500 font-bold mt-0.5">
-                                                            স্টক শেষ
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Quantity Control */}
-                            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                                <span className="text-sm font-medium text-slate-700">পরিমাণ:</span>
-                                <div className="inline-flex items-center border border-slate-200 rounded-xl bg-slate-50 p-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                                        disabled={quantity <= 1}
-                                        className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                                    >
-                                        <Minus className="w-3.5 h-3.5" />
-                                    </button>
-                                    <span className="w-10 text-center font-bold text-sm text-slate-800">
-                                        {quantity}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() => setQuantity((q) => q + 1)}
-                                        disabled={
-                                            selectedVariant?.manage_stock
-                                                ? quantity >= selectedVariant.stock_quantity
-                                                : false
-                                        }
-                                        className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                                    >
-                                        <Plus className="w-3.5 h-3.5" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        ) : null}
 
                         {/* Order Calculation Summary */}
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">

@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     ChevronDown,
     ChevronRight,
@@ -18,7 +18,9 @@ import {
 } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import type { Category } from '@/types';
+import { MiniCartDrawer } from '@/Shared/MiniCartDrawer';
+import type { Category, SharedProps } from '@/types';
+import type { CartSummary } from '@/types/cart';
 import type { StorefrontTheme } from '@/types/storefront';
 
 interface StorefrontLayoutProps {
@@ -34,11 +36,42 @@ export function StorefrontLayout({
     categories = [],
     currentSearch = '',
 }: StorefrontLayoutProps) {
+    const page = usePage<SharedProps>();
+    const pageCart = (page.props.cart as CartSummary) || {
+        id: null,
+        total_items: 0,
+        subtotal: 0,
+        formatted_subtotal: '৳0',
+        items: [],
+        is_empty: true,
+    };
+
+    const [activeCart, setActiveCart] = useState<CartSummary>(pageCart);
+    const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(currentSearch);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [expandedMobileCategories, setExpandedMobileCategories] = useState<Record<number, boolean>>({});
+
+    useEffect(() => {
+        if (page.props.cart) {
+            setActiveCart(page.props.cart as CartSummary);
+        }
+    }, [page.props.cart]);
+
+    // Listen for custom open-mini-cart events across the storefront
+    useEffect(() => {
+        const handleOpenCart = (e: Event) => {
+            const customEvent = e as CustomEvent<CartSummary | undefined>;
+            if (customEvent.detail) {
+                setActiveCart(customEvent.detail);
+            }
+            setIsMiniCartOpen(true);
+        };
+        window.addEventListener('open-mini-cart', handleOpenCart);
+        return () => window.removeEventListener('open-mini-cart', handleOpenCart);
+    }, []);
 
     useEffect(() => {
         setSearchQuery(currentSearch);
@@ -213,20 +246,24 @@ export function StorefrontLayout({
                             </span>
                         </Link>
 
-                        {/* Cart Trigger Button (UI Entry Point) */}
-                        <Link
-                            href="/shop"
+                        {/* Cart Trigger Button (Opens Mini-Cart Drawer) */}
+                        <button
+                            type="button"
+                            onClick={() => setIsMiniCartOpen(true)}
                             className="flex items-center gap-2 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold transition"
                             title="Shopping Cart"
+                            aria-label="Open Shopping Cart"
                         >
                             <div className="relative">
                                 <ShoppingBag className="w-5 h-5" />
-                                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">
-                                    0
-                                </span>
+                                {activeCart.total_items > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">
+                                        {activeCart.total_items > 99 ? '99+' : activeCart.total_items}
+                                    </span>
+                                )}
                             </div>
                             <span className="hidden sm:inline">কার্ট</span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
 
@@ -540,16 +577,20 @@ export function StorefrontLayout({
                         <span>শপ</span>
                     </Link>
 
-                    <Link
-                        href="/shop"
+                    <button
+                        type="button"
+                        onClick={() => setIsMiniCartOpen(true)}
                         className="flex flex-col items-center text-gray-600 hover:text-indigo-600 py-1 text-xs relative"
+                        aria-label="Open Shopping Cart"
                     >
                         <ShoppingBag className="w-5 h-5 mb-0.5" />
                         <span>কার্ট</span>
-                        <span className="absolute top-0 right-3 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
-                            0
-                        </span>
-                    </Link>
+                        {activeCart.total_items > 0 && (
+                            <span className="absolute top-0 right-3 w-3.5 h-3.5 bg-indigo-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
+                                {activeCart.total_items > 99 ? '99+' : activeCart.total_items}
+                            </span>
+                        )}
+                    </button>
 
                     <Link
                         href="/login"
@@ -659,6 +700,14 @@ export function StorefrontLayout({
                     </div>
                 </div>
             </footer>
+
+            {/* Slide-over Mini-Cart Drawer */}
+            <MiniCartDrawer
+                isOpen={isMiniCartOpen}
+                onClose={() => setIsMiniCartOpen(false)}
+                cart={activeCart}
+                onCartChange={setActiveCart}
+            />
         </div>
     );
 }

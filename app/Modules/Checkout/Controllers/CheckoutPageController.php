@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Checkout\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Cart\Services\CartManagerService;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Payments\Models\PaymentMethod;
@@ -18,22 +19,43 @@ use Inertia\Response;
 class CheckoutPageController extends Controller
 {
     /**
-     * Display the checkout page for a product.
+     * Display the checkout page for a direct product or shopping cart.
      */
     public function show(?Product $product, ShippingCalculatorService $calculator): Response
     {
-        if (! $product || ! $product->exists) {
+        $cartManager = app(CartManagerService::class);
+        $cart = $cartManager->getCart(request());
+        $cartSummary = $cart ? $cart->toSummaryArray() : null;
+
+        $hasCartItems = $cartSummary && ! empty($cartSummary['items']);
+        $isDirectProduct = $product && $product->exists;
+
+        // If direct product specified or cart is empty, run in direct mode
+        if ($isDirectProduct || ! $hasCartItems) {
+            $mode = 'direct';
+
+            if (! $product || ! $product->exists) {
+                $product = Product::where('status', 'active')
+                    ->with([
+                        'variants' => fn ($q) => $q->orderBy('id'),
+                        'images' => fn ($q) => $q->orderBy('sort_order'),
+                    ])
+                    ->firstOrFail();
+            } else {
+                $product->load([
+                    'variants' => fn ($q) => $q->orderBy('id'),
+                    'images' => fn ($q) => $q->orderBy('sort_order'),
+                ]);
+            }
+        } else {
+            $mode = 'cart';
+            // Also load first active product as a safe fallback reference if needed
             $product = Product::where('status', 'active')
                 ->with([
                     'variants' => fn ($q) => $q->orderBy('id'),
                     'images' => fn ($q) => $q->orderBy('sort_order'),
                 ])
-                ->firstOrFail();
-        } else {
-            $product->load([
-                'variants' => fn ($q) => $q->orderBy('id'),
-                'images' => fn ($q) => $q->orderBy('sort_order'),
-            ]);
+                ->first();
         }
 
         $districts = District::with([
@@ -44,6 +66,8 @@ class CheckoutPageController extends Controller
         $paymentMethods = PaymentMethod::forCheckout()->get();
 
         return Inertia::render('Checkout/Show', [
+            'mode' => $mode,
+            'cart' => $cartSummary,
             'product' => $product,
             'districts' => $districts,
             'defaultShippingFee' => $defaultCalc->shippingFee,

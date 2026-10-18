@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Cart\Controllers\CartController;
 use App\Modules\Checkout\Controllers\CheckoutPageController;
 use App\Modules\Checkout\Controllers\CodCheckoutController;
 use App\Modules\Installer\Controllers\WebInstallerController;
@@ -18,6 +19,14 @@ Route::get('/', [StorefrontHomeController::class, 'index'])->name('home');
 Route::get('/shop', [StorefrontShopController::class, 'index'])->name('shop.index');
 Route::get('/category/{slug}', [StorefrontShopController::class, 'category'])->name('category.show');
 Route::get('/product/{slug}', [StorefrontProductController::class, 'show'])->name('product.show');
+
+// Server-Authoritative Shopping Cart Routes
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/cart/summary', [CartController::class, 'summary'])->name('cart.summary');
+Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
+Route::patch('/cart/items/{id}', [CartController::class, 'update'])->name('cart.items.update');
+Route::delete('/cart/items/{id}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
 
 // One-time Web Installer routes (locked out permanently once installed)
 Route::middleware([EnsureNotInstalledMiddleware::class])

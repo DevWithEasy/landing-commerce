@@ -1,5 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
+    AlertCircle,
     Check,
     CheckCircle2,
     ChevronRight,
@@ -106,10 +107,47 @@ export default function ProductDetail({
 
     const [activeTab, setActiveTab] = useState<'desc' | 'specs' | 'delivery'>('desc');
     const [cartToast, setCartToast] = useState(false);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [cartError, setCartError] = useState<string | null>(null);
 
-    const handleAddToCart = () => {
-        setCartToast(true);
-        setTimeout(() => setCartToast(false), 3000);
+    const handleAddToCart = async () => {
+        if (!selectedVariant || isAddingToCart) return;
+        setIsAddingToCart(true);
+        setCartError(null);
+
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
+        try {
+            const res = await fetch('/cart/items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                },
+                body: JSON.stringify({
+                    product_id: product.id,
+                    variant_id: selectedVariant.id,
+                    quantity,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                setCartError(data.message || 'কার্টে যোগ করতে সমস্যা হয়েছে।');
+            } else {
+                setCartToast(true);
+                setTimeout(() => setCartToast(false), 3000);
+                window.dispatchEvent(new CustomEvent('open-mini-cart', { detail: data.cart }));
+                router.reload({ only: ['cart'] });
+            }
+        } catch {
+            setCartError('সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।');
+        } finally {
+            setIsAddingToCart(false);
+        }
     };
 
     const cleanWhatsapp = useMemo(() => {
@@ -328,13 +366,21 @@ export default function ProductDetail({
                             <button
                                 type="button"
                                 onClick={handleAddToCart}
-                                disabled={!isCurrentInStock}
-                                className="flex items-center justify-center gap-2 py-4 px-6 bg-white hover:bg-gray-50 text-indigo-700 border-2 border-indigo-600 rounded-2xl font-black text-sm transition"
+                                disabled={!isCurrentInStock || isAddingToCart}
+                                className="flex items-center justify-center gap-2 py-4 px-6 bg-white hover:bg-gray-50 text-indigo-700 border-2 border-indigo-600 rounded-2xl font-black text-sm transition disabled:opacity-60"
                             >
                                 <ShoppingBag className="w-5 h-5 text-indigo-600" />
-                                <span>কার্টে যোগ করুন</span>
+                                <span>{isAddingToCart ? 'যোগ হচ্ছে...' : 'কার্টে যোগ করুন'}</span>
                             </button>
                         </div>
+
+                        {/* Cart Error Banner */}
+                        {cartError && (
+                            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+                                <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
+                                <span>{cartError}</span>
+                            </div>
+                        )}
 
                         {/* Direct WhatsApp Order CTA */}
                         {theme.store_whatsapp && (

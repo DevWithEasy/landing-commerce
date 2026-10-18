@@ -1,3 +1,6 @@
+export * from './cart';
+import type { CartSummary } from './cart';
+
 export interface User {
     id: number;
     name: string;
@@ -13,6 +16,7 @@ export interface SharedProps extends Record<string, unknown> {
         success?: string | null;
         error?: string | null;
     };
+    cart?: CartSummary | null;
     errors: Record<string, string>;
 }
 
@@ -231,6 +235,8 @@ export interface OrderTimelineNode {
 }
 
 export interface CheckoutShowProps extends SharedProps {
+    mode?: 'cart' | 'direct';
+    cart?: CartSummary | null;
     product: Product;
     districts: District[];
     defaultShippingFee: number;

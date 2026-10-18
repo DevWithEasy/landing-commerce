@@ -99,6 +99,16 @@ class Category extends Model
     }
 
     /**
+     * Scope only top-level (parents only) categories alias.
+     *
+     * @param  Builder<Category>  $query
+     */
+    public function scopeParentsOnly(Builder $query): void
+    {
+        $this->scopeRoot($query);
+    }
+
+    /**
      * Validate maximum 2-level hierarchy depth and prevent circular references.
      * Rule: Root (Level 1) -> Subcategory (Level 2).
      * No Sub-subcategory (Level 3+) allowed.

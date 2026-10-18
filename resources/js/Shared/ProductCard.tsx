@@ -1,6 +1,6 @@
-import { Link } from '@inertiajs/react';
-import { Eye, ShoppingCart } from 'lucide-react';
-import { useMemo } from 'react';
+import { Link, router } from '@inertiajs/react';
+import { Eye, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -40,6 +40,51 @@ export function ProductCard({ product }: ProductCardProps) {
         ? `/checkout/${product.slug}?variant=${primaryVariant.id}&quantity=1`
         : `/checkout/${product.slug}`;
 
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleQuickAddToCart = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isInStock || isAdding) return;
+
+        if (product.variants && product.variants.length > 1) {
+            // Multi-variant products require choosing a variant on the product page
+            router.visit(`/product/${product.slug}`);
+            return;
+        }
+
+        setIsAdding(true);
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
+        try {
+            const res = await fetch('/cart/items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                },
+                body: JSON.stringify({
+                    product_id: product.id,
+                    variant_id: primaryVariant?.id,
+                    quantity: 1,
+                }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                window.dispatchEvent(new CustomEvent('open-mini-cart', { detail: data.cart }));
+                router.reload({ only: ['cart'] });
+            }
+        } catch {
+            // Silently handle
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
     return (
         <div className="group relative bg-white border border-gray-200/90 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
             {/* Image & Badges */}
@@ -65,6 +110,20 @@ export function ProductCard({ product }: ProductCardProps) {
                     <div className="absolute top-2.5 right-2.5 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
                         স্টক আউট
                     </div>
+                )}
+
+                {/* Quick Add To Cart Floating Button on Hover */}
+                {isInStock && (
+                    <button
+                        type="button"
+                        onClick={handleQuickAddToCart}
+                        disabled={isAdding}
+                        className="absolute bottom-2.5 right-2.5 w-9 h-9 bg-white/95 hover:bg-indigo-600 text-gray-700 hover:text-white rounded-full shadow-md flex items-center justify-center transition duration-200 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                        title="কার্টে যোগ করুন"
+                        aria-label="Add to cart"
+                    >
+                        <ShoppingBag className="w-4 h-4" />
+                    </button>
                 )}
             </div>
 

@@ -375,60 +375,40 @@ This plan lays out a step-by-step, milestone-driven roadmap. Each phase has conc
 ---
 
 ## Phase 9: Server-Authoritative Cart Engine, Mini-Cart & Unified Storefront Checkout
-**Status:** Pending
+**Status:** Completed
 **Goal:** Build a robust, tamper-proof shopping cart and unified checkout engine that shares the existing pessimistic row-locking, anti-spam, and order pipeline infrastructure with landing pages.
 
-### Scope & Dependencies
-- Depends on: Phase 8 (Product Details, Quick Order UI), Phase 2 (Order Actions, Bangladesh Shipping Matrix).
-- Primary Deliverable: `CartService`, Mini-cart Drawer, `/cart` page, unified `/checkout` controller, and Quick Order integration.
+### Scope & Deliverables
+- Completed Deliverables: `Cart` and `CartItem` models and migration, `CartManagerService`, `CartController`, Slide-over `MiniCartDrawer`, dedicated `/cart` page, unified `CheckoutPageController`, `StoreCodOrderRequest` server-side cart population, and `CodCheckoutController` post-order cart clearance.
 
-### Tasks & Technical Specifications
-1. **Server-Authoritative Cart Service (`CartService.php`):**
-   - Dual Storage Architecture:
-     - Session-backed storage for guests (`cart_items` serialized in session).
-     - Database-synchronized storage for authenticated customers (`cart_items` table: `id`, `customer_id`, `product_variant_id`, `quantity`, `timestamps`).
-     - Automatic cart migration from guest session to customer account upon login.
-   - Authoritative Price & Stock Validation:
-     - Prices are calculated strictly on the server by loading active `ProductVariant` and `Product` models from the database.
-     - Client-side prices are strictly ignored to prevent price tampering.
-     - Stock boundary check: Adding or modifying item quantity validates against `variant.stock_quantity` when `variant.manage_stock === true`. If requested quantity exceeds available stock, clamp to available stock and return an informative message.
-   - Endpoints:
-     - `GET /cart`: Returns normalized cart state (items, subtotal, item count, currency, warnings).
-     - `POST /cart/items`: Add item (`variant_id`, `quantity`).
-     - `PATCH /cart/items/{id}`: Update quantity.
-     - `DELETE /cart/items/{id}`: Remove item.
-     - `POST /cart/clear`: Empty cart.
-2. **Slide-Over Mini Cart Drawer & Dedicated Cart Page (`/cart`):**
-   - Mini-cart slide-over drawer triggered from header cart icon or upon clicking "Add to Cart".
-   - Itemized lines with variant swatches, quantity steppers, item removal, and subtotal.
-   - Free shipping progress bar (e.g. "Add ৳500 more for Free Delivery!").
-   - Dedicated full Cart Page at `/cart` with itemized order summary and checkout CTA.
-3. **Quick Order Popup Integration:**
-   - Connects the Quick Order popup directly to the checkout action or cart.
-   - Allows instant 1-click Cash on Delivery order placement directly from product cards.
+### Implemented Architecture & Technical Highlights
+1. **Cart Persistence & Cryptographic Guest Token Architecture:**
+   - Database tables `carts` and `cart_items` with explicit foreign key constraints (`fk_cart_items_cart_id`, `fk_cart_items_variant_id`) ensuring zero collision and clean cascading.
+   - Secure 64-character hex unpredictable guest token stored in session and HttpOnly cookie (`landing_commerce_cart_token`), preventing IDOR enumeration or cross-guest tampering.
+   - Unique database constraint `UNIQUE(cart_id, variant_id)` (`cart_items_cart_variant_unique`) guaranteeing that duplicate additions automatically merge into existing line items.
+2. **Server-Authoritative Price & Stock Validation:**
+   - Stored and client-supplied prices are completely disregarded. Prices and line totals are dynamically calculated from active database models (`Product` & `ProductVariant`), taking into account active sale prices and regular prices.
+   - Stock boundary checks enforce positive integers (1 to 100) and prevent adding or updating beyond available `variant.stock_quantity`.
+3. **Slide-Over Mini-Cart Drawer & Dedicated `/cart` Page:**
+   - Accessible slide-over drawer triggered by header/sticky bar cart icons or after "কার্টে যোগ করুন" (Add to Cart). Supports keyboard ESC closing, backdrop tap, and accessible focus.
+   - Steppers for quantity modification, remove item buttons, line items with variant labels and thumbnails, and subtotal.
+   - Full `/cart` page at `/cart` with clear itemized tables, empty-cart states, order summary card, and proceed to checkout action.
 4. **Unified Checkout Controller & Experience (`/checkout`):**
-   - Update `CheckoutPageController@show` and `resources/js/Pages/Checkout/Show.tsx` to handle BOTH checkout modes:
-     1. **Cart Checkout:** When accessed via `/checkout` without parameters, automatically populates checkout with all items from the active cart.
-     2. **Direct Product / Campaign Checkout:** When accessed with a product slug (`/checkout/{product:slug}`) or arriving with explicit variant/quantity payload from a landing page, uses direct item checkout while keeping session cart intact.
-   - Unified Order Placement via `ProcessCodOrderAction`:
-     - Reuses the existing, battle-tested `ProcessCodOrderAction` without code duplication.
-     - Pessimistic row locking (`lockForUpdate()`) on MySQL inventory.
-     - UUID `idempotency_key` with 15-second cache lock preventing duplicate rapid submissions.
-     - BBS 64-district and upazila dynamic shipping rate calculation via `ShippingCalculatorService`.
-     - Anti-spam phone blacklist inspection and dual IP/phone rate limiting.
-     - Payment method support: Cash on Delivery (`cod`, status `unpaid`) and manual MFS (`bkash`, `nagad`, `rocket`, requires TrxID, status `pending_verification`).
-     - Clears the active cart upon successful order placement.
-   - Redirects cleanly to the itemized Thank You screen at `/checkout/thank-you/{order:order_number}`.
+   - Seamlessly supports Journey A (Cart Checkout) and Journey B (Direct Quick Order / Campaign Buy Now).
+   - In Cart Mode (`checkout_source: 'cart'`), items are populated server-side from the guest's authenticated cart session.
+   - In Direct Mode (`/checkout/{slug}?variant={id}&quantity={qty}`), direct product is purchased while preserving the customer's cart.
+   - Upon successful order placement via `ProcessCodOrderAction`, only the purchased cart is cleared. Direct checkouts do not clear unrelated cart items.
+   - Idempotent replays with an existing `idempotency_key` return the existing order without failing on empty cart validation or double-deducting stock.
 
-### Acceptance Criteria
-- Client-submitted prices are completely disregarded; final order totals are 100% computed from database pricing.
-- Out-of-stock items cannot be added to cart; item quantity cannot exceed available variant inventory.
-- Unified checkout seamlessly accepts orders from both the multi-item shopping cart and landing pages.
-- Duplicate rapid clicks on checkout trigger the cache lock and return the existing order without duplicate stock deduction.
-
-### Focused Tests
-- `tests/Feature/StorefrontCartTest.php`: Cart additions, quantity updates, removals, stock clamping, price tampering prevention, and guest-to-customer cart migration.
-- `tests/Feature/UnifiedCheckoutTest.php`: Both cart checkout and landing page campaign checkout through `ProcessCodOrderAction`.
+### Acceptance Criteria & Verification
+- 100% of automated tests pass:
+  - `tests/Feature/CartEngineTest.php`: 13 tests, 66 assertions (persistence, guest isolation, simple/variant product additions, duplicate line merging, stock boundaries, invalid quantity rejection, server-authoritative pricing, item removal, cart clearing, IDOR protection, summary).
+  - `tests/Feature/UnifiedCheckoutTest.php`: 8 tests, 65 assertions (cart mode vs direct mode, server item population, price tampering rejection, out of stock rejection, safe cart clearance on success, cart preservation on failed checkout, direct checkout cart isolation, idempotent replay without double deduction).
+  - Full checkout regressions passing: `tests/Feature/CodCheckoutTest.php`, `tests/Feature/CustomerCheckoutComponentTest.php`, `tests/Feature/StorefrontShopTest.php`, `tests/Feature/StorefrontProductDetailTest.php` (22 tests, 256 assertions).
+  - Live MySQL concurrency verification: `tests/Feature/CodConcurrencyMysqlTest.php` passed on MySQL 8.4.3.
+- `npm run type-check`: 0 TypeScript errors.
+- `./vendor/bin/pint --test`: All files adhere to Laravel Pint standards.
+- `npm run build`: Production assets pre-compiled cleanly in 7.78s.
 
 ---
 

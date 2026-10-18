@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Cart\Services\CartManagerService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,6 +50,20 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'cart' => function () use ($request) {
+                /** @var CartManagerService $manager */
+                $manager = app(CartManagerService::class);
+                $cart = $manager->getCart($request);
+
+                return $cart ? $cart->toSummaryArray() : [
+                    'id' => null,
+                    'total_items' => 0,
+                    'subtotal' => 0,
+                    'formatted_subtotal' => '৳0',
+                    'items' => [],
+                    'is_empty' => true,
+                ];
+            },
         ];
     }
 }

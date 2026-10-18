@@ -82,7 +82,14 @@
   - **Product Details & Quick Checkout:** Built `StorefrontProductController` and `ProductDetail.tsx` with WebP image gallery, interactive variant swatches updating price and stock in real-time, BBS shipping estimation widget, tabbed descriptions, and direct Quick Order / Buy Now routing into `/checkout/{product:slug}?variant={id}&quantity={qty}` without redundant cart bypass.
   - **Backward Compatibility:** Preserved seamless routing for published landing pages (`/p/{slug}`) and legacy redirects (`/{slug}` -> `/p/{slug}`), installer routes, and admin dashboard.
   - **Verification:** 19 dedicated feature tests passing 100% across `SliderAdminTest.php` (6 tests), `StorefrontShopTest.php` (7 tests), `StorefrontProductDetailTest.php` (3 tests), and `StorefrontHomeSectionsTest.php` (3 tests). Zero TypeScript errors (`npm run type-check`), clean code style (`./vendor/bin/pint`), and production bundle built (`npm run build`).
-- **Overall Project Status:** **PHASES 0 THROUGH 8 COMPLETE.** Fullstack, single-tenant, self-hosted e-commerce starter kit with responsive customer storefront, visual AST page builder, dynamic shipping methods, multi-payment options, CLI setup, and browser-based cPanel Web Installer is production-ready.
+- **Phase 9: Server-Authoritative Cart Engine, Mini-Cart Drawer & Unified Storefront Checkout (100% Complete):**
+  - **Cart Persistence & Cryptographic Guest Token Architecture:** Created `carts` and `cart_items` tables with clean cascading foreign keys and unique constraint `UNIQUE(cart_id, variant_id)` for automatic line item merging. Generated 64-character unpredictable hex tokens stored in session and HttpOnly cookie (`landing_commerce_cart_token`), preventing IDOR enumeration or cross-guest tampering.
+  - **Server-Authoritative Price & Stock Boundaries:** Client prices and subtotals are completely disregarded; prices are resolved dynamically from active `Product` and `ProductVariant` models (considering `sale_price` and `regular_price`). Clamped quantities (1-100) and enforced stock bounds preventing checkout of exhausted inventory.
+  - **Storefront Mini-Cart Drawer & `/cart` Page:** Built accessible slide-over `MiniCartDrawer.tsx` (ESC dismiss, quantity steppers, item removal, instant subtotal calculation) and full-page `Cart.tsx` with empty states, itemized table, and checkout redirect. Injected live cart count and subtotal into `HandleInertiaRequests` middleware.
+  - **Unified Checkout Experience (`/checkout`):** Seamlessly handles Cart Mode (`checkout_source: 'cart'` with server-side item resolution from authenticated cart) and Direct Mode (`/checkout/{slug}?variant={id}&quantity={qty}`). Integrated directly into `ProcessCodOrderAction` with pessimistic row-locking on inventory. Cart is safely cleared ONLY upon successful cart-source order creation (direct purchases preserve existing cart). Idempotent replay checks allow safe resubmissions without double stock deduction or empty-cart validation failures.
+  - **Verification:** 21 dedicated feature tests passing 100% across `CartEngineTest.php` (13 tests, 66 assertions) and `UnifiedCheckoutTest.php` (8 tests, 65 assertions). Zero TypeScript errors (`npm run type-check`), clean code style (`./vendor/bin/pint`), and production bundle built (`npm run build`).
+  - **Known Limitations & Deferred Tasks:** Promotional coupon codes and discounts are deferred to a dedicated coupon engine; saved address auto-fill and customer order history are deferred to Phase 10 (Customer Authentication & Portal).
+- **Overall Project Status:** **PHASES 0 THROUGH 9 COMPLETE.** Fullstack, single-tenant, self-hosted e-commerce starter kit with responsive customer storefront, visual AST page builder, shopping cart, multi-item checkout, dynamic shipping methods, multi-payment options, CLI setup, and browser-based cPanel Web Installer is production-ready.
 
 ### Completed Roadmap Overview
 - **Phase 0:** Foundation, Scaffolding, Tooling & Quality Gates (100% Complete)
@@ -94,6 +101,7 @@
 - **Phase 6:** Pure-PHP Backup/Restore Engine, Preflight Checks, CLI Setup Wizard & Production Hardening (100% Complete)
 - **Phase 7:** Storefront Core Architecture, Category Management, Branding, Policy Pages, Homepage Mode/Routing, Appearance & Slider Schema Foundation (100% Complete)
 - **Phase 8:** Responsive Storefront UI, Homepage Slider/Sections, Shop, Category Browsing & Product Details (100% Complete)
+- **Phase 9:** Server-Authoritative Cart Engine, Mini-Cart Drawer & Unified Checkout (100% Complete)
 - **Deployment:** cPanel One-Time Web Installation Wizard & Safe Zero-SSH Setup (100% Complete)
 - **Landing Pages:** Multiple Independent Landing Page Management & Dashboard (100% Complete)
 - **Marketing Pixels & Analytics:** Meta Pixel, Google Analytics 4, Google Ads Conversion Tracking, TikTok Pixel & GTM with Deduplication & Privacy Shields (100% Complete)
@@ -118,12 +126,12 @@
 - **Laravel Framework:** 13.37.0
 
 ## 4. Current State & Active Roadmap: Dual-Storefront Expansion
-- **Status:** Phase 8 (Responsive Storefront UI, Homepage Slider/Sections, Shop & Category Browsing, Product Details, and Unified Checkout Routing) is 100% COMPLETE with all test suites passing, zero TypeScript errors, clean Pint formatting, and successful Vite build.
+- **Status:** Phase 9 (Server-Authoritative Cart Engine, Mini-Cart Drawer & Unified Storefront Checkout) is 100% COMPLETE with all test suites passing, zero TypeScript errors, clean Pint formatting, and successful Vite build.
 - **Active Roadmap:**
   - **Phase 7 (Completed):** Category Management (Max 2 Levels, Tree, Product Pivot), Storefront & Branding Settings (`full_storefront` vs `landing_page_home`), Policy & Content Pages (`/pages/{slug}`, XSS sanitization, seeder), Dual Homepage Routing, and Appearance Theme Schema (`/admin/appearance/theme`) + `sliders` schema.
   - **Phase 8 (Completed):** Responsive Storefront UI (2-row Header, mobile drawer, sticky bottom bar), Homepage Slider/Sections (Hero Carousel, Category Circular Grid, New Arrivals, Featured, Best Sellers, Category Collections, Trust Badges), Shop (faceted filters & search), Category Browsing (`/category/{slug}`), Product Details (`/product/{slug}`: swatches, gallery, live stock, BBS delivery matrix widget, tabbed specs, instant buy), and Quick Order integration into `/checkout/{product:slug}`.
-  - **Phase 9 (Next Active Phase):** Server-Authoritative Cart Engine (session/database cart, server-calculated prices, stock limit clamping), Slide-over Mini-cart Drawer, `/cart` page, Quick Order integration, and Unified `/checkout` sharing battle-tested `ProcessCodOrderAction`.
-  - **Phase 10:** Customer Authentication & Portal (isolated `'customer'` guard, optional guest checkout, order history, saved addresses), Public Self-Service Order Tracking (`/track-order`), and Wishlist (`/wishlist`).
+  - **Phase 9 (Completed):** Server-Authoritative Cart Engine (persistent 64-character token guest/session cart, server-calculated prices, stock validation, auto-merging line items, zero IDOR), Slide-over Mini-cart Drawer, `/cart` page, and Unified `/checkout` preserving battle-tested `ProcessCodOrderAction` with checkout source isolation (`cart` vs `direct`), safe post-order cart clearance, and idempotent replay handling.
+  - **Phase 10 (Next Active Phase):** Customer Authentication & Portal (isolated `'customer'` guard, optional guest checkout, order history, saved addresses), Public Self-Service Order Tracking (`/track-order`), and Wishlist (`/wishlist`).
   - **Phase 11:** End-to-End Quality Tooling, live MySQL Concurrency Verification (simultaneous cart and landing page stock contention), TypeScript zero-error check, and Vite production bundle pre-compilation.
 
 ## 5. Important Unresolved Issues & Prerequisites

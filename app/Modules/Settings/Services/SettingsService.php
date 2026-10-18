@@ -293,4 +293,22 @@ class SettingsService
             }
         }
     }
+
+    /**
+     * Get storefront theme configuration.
+     *
+     * @return array<string, string>
+     */
+    public function getStorefrontTheme(): array
+    {
+        return [
+            'primary_color' => (string) $this->get('theme.primary_color', '#4f46e5'),
+            'secondary_color' => (string) $this->get('theme.secondary_color', '#06b6d4'),
+            'accent_color' => (string) $this->get('theme.accent_color', '#f59e0b'),
+            'background_color' => (string) $this->get('theme.background_color', '#f8fafc'),
+            'text_color' => (string) $this->get('theme.text_color', '#0f172a'),
+            'font_family' => (string) $this->get('theme.font_family', 'Hind Siliguri, Inter, sans-serif'),
+            'custom_css' => (string) $this->get('theme.custom_css', ''),
+        ];
+    }
 }

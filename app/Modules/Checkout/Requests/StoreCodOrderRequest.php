@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Checkout\Requests;
 
+use App\Modules\Cart\Services\CartManagerService;
 use App\Modules\Checkout\Rules\BdPhoneRule;
 use App\Modules\Checkout\Services\BlacklistService;
+use App\Modules\Orders\Models\Order;
 use App\Modules\Payments\Models\PaymentMethod;
 use App\Modules\Shipping\Models\ShippingMethod;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -23,10 +25,39 @@ class StoreCodOrderRequest extends FormRequest
     }
 
     /**
-     * Prepare inputs for validation: derive district from shipping_method_id if district is omitted.
+     * Prepare inputs for validation: derive district from shipping_method_id if district is omitted,
+     * and server-authoritatively populate items from the guest cart when checkout_source is 'cart'.
      */
     protected function prepareForValidation(): void
     {
+        if ($this->input('checkout_source') === 'cart') {
+            $idempotencyKey = (string) $this->input('idempotency_key');
+            $existing = $idempotencyKey !== '' ? Order::with('items')->where('idempotency_key', $idempotencyKey)->first() : null;
+
+            if ($existing) {
+                // If replaying an already-placed cart order, populate items from existing order to allow replay through
+                $replayedItems = $existing->items->map(fn ($item) => [
+                    'variant_id' => $item->variant_id,
+                    'quantity' => $item->quantity,
+                ])->values()->all();
+
+                $this->merge(['items' => $replayedItems]);
+            } else {
+                /** @var CartManagerService $cartManager */
+                $cartManager = app(CartManagerService::class);
+                $cart = $cartManager->getCart($this);
+
+                if ($cart && $cart->items()->count() > 0) {
+                    $cartItems = $cart->items()->get()->map(fn ($item) => [
+                        'variant_id' => $item->variant_id,
+                        'quantity' => $item->quantity,
+                    ])->values()->all();
+
+                    $this->merge(['items' => $cartItems]);
+                }
+            }
+        }
+
         if (empty($this->input('district'))) {
             $shippingMethodId = $this->input('shipping_method_id');
             if ($shippingMethodId) {
@@ -65,6 +96,7 @@ class StoreCodOrderRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.variant_id' => ['required', 'integer', 'exists:product_variants,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'checkout_source' => ['nullable', 'string', 'in:cart,direct'],
             'shipping_method_id' => ['nullable', 'integer', 'exists:shipping_methods,id'],
             'payment_method' => ['nullable', 'string', 'max:50'],
             'payment_transaction_id' => ['nullable', 'string', 'max:100'],
@@ -86,6 +118,8 @@ class StoreCodOrderRequest extends FormRequest
             'fax_number.prohibited' => 'Spam bot submission detected.',
             'honeypot.prohibited' => 'Spam bot submission detected.',
             'shipping_method_id.exists' => 'The selected shipping method is invalid.',
+            'items.required' => 'অর্ডারে অন্তত একটি পণ্য থাকা আবশ্যক।',
+            'items.min' => 'অর্ডারে অন্তত একটি পণ্য থাকা আবশ্যক।',
         ];
     }
 
@@ -95,6 +129,20 @@ class StoreCodOrderRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator) {
+            if ($this->input('checkout_source') === 'cart') {
+                $idempotencyKey = (string) $this->input('idempotency_key');
+                $isExisting = $idempotencyKey !== '' && Order::where('idempotency_key', $idempotencyKey)->exists();
+
+                if (! $isExisting) {
+                    /** @var CartManagerService $cartManager */
+                    $cartManager = app(CartManagerService::class);
+                    $cart = $cartManager->getCart($this);
+                    if (! $cart || $cart->items()->count() === 0) {
+                        $validator->errors()->add('cart', 'আপনার কার্ট খালি। অর্ডার করার পূর্বে কার্টে পণ্য যোগ করুন।');
+                    }
+                }
+            }
+
             $phone = (string) ($this->input('customer_phone') ?? $this->input('phone') ?? '');
             if ($phone !== '' && app(BlacklistService::class)->isBlacklisted($phone)) {
                 $validator->errors()->add('phone', 'This phone number is blocked from placing orders.');
