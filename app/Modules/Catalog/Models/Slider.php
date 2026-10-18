@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Slider extends Model
 {
@@ -23,12 +24,32 @@ class Slider extends Model
         'is_active',
     ];
 
+    protected $appends = ['image_url', 'mobile_image_url'];
+
     protected function casts(): array
     {
         return [
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (! $this->image_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->image_path);
+    }
+
+    public function getMobileImageUrlAttribute(): ?string
+    {
+        if (! $this->mobile_image_path) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->mobile_image_path);
     }
 
     /**

@@ -6,6 +6,7 @@ import {
     CreditCard,
     FileText,
     FolderTree,
+    Images,
     Layers,
     LogOut,
     Menu,
@@ -101,6 +102,12 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                       href: '/admin/appearance/theme',
                       icon: Palette,
                       current: window.location.pathname.startsWith('/admin/appearance'),
+                  },
+                  {
+                      name: 'Hero Sliders',
+                      href: '/admin/sliders',
+                      icon: Images,
+                      current: window.location.pathname.startsWith('/admin/sliders'),
                   },
               ]
             : []),

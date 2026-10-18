@@ -47,10 +47,25 @@ export default function CheckoutShow({
     }, [product.variants]);
 
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const variantId = params.get('variant');
+            if (variantId) {
+                const match = product.variants.find((v) => String(v.id) === variantId);
+                if (match) return match;
+            }
+        }
         return availableVariants[0] || product.variants[0];
     });
 
-    const [quantity, setQuantity] = useState<number>(1);
+    const [quantity, setQuantity] = useState<number>(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const qty = parseInt(params.get('quantity') || '1', 10);
+            if (!isNaN(qty) && qty > 0) return qty;
+        }
+        return 1;
+    });
 
     // 2. Client-side Idempotency Key (preserved across retries)
     const [idempotencyKey] = useState<string>(() => generateUuid());

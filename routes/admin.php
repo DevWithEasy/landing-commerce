@@ -4,6 +4,7 @@ use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Catalog\Controllers\CategoryController;
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
+use App\Modules\Catalog\Controllers\SliderController;
 use App\Modules\Orders\Controllers\OrderController;
 use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
@@ -85,6 +86,11 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     // Appearance & Storefront Theme Customization
     Route::get('appearance/theme', [AppearanceController::class, 'index'])->name('appearance.theme');
     Route::post('appearance/theme', [AppearanceController::class, 'update'])->name('appearance.theme.update');
+
+    // Hero Sliders Management
+    Route::post('sliders/{slider}/toggle', [SliderController::class, 'toggle'])
+        ->name('sliders.toggle');
+    Route::resource('sliders', SliderController::class)->except(['create', 'show', 'edit']);
 
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

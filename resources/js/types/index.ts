@@ -283,6 +283,7 @@ export interface Category {
     is_active: boolean;
     parent?: Category | null;
     children?: Category[];
+    products?: Product[];
     products_count?: number;
     created_at?: string;
     updated_at?: string;
@@ -333,6 +334,29 @@ export interface ThemeSettings {
 export interface ThemeSettingsProps extends SharedProps {
     settings: ThemeSettings;
     landingPages: Array<{ id: number; title: string; slug: string }>;
+}
+
+export interface Slider {
+    id: number;
+    title: string;
+    subtitle: string | null;
+    image_path: string;
+    mobile_image_path: string | null;
+    image_url: string;
+    mobile_image_url: string | null;
+    link_url: string | null;
+    button_text: string | null;
+    sort_order: number;
+    is_active: boolean;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface SliderIndexProps extends SharedProps {
+    sliders: PaginatedData<Slider>;
+    filters: {
+        search: string;
+    };
 }
 
 export * from './builder';

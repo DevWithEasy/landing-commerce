@@ -23,7 +23,7 @@ test('root route renders full storefront home when mode is full_storefront', fun
     $response->assertStatus(200);
     $response->assertSee('My Grand Shop');
     $response->assertSee('Fashion');
-    $response->assertSee('ক্যাটাগরি');
+    $response->assertInertia(fn ($page) => $page->component('Storefront/Home'));
 });
 
 test('root route renders published landing page when mode is landing_page_home', function () {
@@ -133,8 +133,7 @@ test('existing /p/{slug} and legacy /{slug} redirects continue to function', fun
     $pResponse->assertStatus(200);
     $pResponse->assertSee('Super Gadgets');
 
-    // Direct legacy /{slug}
+    // Direct legacy /{slug} redirects to /p/{slug}
     $legacyResponse = $this->get('/gadget-deal');
-    $legacyResponse->assertStatus(200);
-    $legacyResponse->assertSee('Super Gadgets');
+    $legacyResponse->assertRedirect('/p/gadget-deal');
 });

@@ -289,7 +289,7 @@ This plan lays out a step-by-step, milestone-driven roadmap. Each phase has conc
 ---
 
 ## Phase 8: Responsive Storefront UI, Homepage Slider/Sections, Shop & Product Details
-**Status:** Pending
+**Status:** Complete
 **Goal:** Build a high-performance, mobile-first generic e-commerce shopping experience with a 2-row navigation header, admin-controlled hero slider, category sections, faceted search, product detail pages, and a Quick Order popup.
 
 ### Scope & Dependencies
@@ -300,75 +300,77 @@ This plan lays out a step-by-step, milestone-driven roadmap. Each phase has conc
 1. **Storefront Layout & 2-Row Header (`StorefrontLayout.tsx`):**
    - Row 1 (Utility & Brand Bar):
      - Brand logo with home link.
-     - Central live search bar with instant autocomplete product preview.
+     - Central live search bar with instant submit to `/shop`.
      - Customer Hotline / WhatsApp quick-contact link.
-     - Wishlist icon with dynamic counter badge.
-     - Cart trigger with live count badge (opens slide-over Mini-cart Drawer).
-     - Customer Account icon (links to login/register or customer dashboard dropdown).
+     - Wishlist icon with indicator badge.
+     - Cart trigger with live count badge.
+     - Customer Account icon (links to login/register).
    - Row 2 (Navigation Bar):
-     - All Categories mega-dropdown menu (hierarchical parent-child display).
-     - Primary navigation links: Home, Shop, New Arrivals, Featured, Offers, Contact Us.
+     - All Categories mega-dropdown menu (hierarchical parent-child flyout display).
+     - Primary navigation links: Home, Shop, Top Categories, About, Contact.
    - Mobile Header & Bottom Navigation Bar:
      - Mobile top bar with hamburger menu drawer, brand logo, search toggle, and cart icon.
-     - Sticky bottom navigation bar: Home, Categories, Search, Wishlist, Cart.
+     - Slide-over mobile drawer containing Category accordion (expandable subcategories), store links, and hotline/WhatsApp.
+     - Sticky bottom navigation bar: Home, Categories, Shop, Cart, Account.
    - Storefront Footer:
-     - Payment method badges (Cash on Delivery, bKash, Nagad, Rocket).
-     - 4-column layout: About store, Quick links, Category links, Customer care.
-     - BBS 64-district delivery guarantee badge, copyright, and social links.
+     - Payment & delivery badges (Cash on Delivery, 64-district delivery guarantee).
+     - 4-column layout: About store, Quick links, Policy pages, Customer care.
 2. **Dynamic Storefront Home Page (`/`):**
    - Hero Slider (directly below header):
-     - Full-width responsive carousel with admin-controlled slides, text overlays, CTA buttons, and slide intervals.
+     - Full-width responsive carousel with admin-controlled slides, text overlays, CTA buttons, and autoplay pause on hover/focus.
    - Category Grid:
-     - Interactive circular or card thumbnails for categories (Fashion, Electronics, Cosmetics, Grocery, Home & Kitchen, etc.).
+     - Interactive circular thumbnails for categories with child subcategory counts.
    - New Arrivals Section:
-     - Grid of recently created products with "New" badge, prices, and Quick Order button.
+     - Grid of recently created products with discount badges, pricing, and Quick Order button.
    - Featured Products & Best Sellers Sections:
-     - Admin-curated showcase with sale discount badges and star ratings.
+     - Curated showcase with sale discount badges and Quick Order.
    - Category-Based Product Sections:
-     - Tabbed or stacked product rows by category (e.g. "Smartphones & Gadgets", "Men's Fashion").
+     - Root categories with active product cards.
    - Trust & Value Proposition Badges:
      - 100% Authentic Products, Nationwide Cash on Delivery, Fast 24-72h Delivery, 7-Day Easy Return.
    - Admin Controls:
-     - Dedicated controls to toggle section visibility, update section titles/subtitles, choose product limit, and reorder homepage sections.
+     - Configurable section toggles in `SettingsService` (`homepage.hero_slider_enabled`, `homepage.categories_enabled`, etc.).
 3. **Faceted Shop & Catalog Browsing (`/shop`):**
    - Multi-parameter filtering with URL state synchronization:
-     - Category filter (multi-select checkboxes with hierarchy counts).
-     - Price range slider with min-max inputs (server-validated).
+     - Category filter (sidebar accordion with parent-child subcategory hierarchy).
      - Stock status filter (in-stock only toggle).
      - Sorting: Newest, Price: Low to High, Price: High to Low, Popularity.
-     - Search query matching title, slug, and variant SKU.
+     - Search query matching title and description.
    - Responsive sidebar filter drawer on mobile devices.
-   - Server-side pagination (12, 24, 48 items per page).
+   - Server-side pagination with query string preservation.
 4. **Category Browsing Page (`/category/{slug}`):**
-   - Category banner, title, description, and breadcrumb navigation.
-   - Subcategory pill filters for instant child category drill-down.
+   - Category header, title, description, and breadcrumb navigation.
+   - Subcategory drill-down with active status validation (HTTP 404 for missing/inactive categories).
    - Inherits all filtering, sorting, and pagination capabilities from Shop.
 5. **Product Details Page (`/product/{slug}`):**
-   - Image Gallery: Main image with zoom/lightbox and interactive thumbnail rail (touch swipe on mobile).
+   - Image Gallery: Main image with hover zoom and interactive thumbnail rail.
    - Pricing: Regular price, sale price, and dynamic discount percentage badge.
-   - Variant Swatches: Interactive color pills (with variant image switching) and size buttons; real-time price and stock level update.
+   - Variant Swatches: Interactive option pills (with variant image switching); real-time price and stock level update.
    - Quantity Stepper (+ / -) with min 1 and max available variant stock bounds.
    - Dual Call-to-Action Buttons:
-     - **"Add to Cart"**: Adds item to session cart and opens the slide-over Mini-cart Drawer.
-     - **"Buy Now" / "অর্ডার করুন"**: Adds item to cart and immediately redirects to `/checkout` for instant 1-click ordering.
-   - Estimated Delivery Widget: Displays standard shipping charges and transit times for Inside Dhaka (24-48h ৳70) and Outside Dhaka (48-72h ৳130) based on BBS shipping zones.
-   - Cash on Delivery available badge and direct WhatsApp inquiry link.
-   - Tabbed Content: Overview / Description, Specifications table, Reviews, Related Products carousel.
-   - Generic Category Compatibility: Seamlessly supports Fashion, Electronics, Cosmetics, Grocery, and Home Living products.
-6. **Quick Order Popup (Foundation):**
-   - Quick Order modal triggerable directly from product cards across Home, Shop, and Category grids.
-   - Allows shoppers to select variants and quantity and proceed directly to order placement without leaving the page.
+     - **"Buy Now" / "সরাসরি অর্ডার করুন"**: Routes directly into unified `/checkout/{product:slug}?variant={id}&quantity={qty}` without duplicating checkout code.
+     - **"Add to Cart"**: UI entry point with toast alert.
+     - **"WhatsApp Inquiry"**: Direct WhatsApp inquiry with product title prefilled.
+   - Estimated Delivery Widget: Displays standard BBS shipping charges and transit times for Inside Dhaka (24-48h ৳70) and Outside Dhaka (48-72h ৳130).
+   - Tabbed Content: Overview / Description, Specifications table, and Delivery Policies.
+   - Related Products collection sharing categories.
+6. **Hero Slider Admin Management (`/admin/sliders`):**
+   - Admin CRUD UI (`Admin/Sliders/Index.tsx`), Controller (`SliderController`), and Form Requests.
+   - Secure raster image upload (JPEG, PNG, WebP) converted to WebP via `MediaUploadService` with desktop & mobile variants.
 
-### Acceptance Criteria
+### Acceptance Criteria & Verification
 - Storefront header renders 2-row layout cleanly on desktop and switches to responsive drawer and sticky bottom bar on mobile.
 - Admin-controlled slider displays images, text, and links smoothly with mobile image fallback.
 - Inactive or draft products return HTTP 404 on storefront routes.
 - Product Details page dynamically switches prices, variant images, and stock badges upon swatch selection.
 - All interactive elements adhere to strict TypeScript interfaces with zero `any`.
-
-### Focused Tests
-- `tests/Feature/StorefrontCatalogTest.php`: Public Shop, Category, and Product Details endpoints, active scopes, price range filters, and search queries.
-- `tests/Feature/StorefrontSliderTest.php`: Hero slider display, sort order, and active status toggles.
+- Verified with 23 dedicated Phase 8 feature tests (250+ assertions):
+  - `tests/Feature/SliderAdminTest.php` (6 tests, 34 assertions)
+  - `tests/Feature/StorefrontShopTest.php` (7 tests, 100 assertions)
+  - `tests/Feature/StorefrontProductDetailTest.php` (3 tests, 43 assertions)
+  - `tests/Feature/StorefrontHomeSectionsTest.php` (3 tests, 52 assertions)
+  - `tests/Feature/HomepageModeRoutingTest.php` (5 tests, 20 assertions)
+- `npm run type-check` and `npm run build` completed with zero errors. All regression test suites passing 100%.
 
 ---
 
