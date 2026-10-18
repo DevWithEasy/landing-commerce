@@ -101,7 +101,7 @@ class ProductController extends Controller
         $validated = $request->validated();
         $product = $createProductAction->execute($validated);
 
-        // Process any uploaded images
+        // Process any uploaded gallery images
         if ($request->hasFile('images')) {
             $uploadedFiles = (array) $request->file('images');
             $isFirst = true;
@@ -121,6 +121,27 @@ class ProductController extends Controller
             }
         }
 
+        // Process any uploaded variant images
+        if ($request->hasFile('variant_images')) {
+            $variantImages = (array) $request->file('variant_images');
+            $variants = $product->variants()->orderBy('id')->get();
+
+            foreach ($variantImages as $vIndex => $file) {
+                if ($file && isset($variants[$vIndex])) {
+                    $variant = $variants[$vIndex];
+                    $uploadResult = $mediaUploadService->upload($file, 'products');
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'variant_id' => $variant->id,
+                        'file_path' => $uploadResult['file_path'],
+                        'sort_order' => 0,
+                        'is_primary' => false,
+                        'alt_text' => "{$product->title} - {$variant->name}",
+                    ]);
+                }
+            }
+        }
+
         return redirect()
             ->route('admin.products.index')
             ->with('success', "Product '{$product->title}' created successfully.");
@@ -134,7 +155,7 @@ class ProductController extends Controller
         Gate::authorize('view', $product);
 
         $product->load([
-            'variants' => fn ($q) => $q->orderBy('id'),
+            'variants' => fn ($q) => $q->orderBy('id')->with(['images' => fn ($iq) => $iq->orderBy('sort_order')]),
             'images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order'),
         ]);
 
@@ -170,6 +191,58 @@ class ProductController extends Controller
                         'sort_order' => $currentCount + $offset,
                         'is_primary' => ! $hasExistingImages && $offset === 0,
                         'alt_text' => $product->title,
+                    ]);
+                }
+            }
+        }
+
+        // Process any removed variant images
+        if ($request->filled('remove_variant_images')) {
+            $removeVariantIds = (array) $request->input('remove_variant_images');
+            $imagesToDelete = ProductImage::where('product_id', $product->id)
+                ->whereIn('variant_id', $removeVariantIds)
+                ->get();
+
+            foreach ($imagesToDelete as $oldImg) {
+                $mediaUploadService->delete($oldImg->file_path);
+                $oldImg->delete();
+            }
+        }
+
+        // Process any uploaded variant images
+        if ($request->hasFile('variant_images')) {
+            $variantImages = (array) $request->file('variant_images');
+            $variants = $product->variants()->orderBy('id')->get();
+
+            foreach ($variantImages as $vKey => $file) {
+                if (! $file) {
+                    continue;
+                }
+
+                $targetVariant = null;
+                if (is_numeric($vKey)) {
+                    $intKey = (int) $vKey;
+                    $targetVariant = $variants->firstWhere('id', $intKey) ?? $variants->get($intKey);
+                }
+
+                if ($targetVariant) {
+                    // Delete previous image for this variant if exists
+                    $oldImages = ProductImage::where('product_id', $product->id)
+                        ->where('variant_id', $targetVariant->id)
+                        ->get();
+                    foreach ($oldImages as $oldImg) {
+                        $mediaUploadService->delete($oldImg->file_path);
+                        $oldImg->delete();
+                    }
+
+                    $uploadResult = $mediaUploadService->upload($file, 'products');
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'variant_id' => $targetVariant->id,
+                        'file_path' => $uploadResult['file_path'],
+                        'sort_order' => 0,
+                        'is_primary' => false,
+                        'alt_text' => "{$product->title} - {$targetVariant->name}",
                     ]);
                 }
             }

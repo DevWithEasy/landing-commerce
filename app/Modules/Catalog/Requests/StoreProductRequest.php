@@ -47,6 +47,8 @@ class StoreProductRequest extends FormRequest
             'variants.*.manage_stock' => ['nullable', 'boolean'],
             'images' => ['nullable', 'array'],
             'images.*' => ['file', 'mimes:jpeg,png,webp', 'max:10240'],
+            'variant_images' => ['nullable', 'array'],
+            'variant_images.*' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:10240'],
         ];
     }
 }

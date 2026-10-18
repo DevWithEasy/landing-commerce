@@ -51,6 +51,10 @@ class UpdateProductRequest extends FormRequest
             'variants.*.manage_stock' => ['nullable', 'boolean'],
             'images' => ['nullable', 'array'],
             'images.*' => ['file', 'mimes:jpeg,png,webp', 'max:10240'],
+            'variant_images' => ['nullable', 'array'],
+            'variant_images.*' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:10240'],
+            'remove_variant_images' => ['nullable', 'array'],
+            'remove_variant_images.*' => ['nullable', 'integer'],
         ];
     }
 }

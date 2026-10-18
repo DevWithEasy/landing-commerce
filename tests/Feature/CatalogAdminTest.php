@@ -503,3 +503,130 @@ test('variant matrix preview returns JSON combinations', function () {
         ->assertJsonFragment(['name' => 'S / Blue', 'sku_suffix' => 'S-BLUE'])
         ->assertJsonFragment(['name' => 'M / Red', 'sku_suffix' => 'M-RED']);
 });
+
+test('can create multi-variant product with dedicated variant images and verify attachment', function () {
+    Storage::fake('public');
+    $manager = User::factory()->create(['role' => 'store_manager']);
+
+    $img1 = UploadedFile::fake()->image('variant_black.webp', 400, 400);
+    $img2 = UploadedFile::fake()->image('variant_white.webp', 400, 400);
+
+    $response = $this->actingAs($manager)
+        ->post(route('admin.products.store'), [
+            'title' => 'Polo T-Shirt',
+            'slug' => 'polo-tshirt',
+            'regular_price' => 1200.00,
+            'has_variants' => true,
+            'status' => 'active',
+            'variants' => [
+                [
+                    'sku' => 'POLO-BLK',
+                    'name' => 'Black / M',
+                    'regular_price' => 1200.00,
+                    'stock_quantity' => 10,
+                    'manage_stock' => true,
+                ],
+                [
+                    'sku' => 'POLO-WHT',
+                    'name' => 'White / M',
+                    'regular_price' => 1200.00,
+                    'stock_quantity' => 15,
+                    'manage_stock' => true,
+                ],
+            ],
+            'variant_images' => [
+                0 => $img1,
+                1 => $img2,
+            ],
+        ]);
+
+    $response->assertRedirect(route('admin.products.index'));
+
+    $product = Product::where('slug', 'polo-tshirt')->first();
+    expect($product)->not->toBeNull()
+        ->and($product->variants)->toHaveCount(2);
+
+    $vBlack = $product->variants()->where('sku', 'POLO-BLK')->first();
+    $vWhite = $product->variants()->where('sku', 'POLO-WHT')->first();
+
+    expect($vBlack->images)->toHaveCount(1)
+        ->and($vWhite->images)->toHaveCount(1);
+
+    expect(Storage::disk('public')->exists($vBlack->images->first()->file_path))->toBeTrue()
+        ->and(Storage::disk('public')->exists($vWhite->images->first()->file_path))->toBeTrue();
+});
+
+test('can update and remove variant images on existing product', function () {
+    Storage::fake('public');
+    $manager = User::factory()->create(['role' => 'store_manager']);
+
+    $product = Product::create([
+        'title' => 'Leather Jacket',
+        'slug' => 'leather-jacket',
+        'regular_price' => 5000.00,
+        'has_variants' => true,
+        'status' => 'active',
+    ]);
+
+    $variant = ProductVariant::create([
+        'product_id' => $product->id,
+        'sku' => 'JKT-BLK',
+        'name' => 'Black',
+        'regular_price' => 5000.00,
+        'stock_quantity' => 5,
+        'manage_stock' => true,
+    ]);
+
+    // Initial image upload for variant
+    $newImg = UploadedFile::fake()->image('jacket_black.webp', 600, 600);
+
+    $this->actingAs($manager)
+        ->put(route('admin.products.update', $product), [
+            'title' => 'Leather Jacket',
+            'regular_price' => 5000.00,
+            'has_variants' => true,
+            'variants' => [
+                [
+                    'id' => $variant->id,
+                    'sku' => 'JKT-BLK',
+                    'name' => 'Black',
+                    'regular_price' => 5000.00,
+                    'stock_quantity' => 5,
+                    'manage_stock' => true,
+                ],
+            ],
+            'variant_images' => [
+                $variant->id => $newImg,
+            ],
+        ])
+        ->assertRedirect(route('admin.products.edit', $product));
+
+    expect($variant->fresh()->images)->toHaveCount(1);
+    $savedImg = $variant->fresh()->images->first();
+    expect(Storage::disk('public')->exists($savedImg->file_path))->toBeTrue();
+
+    // Now remove variant image
+    $this->actingAs($manager)
+        ->put(route('admin.products.update', $product), [
+            'title' => 'Leather Jacket',
+            'regular_price' => 5000.00,
+            'has_variants' => true,
+            'variants' => [
+                [
+                    'id' => $variant->id,
+                    'sku' => 'JKT-BLK',
+                    'name' => 'Black',
+                    'regular_price' => 5000.00,
+                    'stock_quantity' => 5,
+                    'manage_stock' => true,
+                ],
+            ],
+            'remove_variant_images' => [
+                $variant->id,
+            ],
+        ])
+        ->assertRedirect(route('admin.products.edit', $product));
+
+    expect($variant->fresh()->images)->toHaveCount(0)
+        ->and(Storage::disk('public')->exists($savedImg->file_path))->toBeFalse();
+});

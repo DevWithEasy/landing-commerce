@@ -1,12 +1,12 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Check, Layers, Package, Plus, Tag, Trash2, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Check, Package, Tag, Trash2, UploadCloud } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Card } from '@/Shared/Card';
 import { ImageUploader } from '@/Shared/ImageUploader';
-import type { VariantRowItem } from '@/Shared/VariantGenerator';
+import { VariantGenerator, type VariantRowItem } from '@/Shared/VariantGenerator';
 import type { ProductEditProps, ProductImage } from '@/types';
 
 interface EditProductFormData {
@@ -20,6 +20,8 @@ interface EditProductFormData {
     status: 'draft' | 'active' | 'archived';
     variants: VariantRowItem[];
     images: File[];
+    variant_images?: Record<number, File>;
+    remove_variant_images?: number[];
 }
 
 export default function Edit({ product }: ProductEditProps) {
@@ -32,9 +34,11 @@ export default function Edit({ product }: ProductEditProps) {
         sale_price: v.sale_price,
         stock_quantity: v.stock_quantity,
         manage_stock: Boolean(v.manage_stock),
+        image_url: v.images?.[0]?.thumb_url || v.images?.[0]?.url || null,
+        image_file: null,
     }));
 
-    const { data, setData, post, processing, errors } = useForm<EditProductFormData>({
+    const { data, setData, post, processing, errors, transform } = useForm<EditProductFormData>({
         _method: 'put',
         title: product.title || '',
         slug: product.slug || '',
@@ -45,6 +49,8 @@ export default function Edit({ product }: ProductEditProps) {
         status: product.status || 'draft',
         variants: initialVariants,
         images: [],
+        variant_images: {},
+        remove_variant_images: [],
     });
 
     const [isDeletingProduct, setIsDeletingProduct] = useState(false);
@@ -77,44 +83,28 @@ export default function Edit({ product }: ProductEditProps) {
         }
     };
 
-    const handleAddVariant = () => {
-        const nextIdx = data.variants.length + 1;
-        const prefix = product.slug.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const newVar: VariantRowItem = {
-            name: `Variant ${nextIdx}`,
-            sku: `${prefix}-VAR-${nextIdx}`,
-            attributes: null,
-            regular_price: data.regular_price || '0.00',
-            sale_price: data.sale_price || null,
-            stock_quantity: 0,
-            manage_stock: true,
-        };
-        setData('variants', [...data.variants, newVar]);
-    };
-
-    const handleUpdateVariant = (
-        index: number,
-        field: keyof VariantRowItem,
-        value: string | number | boolean | null
-    ) => {
-        const updated = data.variants.map((item, i) => {
-            if (i === index) {
-                return { ...item, [field]: value };
-            }
-            return item;
-        });
-        setData('variants', updated);
-    };
-
-    const handleRemoveVariant = (index: number) => {
-        setData(
-            'variants',
-            data.variants.filter((_, i) => i !== index)
-        );
-    };
-
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
+        const variantImagesMap: Record<number, File> = {};
+        const removeVariantIds: number[] = [];
+
+        data.variants.forEach((v, idx) => {
+            if (v.image_file) {
+                const key = v.id ?? idx;
+                variantImagesMap[key] = v.image_file;
+            }
+            if (v.remove_image && v.id) {
+                removeVariantIds.push(v.id);
+            }
+        });
+
+        transform((currentData) => ({
+            ...currentData,
+            variant_images: variantImagesMap,
+            remove_variant_images: removeVariantIds,
+        }));
+
         post(`/admin/products/${product.id}`, {
             forceFormData: true,
             preserveScroll: true,
@@ -331,150 +321,18 @@ export default function Edit({ product }: ProductEditProps) {
 
                 {/* Variants & Inventory */}
                 <Card padding="md" className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <div className="flex items-center space-x-2">
-                            <Layers className="w-5 h-5 text-primary-600" />
-                            <div>
-                                <h3 className="text-base font-bold text-gray-900">
-                                    Product Variants & Inventory
-                                </h3>
-                                <p className="text-xs text-gray-500">
-                                    Manage individual SKUs, stock levels, and distinct pricing.
-                                </p>
-                            </div>
-                        </div>
-
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleAddVariant}
-                        >
-                            <Plus className="w-3.5 h-3.5 mr-1" />
-                            Add Variant
-                        </Button>
-                    </div>
-
-                    <div className="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-2xs">
-                        <table className="w-full text-left text-xs">
-                            <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold uppercase tracking-wider">
-                                <tr>
-                                    <th className="py-2.5 px-3">Variant Name</th>
-                                    <th className="py-2.5 px-3">SKU</th>
-                                    <th className="py-2.5 px-3">Regular (৳)</th>
-                                    <th className="py-2.5 px-3">Sale (৳)</th>
-                                    <th className="py-2.5 px-3">Stock</th>
-                                    <th className="py-2.5 px-3 text-center">Manage</th>
-                                    <th className="py-2.5 px-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {data.variants.map((v, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50/50">
-                                        <td className="py-2 px-3">
-                                            <input
-                                                type="text"
-                                                value={v.name}
-                                                onChange={(e) =>
-                                                    handleUpdateVariant(idx, 'name', e.target.value)
-                                                }
-                                                className="w-full text-xs rounded border-gray-300 py-1 px-2 focus:border-primary-500 focus:ring-primary-500"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-3">
-                                            <input
-                                                type="text"
-                                                value={v.sku}
-                                                onChange={(e) =>
-                                                    handleUpdateVariant(
-                                                        idx,
-                                                        'sku',
-                                                        e.target.value.toUpperCase()
-                                                    )
-                                                }
-                                                className="w-full text-xs font-mono uppercase rounded border-gray-300 py-1 px-2 focus:border-primary-500 focus:ring-primary-500"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-3 w-28">
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                value={v.regular_price}
-                                                onChange={(e) =>
-                                                    handleUpdateVariant(
-                                                        idx,
-                                                        'regular_price',
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-full text-xs rounded border-gray-300 py-1 px-2 focus:border-primary-500 focus:ring-primary-500"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-3 w-28">
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                placeholder="Optional"
-                                                value={v.sale_price ?? ''}
-                                                onChange={(e) =>
-                                                    handleUpdateVariant(
-                                                        idx,
-                                                        'sale_price',
-                                                        e.target.value || null
-                                                    )
-                                                }
-                                                className="w-full text-xs rounded border-gray-300 py-1 px-2 focus:border-primary-500 focus:ring-primary-500"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-3 w-24">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={v.stock_quantity}
-                                                disabled={!v.manage_stock}
-                                                onChange={(e) =>
-                                                    handleUpdateVariant(
-                                                        idx,
-                                                        'stock_quantity',
-                                                        parseInt(e.target.value) || 0
-                                                    )
-                                                }
-                                                className="w-full text-xs rounded border-gray-300 py-1 px-2 disabled:bg-gray-100 focus:border-primary-500 focus:ring-primary-500"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-3 text-center w-20">
-                                            <input
-                                                type="checkbox"
-                                                checked={v.manage_stock}
-                                                onChange={(e) =>
-                                                    handleUpdateVariant(
-                                                        idx,
-                                                        'manage_stock',
-                                                        e.target.checked
-                                                    )
-                                                }
-                                                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
-                                            />
-                                        </td>
-                                        <td className="py-2 px-3 text-right">
-                                            {data.variants.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveVariant(idx)}
-                                                    className="text-gray-400 hover:text-rose-600 p-1"
-                                                    title="Remove variant"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <VariantGenerator
+                        variants={data.variants}
+                        onChangeVariants={(newVariants) => setData('variants', newVariants)}
+                        basePrice={data.regular_price}
+                        baseSalePrice={data.sale_price}
+                        productSlug={data.slug}
+                    />
+                    {errors.variants && (
+                        <p className="text-xs text-rose-600 mt-2 font-medium">
+                            {errors.variants}
+                        </p>
+                    )}
                 </Card>
 
                 {/* Media & Gallery Images */}

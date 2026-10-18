@@ -21,10 +21,11 @@ interface CreateProductFormData {
     manage_stock: boolean;
     variants: VariantRowItem[];
     images: File[];
+    variant_images?: Record<number, File>;
 }
 
 export default function Create() {
-    const { data, setData, post, processing, errors } = useForm<CreateProductFormData>({
+    const { data, setData, post, processing, errors, transform } = useForm<CreateProductFormData>({
         title: '',
         slug: '',
         description: '',
@@ -36,6 +37,7 @@ export default function Create() {
         manage_stock: true,
         variants: [],
         images: [],
+        variant_images: {},
     });
 
     const [autoSlug, setAutoSlug] = useState(true);
@@ -66,6 +68,19 @@ export default function Create() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
+        const variantImagesMap: Record<number, File> = {};
+        data.variants.forEach((v, idx) => {
+            if (v.image_file) {
+                variantImagesMap[idx] = v.image_file;
+            }
+        });
+
+        transform((currentData) => ({
+            ...currentData,
+            variant_images: variantImagesMap,
+        }));
+
         post('/admin/products', {
             forceFormData: true,
         });
