@@ -161,10 +161,14 @@ beforeEach(function () {
     ]);
 });
 
-test('public published landing page resolves dynamically and renders all 9 blocks in SSR', function () {
-    $response = $this->get('/smartwatch-deal');
+test('public published landing page resolves dynamically under /p/{slug} and renders all 9 blocks in SSR', function () {
+    $response = $this->get('/p/smartwatch-deal');
 
     $response->assertStatus(200);
+
+    // Verify legacy root URL redirects to /p/{slug}
+    $legacyResponse = $this->get('/smartwatch-deal');
+    $legacyResponse->assertRedirect('/p/smartwatch-deal');
 
     // Verify SEO metadata
     $response->assertSee('Special Eid Launch - Titanium Smartwatch ৳4,500');
@@ -193,17 +197,23 @@ test('draft or archived landing pages return HTTP 404', function () {
         'status' => 'draft',
     ]);
 
-    $response = $this->get('/draft-campaign-slug');
+    $response = $this->get('/p/draft-campaign-slug');
     $response->assertStatus(404);
 
+    $legacyResponse = $this->get('/draft-campaign-slug');
+    $legacyResponse->assertStatus(404);
+
     $draftPage->update(['status' => 'archived']);
-    $responseArchived = $this->get('/draft-campaign-slug');
+    $responseArchived = $this->get('/p/draft-campaign-slug');
     $responseArchived->assertStatus(404);
 });
 
 test('non-existent landing page slug returns HTTP 404', function () {
-    $response = $this->get('/random-non-existent-campaign-page');
+    $response = $this->get('/p/random-non-existent-campaign-page');
     $response->assertStatus(404);
+
+    $legacyResponse = $this->get('/random-non-existent-campaign-page');
+    $legacyResponse->assertStatus(404);
 });
 
 test('landing page without any revision returns HTTP 404', function () {
@@ -215,7 +225,7 @@ test('landing page without any revision returns HTTP 404', function () {
         'published_revision_id' => null,
     ]);
 
-    $response = $this->get('/empty-campaign');
+    $response = $this->get('/p/empty-campaign');
     $response->assertStatus(404);
 });
 
@@ -229,7 +239,7 @@ test('reserved system routes are never intercepted by landing page dynamic route
     expect($loginResponse->status())->toBeIn([200, 401]);
 
     // Root route remains functional
-    $rootResponse = $this->get('/');
+    $rootResponse = $this->getJson('/');
     $rootResponse->assertStatus(200)->assertJson(['status' => 'ok']);
 
     // Direct match against reserved keywords returns 404 if not defined
@@ -272,7 +282,7 @@ test('unapproved or malicious blocks in AST are ignored safely without executing
         'published_revision_id' => $maliciousRevision->id,
     ]);
 
-    $response = $this->get('/smartwatch-deal');
+    $response = $this->get('/p/smartwatch-deal');
     $response->assertStatus(200);
     $response->assertSee('Authentic Watch Deal');
     $response->assertDontSee('<script>window.location="https://malicious.test"</script>', false);

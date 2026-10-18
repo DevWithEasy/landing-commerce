@@ -14,7 +14,10 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
     const { ast, viewport, selectedBlockId, setSelectedBlockId, removeBlock, reorderBlocks } =
         useBuilderStore();
 
-    const blocks = ast.blocks;
+    const blocks = ast.blocks || [];
+    const settings = ast.settings || {};
+    const pageFontFamily = settings.fontFamily || "'Inter', sans-serif";
+    const pageBgColor = settings.backgroundColor || '#ffffff';
 
     // Viewport styling
     const viewportClasses = {
@@ -23,13 +26,19 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
         mobile: 'w-full max-w-[390px] mx-auto my-6 rounded-3xl shadow-2xl border-8 border-slate-800',
     }[viewport];
 
+    const canvasStyle: CSSProperties = {
+        fontFamily: pageFontFamily,
+        backgroundColor: pageBgColor,
+    };
+
     return (
         <main
             className="flex-1 h-full min-h-0 w-full bg-slate-100/90 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-28"
             onClick={() => setSelectedBlockId(null)}
         >
             <div
-                className={`bg-white min-h-[calc(100vh-8rem)] transition-all duration-300 relative ${viewportClasses}`}
+                style={canvasStyle}
+                className={`min-h-[calc(100vh-8rem)] transition-all duration-300 relative ${viewportClasses}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {blocks.length === 0 ? (

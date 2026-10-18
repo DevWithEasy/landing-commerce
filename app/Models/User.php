@@ -82,6 +82,21 @@ class User extends Authenticatable
         return in_array($this->role, ['super_admin', 'store_manager'], true);
     }
 
+    public function canManageCategories(): bool
+    {
+        return in_array($this->role, ['super_admin', 'store_manager'], true);
+    }
+
+    public function canManagePolicyPages(): bool
+    {
+        return in_array($this->role, ['super_admin', 'store_manager'], true);
+    }
+
+    public function canManageAppearance(): bool
+    {
+        return in_array($this->role, ['super_admin', 'store_manager'], true);
+    }
+
     /**
      * @return HasMany<OrderHistory, $this>
      */

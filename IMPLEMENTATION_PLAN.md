@@ -213,3 +213,304 @@ This plan lays out a step-by-step, milestone-driven roadmap. Each phase has conc
 - `php artisan commerce:backup` creates a valid zip archive; `commerce:restore` restores the database state cleanly.
 - `php artisan test` passes full suite on MySQL database.
 - Web installer wizard seeds demo store in under 3 minutes.
+
+---
+
+## Phase 7: Storefront Core Architecture, Category Management & Appearance Schema
+**Status:** 100% COMPLETE
+**Goal:** Establish the foundational category catalog hierarchy, storefront mode settings, policy/content pages, dual homepage routing, and the appearance/theme configuration schema without disrupting existing landing pages or visual builder functionality.
+
+### Scope & Dependencies
+- Depends on: Phase 0-6 foundation (Products, Variants, Settings, Media Upload Service, RBAC).
+- Primary Deliverable: Database schemas, models, controllers, and admin UI for Categories, Policy Pages, Store Branding, Storefront Mode, and Theme/Slider schema foundation.
+
+### Tasks & Technical Specifications
+1. **Category Database Migrations & Models (Intact Core Deliverable):**
+   - Table `categories`: `id`, `name`, `slug` (unique), `description`, `image_path` (nullable), `parent_id` (self-referencing nullable foreign key with cascade on delete for subcategories), `sort_order` (integer default 0), `is_active` (boolean default true), `timestamps`.
+   - Table `category_product`: `category_id` (foreign key), `product_id` (foreign key), composite primary key `(category_id, product_id)`.
+   - Eloquent Model `Category` in `app/Modules/Catalog/Models/Category.php` with:
+     - Relationships: `parent()` (belongsTo), `children()` (hasMany), `products()` (belongsToMany).
+     - Helpers: `toTree()` static method to generate nested parent-child hierarchies.
+     - Scopes: `scopeActive($query)`, `scopeRoot($query)` (parent_id is null).
+   - Update `Product` model with `categories()` BelongsToMany relationship.
+2. **Admin Category Management UI (Inertia + React):**
+   - Routes in `routes/admin.php`: `Route::resource('categories', CategoryController::class)->except(['show'])`.
+   - Controller: `App\Modules\Catalog\Controllers\CategoryController` handling index, store, update, destroy, and sort order updates.
+   - Admin UI in `resources/js/Pages/Admin/Categories/Index.tsx`:
+     - Parent category dropdown (hierarchical indentation).
+     - Drag/sort reordering, active status toggles.
+     - Image upload via existing `MediaUploadService` (WebP conversion).
+     - Product count badges per category.
+   - Update Product Create (`resources/js/Pages/Admin/Products/Create.tsx`) and Edit (`Edit.tsx`) views with a multi-category selector checkbox list.
+   - RBAC: Authorized for `super_admin` and `store_manager`; strictly forbidden for `fulfillment_agent` (HTTP 403).
+3. **Storefront General Settings & Mode Architecture (Intact Core Deliverable):**
+   - Extend `settings` table with storefront configuration keys:
+     - `store_name`, `store_tagline`, `store_logo_url`, `store_favicon_url`, `contact_phone`, `contact_whatsapp`, `contact_email`, `store_address`.
+     - `ecom_storefront_mode`: Enum `'full_storefront' | 'landing_page_home'` (default `'full_storefront'`).
+     - `home_landing_page_id`: Nullable integer referencing `landing_pages.id` (used when mode is `'landing_page_home'`).
+   - Admin Settings UI tab for Storefront Branding & Mode in `resources/js/Pages/Admin/Settings/Index.tsx`.
+4. **Policy & Content Pages Module (Intact Core Deliverable):**
+   - Table `policy_pages`: `id`, `slug` (unique), `title`, `content` (sanitized markdown or rich text), `meta_seo` (JSON), `is_published` (boolean default true), `timestamps`.
+   - Model `PolicyPage` in `app/Modules/PageBuilder/Models/PolicyPage.php`.
+   - Seed standard Bangladesh e-commerce policies: Privacy Policy, Terms & Conditions, Return & Refund Policy, Shipping Policy, About Us, Contact Us.
+   - Admin CRUD at `/admin/pages` for editing policies and custom content under RBAC (`super_admin`, `store_manager`).
+   - Public route: `Route::get('/pages/{slug}', [StorefrontPageController::class, 'show'])->name('storefront.page.show')`.
+5. **Dual Homepage Controller Architecture (Intact Core Deliverable):**
+   - Update root route `/` handler:
+     - If `ecom_storefront_mode === 'landing_page_home'` and valid published landing page exists, delegate seamlessly to `PublicLandingPageController::show`.
+     - If `ecom_storefront_mode === 'full_storefront'`, delegate to `StorefrontHomeController::index` rendering the complete storefront home page.
+     - Preserves existing landing page URLs under `/p/{slug}` and legacy redirects without route shadowing.
+6. **Appearance & Theme Settings Schema Foundation:**
+   - Extend `settings` with structured appearance tokens:
+     - `theme_colors`: Primary brand accent, secondary accent, header background, footer background, body background, text color, sale badge color.
+     - `theme_typography`: Google Font family (`Inter`, `Outfit`, `Hind Siliguri`, `Tiro Bangla`, `Poppins`), base font size.
+     - `theme_ui`: Button style (`rounded`, `pill`, `sharp`), border radius (`sm`, `md`, `lg`, `full`).
+     - `theme_header_footer`: Top announcement bar text, announcement background, sticky header toggle, footer payment icons toggle.
+   - Admin Appearance Route: `Route::get('appearance/theme', [ThemeController::class, 'index'])->name('appearance.theme')` and `POST` update endpoint.
+   - Architecture Boundary: Global Theme tokens strictly control the generic storefront (`/`, `/shop`, `/product/*`, `/cart`). Landing pages preserve their independent AST settings (`ast.settings`) and page-specific theme overrides, which apply strictly per landing page and never mutate the Global Theme.
+7. **Hero Slider & Homepage Sections Schema Foundation:**
+   - Table `sliders`: `id`, `title`, `subtitle`, `image_path`, `mobile_image_path` (nullable), `link_url`, `button_text`, `sort_order` (default 0), `is_active` (boolean default true), `timestamps`.
+   - Model `Slider` in `app/Modules/Catalog/Models/Slider.php`.
+   - Admin Slider CRUD at `/admin/appearance/sliders`.
+
+### Acceptance Criteria
+- `categories` and `category_product` migrations run cleanly on SQLite test database and MySQL without errors.
+- Products can be assigned to multiple categories, and deleting a category cascades cleanly on the pivot table without deleting products.
+- Toggling `ecom_storefront_mode` between `full_storefront` and `landing_page_home` instantly updates the root route `/` response.
+- All existing landing page URLs under `/p/{slug}` and legacy root redirects (`/{slug}`) remain 100% operational.
+- Policy pages render sanitized content with strict protection against XSS.
+- `fulfillment_agent` role is strictly rejected (HTTP 403) from category, policy, and appearance mutations.
+
+### Focused Tests
+- `tests/Feature/CategoryAdminTest.php`: Category CRUD, image upload, parent-child nesting tree, and product association.
+- `tests/Feature/DualHomepageModeTest.php`: Mode switching between storefront home and landing page home.
+- `tests/Feature/PolicyPagesTest.php`: Public policy page rendering, draft protection, and admin CRUD.
+
+---
+
+## Phase 8: Responsive Storefront UI, Homepage Slider/Sections, Shop & Product Details
+**Status:** Pending
+**Goal:** Build a high-performance, mobile-first generic e-commerce shopping experience with a 2-row navigation header, admin-controlled hero slider, category sections, faceted search, product detail pages, and a Quick Order popup.
+
+### Scope & Dependencies
+- Depends on: Phase 7 (Categories, Sliders, Theme Settings, Dual Homepage Router).
+- Primary Deliverable: Storefront React + TypeScript components via Inertia.js, responsive header/footer layout, Home, Shop, Category, and Product Details views.
+
+### Tasks & Technical Specifications
+1. **Storefront Layout & 2-Row Header (`StorefrontLayout.tsx`):**
+   - Row 1 (Utility & Brand Bar):
+     - Brand logo with home link.
+     - Central live search bar with instant autocomplete product preview.
+     - Customer Hotline / WhatsApp quick-contact link.
+     - Wishlist icon with dynamic counter badge.
+     - Cart trigger with live count badge (opens slide-over Mini-cart Drawer).
+     - Customer Account icon (links to login/register or customer dashboard dropdown).
+   - Row 2 (Navigation Bar):
+     - All Categories mega-dropdown menu (hierarchical parent-child display).
+     - Primary navigation links: Home, Shop, New Arrivals, Featured, Offers, Contact Us.
+   - Mobile Header & Bottom Navigation Bar:
+     - Mobile top bar with hamburger menu drawer, brand logo, search toggle, and cart icon.
+     - Sticky bottom navigation bar: Home, Categories, Search, Wishlist, Cart.
+   - Storefront Footer:
+     - Payment method badges (Cash on Delivery, bKash, Nagad, Rocket).
+     - 4-column layout: About store, Quick links, Category links, Customer care.
+     - BBS 64-district delivery guarantee badge, copyright, and social links.
+2. **Dynamic Storefront Home Page (`/`):**
+   - Hero Slider (directly below header):
+     - Full-width responsive carousel with admin-controlled slides, text overlays, CTA buttons, and slide intervals.
+   - Category Grid:
+     - Interactive circular or card thumbnails for categories (Fashion, Electronics, Cosmetics, Grocery, Home & Kitchen, etc.).
+   - New Arrivals Section:
+     - Grid of recently created products with "New" badge, prices, and Quick Order button.
+   - Featured Products & Best Sellers Sections:
+     - Admin-curated showcase with sale discount badges and star ratings.
+   - Category-Based Product Sections:
+     - Tabbed or stacked product rows by category (e.g. "Smartphones & Gadgets", "Men's Fashion").
+   - Trust & Value Proposition Badges:
+     - 100% Authentic Products, Nationwide Cash on Delivery, Fast 24-72h Delivery, 7-Day Easy Return.
+   - Admin Controls:
+     - Dedicated controls to toggle section visibility, update section titles/subtitles, choose product limit, and reorder homepage sections.
+3. **Faceted Shop & Catalog Browsing (`/shop`):**
+   - Multi-parameter filtering with URL state synchronization:
+     - Category filter (multi-select checkboxes with hierarchy counts).
+     - Price range slider with min-max inputs (server-validated).
+     - Stock status filter (in-stock only toggle).
+     - Sorting: Newest, Price: Low to High, Price: High to Low, Popularity.
+     - Search query matching title, slug, and variant SKU.
+   - Responsive sidebar filter drawer on mobile devices.
+   - Server-side pagination (12, 24, 48 items per page).
+4. **Category Browsing Page (`/category/{slug}`):**
+   - Category banner, title, description, and breadcrumb navigation.
+   - Subcategory pill filters for instant child category drill-down.
+   - Inherits all filtering, sorting, and pagination capabilities from Shop.
+5. **Product Details Page (`/product/{slug}`):**
+   - Image Gallery: Main image with zoom/lightbox and interactive thumbnail rail (touch swipe on mobile).
+   - Pricing: Regular price, sale price, and dynamic discount percentage badge.
+   - Variant Swatches: Interactive color pills (with variant image switching) and size buttons; real-time price and stock level update.
+   - Quantity Stepper (+ / -) with min 1 and max available variant stock bounds.
+   - Dual Call-to-Action Buttons:
+     - **"Add to Cart"**: Adds item to session cart and opens the slide-over Mini-cart Drawer.
+     - **"Buy Now" / "অর্ডার করুন"**: Adds item to cart and immediately redirects to `/checkout` for instant 1-click ordering.
+   - Estimated Delivery Widget: Displays standard shipping charges and transit times for Inside Dhaka (24-48h ৳70) and Outside Dhaka (48-72h ৳130) based on BBS shipping zones.
+   - Cash on Delivery available badge and direct WhatsApp inquiry link.
+   - Tabbed Content: Overview / Description, Specifications table, Reviews, Related Products carousel.
+   - Generic Category Compatibility: Seamlessly supports Fashion, Electronics, Cosmetics, Grocery, and Home Living products.
+6. **Quick Order Popup (Foundation):**
+   - Quick Order modal triggerable directly from product cards across Home, Shop, and Category grids.
+   - Allows shoppers to select variants and quantity and proceed directly to order placement without leaving the page.
+
+### Acceptance Criteria
+- Storefront header renders 2-row layout cleanly on desktop and switches to responsive drawer and sticky bottom bar on mobile.
+- Admin-controlled slider displays images, text, and links smoothly with mobile image fallback.
+- Inactive or draft products return HTTP 404 on storefront routes.
+- Product Details page dynamically switches prices, variant images, and stock badges upon swatch selection.
+- All interactive elements adhere to strict TypeScript interfaces with zero `any`.
+
+### Focused Tests
+- `tests/Feature/StorefrontCatalogTest.php`: Public Shop, Category, and Product Details endpoints, active scopes, price range filters, and search queries.
+- `tests/Feature/StorefrontSliderTest.php`: Hero slider display, sort order, and active status toggles.
+
+---
+
+## Phase 9: Server-Authoritative Cart Engine, Mini-Cart & Unified Storefront Checkout
+**Status:** Pending
+**Goal:** Build a robust, tamper-proof shopping cart and unified checkout engine that shares the existing pessimistic row-locking, anti-spam, and order pipeline infrastructure with landing pages.
+
+### Scope & Dependencies
+- Depends on: Phase 8 (Product Details, Quick Order UI), Phase 2 (Order Actions, Bangladesh Shipping Matrix).
+- Primary Deliverable: `CartService`, Mini-cart Drawer, `/cart` page, unified `/checkout` controller, and Quick Order integration.
+
+### Tasks & Technical Specifications
+1. **Server-Authoritative Cart Service (`CartService.php`):**
+   - Dual Storage Architecture:
+     - Session-backed storage for guests (`cart_items` serialized in session).
+     - Database-synchronized storage for authenticated customers (`cart_items` table: `id`, `customer_id`, `product_variant_id`, `quantity`, `timestamps`).
+     - Automatic cart migration from guest session to customer account upon login.
+   - Authoritative Price & Stock Validation:
+     - Prices are calculated strictly on the server by loading active `ProductVariant` and `Product` models from the database.
+     - Client-side prices are strictly ignored to prevent price tampering.
+     - Stock boundary check: Adding or modifying item quantity validates against `variant.stock_quantity` when `variant.manage_stock === true`. If requested quantity exceeds available stock, clamp to available stock and return an informative message.
+   - Endpoints:
+     - `GET /cart`: Returns normalized cart state (items, subtotal, item count, currency, warnings).
+     - `POST /cart/items`: Add item (`variant_id`, `quantity`).
+     - `PATCH /cart/items/{id}`: Update quantity.
+     - `DELETE /cart/items/{id}`: Remove item.
+     - `POST /cart/clear`: Empty cart.
+2. **Slide-Over Mini Cart Drawer & Dedicated Cart Page (`/cart`):**
+   - Mini-cart slide-over drawer triggered from header cart icon or upon clicking "Add to Cart".
+   - Itemized lines with variant swatches, quantity steppers, item removal, and subtotal.
+   - Free shipping progress bar (e.g. "Add ৳500 more for Free Delivery!").
+   - Dedicated full Cart Page at `/cart` with itemized order summary and checkout CTA.
+3. **Quick Order Popup Integration:**
+   - Connects the Quick Order popup directly to the checkout action or cart.
+   - Allows instant 1-click Cash on Delivery order placement directly from product cards.
+4. **Unified Checkout Controller & Experience (`/checkout`):**
+   - Update `CheckoutPageController@show` and `resources/js/Pages/Checkout/Show.tsx` to handle BOTH checkout modes:
+     1. **Cart Checkout:** When accessed via `/checkout` without parameters, automatically populates checkout with all items from the active cart.
+     2. **Direct Product / Campaign Checkout:** When accessed with a product slug (`/checkout/{product:slug}`) or arriving with explicit variant/quantity payload from a landing page, uses direct item checkout while keeping session cart intact.
+   - Unified Order Placement via `ProcessCodOrderAction`:
+     - Reuses the existing, battle-tested `ProcessCodOrderAction` without code duplication.
+     - Pessimistic row locking (`lockForUpdate()`) on MySQL inventory.
+     - UUID `idempotency_key` with 15-second cache lock preventing duplicate rapid submissions.
+     - BBS 64-district and upazila dynamic shipping rate calculation via `ShippingCalculatorService`.
+     - Anti-spam phone blacklist inspection and dual IP/phone rate limiting.
+     - Payment method support: Cash on Delivery (`cod`, status `unpaid`) and manual MFS (`bkash`, `nagad`, `rocket`, requires TrxID, status `pending_verification`).
+     - Clears the active cart upon successful order placement.
+   - Redirects cleanly to the itemized Thank You screen at `/checkout/thank-you/{order:order_number}`.
+
+### Acceptance Criteria
+- Client-submitted prices are completely disregarded; final order totals are 100% computed from database pricing.
+- Out-of-stock items cannot be added to cart; item quantity cannot exceed available variant inventory.
+- Unified checkout seamlessly accepts orders from both the multi-item shopping cart and landing pages.
+- Duplicate rapid clicks on checkout trigger the cache lock and return the existing order without duplicate stock deduction.
+
+### Focused Tests
+- `tests/Feature/StorefrontCartTest.php`: Cart additions, quantity updates, removals, stock clamping, price tampering prevention, and guest-to-customer cart migration.
+- `tests/Feature/UnifiedCheckoutTest.php`: Both cart checkout and landing page campaign checkout through `ProcessCodOrderAction`.
+
+---
+
+## Phase 10: Customer Authentication, Account Portal, Order Tracking & Wishlist
+**Status:** Pending
+**Goal:** Empower customers with optional accounts, self-service order tracking, saved address books, and wishlists while strictly maintaining zero-friction guest checkout.
+
+### Scope & Dependencies
+- Depends on: Phase 7 (Core), Phase 9 (Checkout, Orders).
+- Primary Deliverable: `Customer` model, `customer` auth guard, Customer Portal, Public Order Tracking, and Wishlist.
+
+### Tasks & Technical Specifications
+1. **Customer Multi-Auth Guard Architecture:**
+   - Table `customers`: `id`, `name`, `phone` (unique), `email` (nullable unique), `password` (hashed), `address`, `district`, `upazila`, `is_active` (boolean default true), `email_verified_at` (nullable), `timestamps`.
+   - Model `Customer` in `app/Modules/Customer/Models/Customer.php`.
+   - Separate auth guard `'customer'` in `config/auth.php` using `eloquent` provider pointing to `Customer`.
+   - Complete isolation between admin `'web'` guard and customer `'customer'` guard to prevent privilege leakage.
+2. **Customer Authentication & Guest Checkout Coexistence:**
+   - Guest checkout remains the primary, zero-friction default for all storefront and landing page orders.
+   - On checkout, guest shoppers can optionally check: "Save my information for faster checkout next time" with an optional password field to automatically create a customer account upon order completion.
+   - Customer Auth Routes:
+     - `GET /customer/login`, `POST /customer/login` (rate-limited via `throttle:5,1`).
+     - `GET /customer/register`, `POST /customer/register`.
+     - `POST /customer/logout`.
+3. **Customer Account Portal (`/customer/*`):**
+   - Protected by `auth:customer` middleware.
+   - Pages in `resources/js/Pages/Customer/`:
+     - **Dashboard (`/customer/dashboard`):** Welcome banner, recent orders summary, default shipping address card.
+     - **Order History (`/customer/orders`):** Paginated list of customer orders with status badges, item summaries, total amount, and link to order details.
+     - **Order Detail (`/customer/orders/{order_number}`):** Detailed view showing delivery address, courier tracking consignment number, live courier tracking status, itemized products, and downloadable invoice.
+     - **Address Book (`/customer/addresses`):** Manage saved delivery addresses (District, Upazila, Street Address) with default selection for 1-click checkout autofill.
+     - **Profile Settings (`/customer/profile`):** Update name, email, phone, and change password.
+4. **Public Self-Service Order Tracking (`/track-order`):**
+   - Public page accessible to all shoppers without requiring account login.
+   - Input: Order Number (e.g. `ORD-20261018-XXXXXX`) + Customer Phone Number (normalized 11-digit BD mobile).
+   - Form validation & anti-enumeration rate limiting (`throttle:10,1`).
+   - Displays live order status timeline:
+     - Pending -> Confirmed -> Processing -> Handed to Courier -> In Transit -> Delivered.
+     - If dispatched, displays courier name (Steadfast, Pathao, RedX), tracking ID, and direct external tracking URL.
+5. **Customer Wishlist Engine (`/wishlist`):**
+   - Storage: LocalStorage for guest users, database table `wishlists` (`customer_id`, `product_id`) for authenticated customers.
+   - Instant toggle on product cards and product detail pages with heart icon animation.
+   - Dedicated Wishlist Page (`/wishlist`): Displays saved products with "Move to Cart" and "Remove" actions.
+
+### Acceptance Criteria
+- Customer login sessions are completely isolated from admin dashboard sessions; customers cannot access `/admin/*`.
+- Order tracking strictly returns order details only when the phone number exactly matches the order record.
+- Guest shoppers can complete purchases without creating an account; registered customers enjoy pre-filled addresses.
+
+### Focused Tests
+- `tests/Feature/CustomerAuthTest.php`: Customer registration, login, logout, guard isolation, and address management.
+- `tests/Feature/OrderTrackingTest.php`: Public order lookup, phone verification, and rate limiting.
+
+---
+
+## Phase 11: End-to-End Quality Tooling, Performance Optimization & Verification
+**Status:** Pending
+**Goal:** Validate all storefront and landing page flows against rigorous regression suites, multi-process MySQL concurrency harnesses, and production build standards.
+
+### Scope & Dependencies
+- Depends on: Completion of Phases 7, 8, 9, 10.
+- Primary Deliverable: Full-suite test passes, live MySQL concurrency verification, static asset production bundle, Pint formatting, and deployment manual.
+
+### Tasks & Technical Specifications
+1. **Full-Suite Automated Regression & Concurrency Testing:**
+   - Execute complete Pest test suite covering:
+     - Phase 0-6 baseline tests (Catalog, Orders, FSM, AST Builder, Couriers, SMS, RBAC, Backups, Web Installer).
+     - Phase 7-10 tests (Categories, Storefront Catalog, Cart, Unified Checkout, Customer Portal, Order Tracking).
+   - Multi-process parallel HTTP concurrency test on live MySQL:
+     - Simulate 10 parallel processes attempting to purchase the last unit of stock via both storefront cart checkout and landing page COD checkout simultaneously.
+     - Verify exactly 1 order succeeds, 9 fail with HTTP 422 insufficient stock, and final MySQL inventory ends at exactly 0 with zero overselling.
+2. **Production Asset Pre-compilation & Performance Optimization:**
+   - Run `npm run type-check` (strictly zero `any`, zero TypeScript errors).
+   - Run `npm run build` to verify clean production Vite bundling of all storefront, admin, and builder assets.
+   - Verify server-side response times: Storefront home and catalog pages must achieve sub-200ms TTFB under local PHP runtime.
+   - Code formatting with Laravel Pint (`./vendor/bin/pint --test`).
+3. **Deployment Documentation & User Manual:**
+   - Update `PROJECT_STATUS.md` with final milestone achievements.
+   - Document storefront mode toggle, category management, customer account configuration, and order tracking usage in `DEPLOYMENT.md`.
+
+### Acceptance Criteria
+- 100% of automated tests pass without errors (`php artisan test`).
+- `npm run type-check` exits with code 0.
+- `npm run build` pre-compiles production assets cleanly without persistent Node.js dependencies.
+- `./vendor/bin/pint --test` passes with zero violations.
+
+

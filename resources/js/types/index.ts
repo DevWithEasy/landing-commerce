@@ -56,6 +56,7 @@ export interface Product {
     updated_at: string;
     variants: ProductVariant[];
     images: ProductImage[];
+    categories?: Category[];
     primaryImage?: ProductImage | null;
     primary_image?: ProductImage | null;
 }
@@ -268,6 +269,70 @@ export interface OrderIndexProps extends SharedProps {
     allowedTransitions: Record<string, string[]>;
     courierConfig?: CourierConfig;
     smsConfig?: SmsConfig;
+}
+
+export interface Category {
+    id: number;
+    parent_id: number | null;
+    name: string;
+    slug: string;
+    description: string | null;
+    image_path: string | null;
+    image_url?: string | null;
+    sort_order: number;
+    is_active: boolean;
+    parent?: Category | null;
+    children?: Category[];
+    products_count?: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface CategoryIndexProps extends SharedProps {
+    categories: PaginatedData<Category>;
+    rootCategories: Array<{ id: number; name: string }>;
+    filters: {
+        search: string;
+    };
+}
+
+export interface PolicyPage {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    is_published: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PolicyPageIndexProps extends SharedProps {
+    pages: PaginatedData<PolicyPage>;
+    filters: {
+        search: string;
+    };
+}
+
+export interface ThemeSettings {
+    storefront_mode: 'full_storefront' | 'landing_page_home';
+    home_landing_page_id: number | string | null;
+    store_name: string;
+    store_logo_url: string;
+    store_favicon_url: string;
+    support_phone: string;
+    support_whatsapp: string;
+    primary_color: string;
+    secondary_color: string;
+    accent_color: string;
+    background_color: string;
+    text_color: string;
+    font_family: string;
+    custom_css: string;
+}
+
+export interface ThemeSettingsProps extends SharedProps {
+    settings: ThemeSettings;
+    landingPages: Array<{ id: number; title: string; slug: string }>;
 }
 
 export * from './builder';

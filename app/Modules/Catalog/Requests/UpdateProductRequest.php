@@ -40,6 +40,8 @@ class UpdateProductRequest extends FormRequest
             'sale_price' => ['nullable', 'numeric', 'min:0'],
             'has_variants' => ['boolean'],
             'status' => ['nullable', 'string', 'in:draft,active,archived'],
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
             'variants' => ['nullable', 'array'],
             'variants.*.id' => ['nullable', 'integer'],
             'variants.*.sku' => ['nullable', 'string', 'max:100'],

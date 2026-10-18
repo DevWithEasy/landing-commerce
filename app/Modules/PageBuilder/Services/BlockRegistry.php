@@ -198,13 +198,13 @@ class BlockRegistry
                 'placement' => 'bottom',
             ],
             'HtmlBlock' => [
-                'html' => '<div class="custom-promo p-6 text-center bg-white rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto my-4">' . "\n" .
-                          '    <h3 class="text-2xl font-bold text-gray-900 mb-2">কাস্টম সেকশন বা ব্যানার</h3>' . "\n" .
-                          '    <p class="text-gray-600 mb-4">এখানে কাস্টম HTML ও CSS কোড লিখে সরাসরি ক্যানভাসে প্রিভিউ দেখুন।</p>' . "\n" .
-                          '    <a href="#cod-checkout" class="inline-block px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition">অর্ডার করুন</a>' . "\n" .
+                'html' => '<div class="custom-promo p-5 text-center bg-white rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto my-1">'."\n".
+                          '    <h3 class="text-xl font-bold text-gray-900 mb-1.5">কাস্টম সেকশন বা ব্যানার</h3>'."\n".
+                          '    <p class="text-sm text-gray-600 mb-3">এখানে কাস্টম HTML ও CSS কোড লিখে সরাসরি ক্যানভাসে প্রিভিউ দেখুন।</p>'."\n".
+                          '    <a href="#cod-checkout" class="inline-block px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition text-sm">অর্ডার করুন</a>'."\n".
                           '</div>',
-                'css' => '.custom-promo { transition: transform 0.2s ease, box-shadow 0.2s ease; }' . "\n" .
-                         '.custom-promo:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }',
+                'css' => '.custom-promo { transition: transform 0.2s ease, box-shadow 0.2s ease; }'."\n".
+                         '.custom-promo:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }',
             ],
             default => [],
         };
@@ -241,8 +241,8 @@ class BlockRegistry
                 'zIndex' => '40',
             ],
             'HtmlBlock' => [
-                'paddingTop' => '24px',
-                'paddingBottom' => '24px',
+                'paddingTop' => '12px',
+                'paddingBottom' => '12px',
             ],
             default => [
                 'paddingTop' => '32px',

@@ -67,10 +67,10 @@ export function TopBar({
                         </span>
                     </div>
                     <div className="flex items-center space-x-2 text-[11px] text-gray-400 -mt-0.5">
-                        <span>Slug: /{landingPage.slug}</span>
+                        <span>Slug: /p/{landingPage.slug}</span>
                         {landingPage.status === 'published' && (
                             <a
-                                href={`/${landingPage.slug}`}
+                                href={`/p/${landingPage.slug}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex items-center text-primary-600 hover:text-primary-700 hover:underline font-medium"

@@ -34,6 +34,9 @@ export interface BuilderState {
     removeBlock: (id: string) => void;
     reorderBlocks: (startIndex: number, endIndex: number) => void;
 
+    // Page Settings manipulation
+    updatePageSettings: (settings: Partial<import('@/types/builder').PageSettings>) => void;
+
     // History actions
     undo: () => void;
     redo: () => void;
@@ -124,6 +127,20 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         );
 
         const newAst: PageAst = { ...ast, blocks: newBlocks };
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newAst);
+
+        set({
+            ast: newAst,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+        });
+    },
+
+    updatePageSettings: (settings: Partial<import('@/types/builder').PageSettings>) => {
+        const { ast, history, historyIndex } = get();
+        const newSettings = { ...(ast.settings || {}), ...settings };
+        const newAst: PageAst = { ...ast, settings: newSettings };
         const newHistory = history.slice(0, historyIndex + 1);
         newHistory.push(newAst);
 

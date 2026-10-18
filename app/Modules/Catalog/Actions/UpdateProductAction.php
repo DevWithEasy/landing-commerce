@@ -149,7 +149,11 @@ class UpdateProductAction
                 }
             }
 
-            return $model->fresh(['variants', 'images']);
+            if (array_key_exists('category_ids', $data)) {
+                $model->categories()->sync((array) $data['category_ids']);
+            }
+
+            return $model->fresh(['variants', 'images', 'categories']);
         });
     }
 

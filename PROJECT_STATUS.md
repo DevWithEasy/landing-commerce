@@ -85,6 +85,7 @@
 - **Phase 4:** Visual Drag-and-Drop Landing Page Builder, Allowlisted AST Engine & Blade SSR (100% Complete)
 - **Phase 5:** Bangladesh Couriers (Steadfast, Pathao, RedX), SMS Gateways, Encrypted Vault & 3-Tier RBAC (100% Complete)
 - **Phase 6:** Pure-PHP Backup/Restore Engine, Preflight Checks, CLI Setup Wizard & Production Hardening (100% Complete)
+- **Phase 7:** Storefront Core Architecture, Category Management, Branding, Policy Pages, Homepage Mode/Routing, Appearance & Slider Schema Foundation (100% Complete)
 - **Deployment:** cPanel One-Time Web Installation Wizard & Safe Zero-SSH Setup (100% Complete)
 - **Landing Pages:** Multiple Independent Landing Page Management & Dashboard (100% Complete)
 - **Marketing Pixels & Analytics:** Meta Pixel, Google Analytics 4, Google Ads Conversion Tracking, TikTok Pixel & GTM with Deduplication & Privacy Shields (100% Complete)
@@ -108,8 +109,14 @@
 - **Node.js / npm:** 24.19.0 / 11.17.0
 - **Laravel Framework:** 13.37.0
 
-## 4. Current State
-- **Status:** All core implementation phases are fully executed, verified, and passing 100% of automated tests. Ready for deployment and client provisioning.
+## 4. Current State & Active Roadmap: Dual-Storefront Expansion
+- **Status:** Phase 7 (Storefront Core Architecture, Category Management, Branding, Policy Pages, Homepage Mode/Routing, Appearance & Slider Schema Foundation) is 100% COMPLETE with all 4 focused test suites passing (22 new feature tests, 94 assertions) and zero regressions across existing test suites.
+- **Active Roadmap:**
+  - **Phase 7 (Completed):** Category Management (Max 2 Levels, Tree, Product Pivot), Storefront & Branding Settings (`full_storefront` vs `landing_page_home`), Policy & Content Pages (`/pages/{slug}`, XSS sanitization, seeder), Dual Homepage Routing, and Appearance Theme Schema (`/admin/appearance/theme`) + `sliders` schema.
+  - **Phase 8 (Next Active Phase):** Responsive Storefront UI (2-row Header, sticky mobile bottom bar), Homepage Slider/Sections (Hero Carousel, Category Grid, New Arrivals, Featured, Best Sellers, Tabs, Trust Badges), Shop (faceted filters & search), Category Browsing, Product Details (swatches, gallery, live stock, instant buy), and Quick Order Popup foundation.
+  - **Phase 9:** Server-Authoritative Cart Engine (session/database cart, server-calculated prices, stock limit clamping), Slide-over Mini-cart Drawer, `/cart` page, Quick Order integration, and Unified `/checkout` sharing battle-tested `ProcessCodOrderAction`.
+  - **Phase 10:** Customer Authentication & Portal (isolated `'customer'` guard, optional guest checkout, order history, saved addresses), Public Self-Service Order Tracking (`/track-order`), and Wishlist (`/wishlist`).
+  - **Phase 11:** End-to-End Quality Tooling, live MySQL Concurrency Verification (simultaneous cart and landing page stock contention), TypeScript zero-error check, and Vite production bundle pre-compilation.
 
 ## 5. Important Unresolved Issues & Prerequisites
 1. **PHP CLI Executable Path:** Always invoke `I:\coding_world\laragon\bin\php\php-8.3.33-Win32-vs16-x64\php.exe` for artisan/tests to ensure full extension compatibility (`ext-zip`, `ext-mbstring`, `ext-gd`).

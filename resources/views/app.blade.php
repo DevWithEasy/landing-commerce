@@ -7,6 +7,11 @@
 
         <title inertia>{{ config('app.name', 'Landing Commerce') }}</title>
 
+        {{-- Google Fonts for Page Builder Typography (Hind Siliguri, Tiro Bangla, Inter) --}}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Tiro+Bangla:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
         @viteReactRefresh
         @vite(['resources/js/app.tsx', 'resources/css/app.css'])
         @inertiaHead

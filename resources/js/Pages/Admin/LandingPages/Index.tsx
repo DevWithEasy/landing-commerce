@@ -116,7 +116,7 @@ export default function LandingPagesIndex({
     };
 
     const handleCopyUrl = (slug: string) => {
-        const fullUrl = `${window.location.origin}/${slug}`;
+        const fullUrl = `${window.location.origin}/p/${slug}`;
         navigator.clipboard.writeText(fullUrl);
         setCopiedSlug(slug);
         setTimeout(() => setCopiedSlug(null), 2000);
@@ -399,7 +399,7 @@ export default function LandingPagesIndex({
                                                         )}
                                                     </div>
                                                     <div className="flex items-center space-x-2 mt-0.5 text-xs text-gray-500">
-                                                        <span className="font-mono text-gray-600">/{page.slug}</span>
+                                                        <span className="font-mono text-gray-600">/p/{page.slug}</span>
                                                         <button
                                                             type="button"
                                                             onClick={() => handleCopyUrl(page.slug)}
@@ -491,7 +491,7 @@ export default function LandingPagesIndex({
 
                                                 {/* Preview / Live link */}
                                                 <a
-                                                    href={`/${page.slug}`}
+                                                    href={`/p/${page.slug}`}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className={`p-1.5 rounded-lg border transition ${
@@ -589,7 +589,7 @@ export default function LandingPagesIndex({
                                 </label>
                                 <div className="flex items-center rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-primary-500">
                                     <span className="px-3 py-2 bg-gray-100 text-xs font-mono text-gray-500 border-r border-gray-300">
-                                        /
+                                        /p/
                                     </span>
                                     <input
                                         type="text"
@@ -605,7 +605,7 @@ export default function LandingPagesIndex({
                                     />
                                 </div>
                                 <p className="text-[11px] text-gray-500 mt-1">
-                                    Public URL: <span className="font-mono text-gray-700">/{createSlug || 'your-slug'}</span>
+                                    Public URL: <span className="font-mono text-gray-700">/p/{createSlug || 'your-slug'}</span>
                                 </p>
                                 {formErrors.slug && (
                                     <p className="text-xs text-rose-600 mt-1">{formErrors.slug}</p>
@@ -804,7 +804,7 @@ export default function LandingPagesIndex({
                                 </label>
                                 <div className="flex items-center rounded-lg border border-gray-300 overflow-hidden focus-within:ring-2 focus-within:ring-primary-500">
                                     <span className="px-3 py-2 bg-gray-100 text-xs font-mono text-gray-500 border-r border-gray-300">
-                                        /
+                                        /p/
                                     </span>
                                     <input
                                         type="text"
@@ -816,6 +816,9 @@ export default function LandingPagesIndex({
                                         className="flex-1 px-3 py-2 text-sm font-mono focus:outline-hidden"
                                     />
                                 </div>
+                                <p className="text-[11px] text-gray-500 mt-1">
+                                    Public URL: <span className="font-mono text-gray-700">/p/{editSlug || 'your-slug'}</span>
+                                </p>
                                 {formErrors.slug && (
                                     <p className="text-xs text-rose-600 mt-1">{formErrors.slug}</p>
                                 )}

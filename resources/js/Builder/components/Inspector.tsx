@@ -10,7 +10,6 @@ import {
     Maximize2,
     Palette,
     Plus,
-    Sliders,
     Sparkles,
     Square,
     Trash2,
@@ -19,6 +18,7 @@ import {
     Zap,
 } from 'lucide-react';
 import { useState } from 'react';
+import { PageSettingsInspector } from './PageSettingsInspector';
 import { useBuilderStore } from '../stores/useBuilderStore';
 import type {
     BenefitItem,
@@ -57,24 +57,17 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
         useBuilderStore();
 
     const [activeTab, setActiveTab] = useState<'content' | 'styles'>('content');
+    const [showPageSettings, setShowPageSettings] = useState(false);
 
     const selectedBlock = ast.blocks.find((b) => b.id === selectedBlockId);
 
-    if (!selectedBlock) {
+    if (!selectedBlock || showPageSettings) {
         return (
-            <aside
-                style={{ width: width ? `${width}px` : undefined }}
-                className="w-80 shrink-0 bg-white border-l border-gray-200 p-6 flex flex-col items-center justify-center text-center text-gray-400 select-none transition-[width] duration-75"
-            >
-                <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center mb-3">
-                    <Sliders className="w-6 h-6 text-gray-300" />
-                </div>
-                <h4 className="text-sm font-bold text-gray-700">No Block Selected</h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-[200px]">
-                    Click any block on the canvas or layers tree to configure its properties and
-                    styles.
-                </p>
-            </aside>
+            <PageSettingsInspector
+                width={width}
+                hasSelectedBlock={!!selectedBlock}
+                onBackToBlock={() => setShowPageSettings(false)}
+            />
         );
     }
 
@@ -114,14 +107,25 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
                     </span>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => setSelectedBlockId(null)}
-                    className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50"
-                    title="Close Inspector"
-                >
-                    <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center space-x-1.5">
+                    <button
+                        type="button"
+                        onClick={() => setShowPageSettings(true)}
+                        className="px-2 py-1 rounded-md text-[11px] font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 flex items-center space-x-1 transition-colors"
+                        title="পেজ সেটিংস (Page Settings)"
+                    >
+                        <Palette className="w-3.5 h-3.5" />
+                        <span>পেজ সেটিংস</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setSelectedBlockId(null)}
+                        className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200/50"
+                        title="Close Inspector"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             {/* Content vs Styles Tabs */}

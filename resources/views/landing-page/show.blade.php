@@ -38,19 +38,24 @@
         <meta name="twitter:image" content="{{ e($ogImage) }}">
     @endif
 
+    {{-- Google Fonts Typography (Hind Siliguri, Tiro Bangla, Inter) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Tiro+Bangla:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    {{-- Pre-compiled CSS & Fonts --}}
+    @vite(['resources/css/app.css'])
+
     {{-- Dynamic Theme & Typography Tokens --}}
     <style>
         :root {
             --primary-color: {{ e($primaryColor) }};
         }
         body {
-            background-color: {{ e($backgroundColor) }};
-            font-family: {{ e($fontFamily) }};
+            background-color: {{ e($backgroundColor) }} !important;
+            font-family: {!! $fontFamily !!} !important;
         }
     </style>
-
-    {{-- Pre-compiled CSS & Fonts --}}
-    @vite(['resources/css/app.css'])
 
     {{-- Marketing Pixels & Analytics (Head) --}}
     {!! $trackingHead ?? '' !!}

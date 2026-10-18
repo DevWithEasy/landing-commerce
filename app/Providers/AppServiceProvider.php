@@ -47,6 +47,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-catalog', fn (User $user) => $user->canManageCatalog());
         Gate::define('manage-orders', fn (User $user) => $user->canManageOrders());
         Gate::define('manage-landing-pages', fn (User $user) => $user->canManageLandingPages());
+        Gate::define('manage-categories', fn (User $user) => $user->canManageCategories());
+        Gate::define('manage-policy-pages', fn (User $user) => $user->canManagePolicyPages());
+        Gate::define('manage-appearance', fn (User $user) => $user->canManageAppearance());
         Gate::define('manage-shipping-methods', fn (User $user) => $user->canManageShippingAndPayments());
         Gate::define('manage-payment-methods', fn (User $user) => $user->canManageShippingAndPayments());
 

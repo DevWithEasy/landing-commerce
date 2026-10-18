@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Check, Package, Tag, Trash2, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Check, FolderTree, Package, Tag, Trash2, UploadCloud } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
@@ -18,13 +18,19 @@ interface EditProductFormData {
     sale_price: string;
     has_variants: boolean;
     status: 'draft' | 'active' | 'archived';
+    category_ids: number[];
     variants: VariantRowItem[];
     images: File[];
     variant_images?: Record<number, File>;
     remove_variant_images?: number[];
 }
 
-export default function Edit({ product }: ProductEditProps) {
+export default function Edit({
+    product,
+    categories = [],
+}: ProductEditProps & {
+    categories?: Array<{ id: number; name: string; parent_id: number | null }>;
+}) {
     const initialVariants: VariantRowItem[] = (product.variants || []).map((v) => ({
         id: v.id,
         name: v.name,
@@ -47,6 +53,7 @@ export default function Edit({ product }: ProductEditProps) {
         sale_price: product.sale_price !== null ? String(product.sale_price) : '',
         has_variants: Boolean(product.has_variants),
         status: product.status || 'draft',
+        category_ids: (product.categories || []).map((c) => c.id),
         variants: initialVariants,
         images: [],
         variant_images: {},
@@ -251,6 +258,56 @@ export default function Edit({ product }: ProductEditProps) {
                         </div>
                     </div>
                 </Card>
+
+                {/* Categories */}
+                {categories && categories.length > 0 && (
+                    <Card padding="md" className="space-y-4">
+                        <div className="flex items-center space-x-2 border-b border-gray-100 pb-3">
+                            <FolderTree className="w-5 h-5 text-primary-600" />
+                            <div>
+                                <h3 className="text-base font-bold text-gray-900">Categories</h3>
+                                <p className="text-xs text-gray-500">
+                                    Assign this product to one or more storefront categories.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {categories.map((cat) => {
+                                const isChecked = data.category_ids.includes(cat.id);
+                                return (
+                                    <label
+                                        key={cat.id}
+                                        className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer text-sm transition ${
+                                            isChecked
+                                                ? 'border-indigo-500 bg-indigo-50/40 text-indigo-900 font-semibold'
+                                                : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setData('category_ids', [...data.category_ids, cat.id]);
+                                                } else {
+                                                    setData(
+                                                        'category_ids',
+                                                        data.category_ids.filter((id) => id !== cat.id)
+                                                    );
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                        />
+                                        <span className="truncate">
+                                            {cat.parent_id ? `↳ ${cat.name}` : cat.name}
+                                        </span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </Card>
+                )}
 
                 {/* Pricing Structure */}
                 <Card padding="md" className="space-y-4">

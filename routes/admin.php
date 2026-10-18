@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Auth\Controllers\AuthController;
+use App\Modules\Catalog\Controllers\CategoryController;
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
 use App\Modules\Orders\Controllers\OrderController;
@@ -8,7 +9,9 @@ use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
 use App\Modules\PageBuilder\Controllers\LandingPageController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
+use App\Modules\PageBuilder\Controllers\PolicyPageController;
 use App\Modules\Payments\Controllers\PaymentMethodController;
+use App\Modules\Settings\Controllers\AppearanceController;
 use App\Modules\Settings\Controllers\SettingController;
 use App\Modules\Shipping\Controllers\ShippingMethodController;
 use App\Modules\Sms\Controllers\OrderSmsController;
@@ -39,6 +42,11 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
 
     Route::resource('products', ProductController::class);
 
+    // Category Management
+    Route::post('categories/{category}/toggle', [CategoryController::class, 'toggle'])
+        ->name('categories.toggle');
+    Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
+
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])
         ->name('products.images.store');
     Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])
@@ -68,6 +76,15 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::post('landing-pages/{landing_page}/revisions/{revision}/restore', [LandingPageRevisionController::class, 'restore'])
         ->name('landing-pages.revisions.restore');
     Route::resource('landing-pages', LandingPageController::class)->except(['create', 'show', 'edit']);
+
+    // Policy & Content Pages Management
+    Route::post('pages/{page}/toggle', [PolicyPageController::class, 'toggle'])
+        ->name('pages.toggle');
+    Route::resource('pages', PolicyPageController::class)->except(['create', 'show', 'edit']);
+
+    // Appearance & Storefront Theme Customization
+    Route::get('appearance/theme', [AppearanceController::class, 'index'])->name('appearance.theme');
+    Route::post('appearance/theme', [AppearanceController::class, 'update'])->name('appearance.theme.update');
 
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

@@ -101,12 +101,12 @@ export function HtmlBlock({ props, styles = {}, isEditor = false }: HtmlBlockCom
                     dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
                 />
             ) : isEditor ? (
-                <div className="max-w-2xl mx-auto my-6 p-8 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50/80 text-center select-none">
-                    <div className="w-12 h-12 mx-auto rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 mb-3">
-                        <Code className="w-6 h-6" />
+                <div className="max-w-2xl mx-auto my-2 p-4 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/80 text-center select-none">
+                    <div className="w-9 h-9 mx-auto rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 mb-2">
+                        <Code className="w-5 h-5" />
                     </div>
-                    <h4 className="text-sm font-bold text-gray-800">কাস্টম HTML ও CSS সেকশন</h4>
-                    <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+                    <h4 className="text-xs font-bold text-gray-800">কাস্টম HTML ও CSS সেকশন</h4>
+                    <p className="text-[11px] text-gray-500 mt-1 max-w-md mx-auto">
                         ডানপাশের Inspector প্যানেল থেকে আপনার কাস্টম HTML ও CSS কোড যোগ করুন। কোড লিখলে তা সাথে সাথে এখানে লাইভ প্রিভিউ দেখাবে।
                     </p>
                 </div>

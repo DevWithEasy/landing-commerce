@@ -123,7 +123,11 @@ class CreateProductAction
                 ]);
             }
 
-            return $product->load('variants');
+            if (isset($data['category_ids'])) {
+                $product->categories()->sync((array) $data['category_ids']);
+            }
+
+            return $product->load(['variants', 'categories']);
         });
     }
 

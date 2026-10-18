@@ -35,6 +35,8 @@ class StoreProductRequest extends FormRequest
             'status' => ['nullable', 'string', 'in:draft,active,archived'],
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
             'manage_stock' => ['nullable', 'boolean'],
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
             'variant_matrix_attributes' => ['nullable', 'array'],
             'variant_matrix_attributes.*' => ['array'],
             'variants' => ['nullable', 'array'],

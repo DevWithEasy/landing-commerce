@@ -1,18 +1,21 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
+    Activity,
     AlertCircle,
     CheckCircle,
     CreditCard,
+    FileText,
+    FolderTree,
     Layers,
     LogOut,
     Menu,
     Package,
+    Palette,
     Settings,
     Shield,
     ShoppingCart,
     Store,
     Truck,
-    Activity,
     X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -54,10 +57,22 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                           window.location.pathname === '/admin',
                   },
                   {
+                      name: 'Categories',
+                      href: '/admin/categories',
+                      icon: FolderTree,
+                      current: window.location.pathname.startsWith('/admin/categories'),
+                  },
+                  {
                       name: 'Landing Pages',
                       href: '/admin/landing-pages',
                       icon: Layers,
                       current: window.location.pathname.startsWith('/admin/landing-pages'),
+                  },
+                  {
+                      name: 'Policy Pages',
+                      href: '/admin/pages',
+                      icon: FileText,
+                      current: window.location.pathname.startsWith('/admin/pages'),
                   },
               ]
             : []),
@@ -80,6 +95,12 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                       href: '/admin/payment-methods',
                       icon: CreditCard,
                       current: window.location.pathname.startsWith('/admin/payment-methods'),
+                  },
+                  {
+                      name: 'Appearance & Theme',
+                      href: '/admin/appearance/theme',
+                      icon: Palette,
+                      current: window.location.pathname.startsWith('/admin/appearance'),
                   },
               ]
             : []),

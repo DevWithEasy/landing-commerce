@@ -7,6 +7,7 @@ namespace App\Modules\Catalog\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Actions\CreateProductAction;
 use App\Modules\Catalog\Actions\UpdateProductAction;
+use App\Modules\Catalog\Models\Category;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductImage;
 use App\Modules\Catalog\Requests\StoreProductRequest;
@@ -87,7 +88,9 @@ class ProductController extends Controller
     {
         Gate::authorize('create', Product::class);
 
-        return Inertia::render('Admin/Products/Create');
+        return Inertia::render('Admin/Products/Create', [
+            'categories' => Category::orderBy('name')->get(['id', 'name', 'parent_id']),
+        ]);
     }
 
     /**
@@ -155,12 +158,14 @@ class ProductController extends Controller
         Gate::authorize('view', $product);
 
         $product->load([
+            'categories',
             'variants' => fn ($q) => $q->orderBy('id')->with(['images' => fn ($iq) => $iq->orderBy('sort_order')]),
             'images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order'),
         ]);
 
         return Inertia::render('Admin/Products/Edit', [
             'product' => $product,
+            'categories' => Category::orderBy('name')->get(['id', 'name', 'parent_id']),
         ]);
     }
 
