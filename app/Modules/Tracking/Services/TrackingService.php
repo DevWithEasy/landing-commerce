@@ -12,6 +12,8 @@ class TrackingService
 {
     public const META_PIXEL_REGEX = '/^[0-9]{8,20}$/';
 
+    public const META_TEST_EVENT_CODE_REGEX = '/^[A-Za-z0-9_-]{3,50}$/';
+
     public const GA4_REGEX = '/^G-[A-Z0-9]{4,15}$/i';
 
     public const GOOGLE_ADS_ID_REGEX = '/^(AW-)?[0-9]{6,15}$/i';
@@ -46,6 +48,8 @@ class TrackingService
             'meta_pixel' => [
                 'enabled' => filter_var($this->settingsService->get('tracking.meta_pixel.enabled', config('tracking.meta_pixel.enabled', false)), FILTER_VALIDATE_BOOLEAN),
                 'pixel_id' => (string) $this->settingsService->get('tracking.meta_pixel.pixel_id', config('tracking.meta_pixel.pixel_id', '')),
+                'access_token' => (string) $this->settingsService->get('tracking.meta_pixel.access_token', config('tracking.meta_pixel.access_token', '')),
+                'test_event_code' => (string) $this->settingsService->get('tracking.meta_pixel.test_event_code', config('tracking.meta_pixel.test_event_code', '')),
             ],
             'ga4' => [
                 'enabled' => filter_var($this->settingsService->get('tracking.ga4.enabled', config('tracking.ga4.enabled', false)), FILTER_VALIDATE_BOOLEAN),
@@ -85,6 +89,13 @@ class TrackingService
         $this->settingsService->set('tracking.meta_pixel.enabled', ! empty($input['meta_pixel']['enabled']) ? '1' : '0', 'tracking');
         $this->settingsService->set('tracking.meta_pixel.pixel_id', trim((string) ($input['meta_pixel']['pixel_id'] ?? '')), 'tracking');
 
+        $metaToken = trim((string) ($input['meta_pixel']['access_token'] ?? ''));
+        if ($metaToken !== '' && $metaToken !== SettingsService::SECRET_MASK && ! str_starts_with($metaToken, '••••')) {
+            $this->settingsService->set('tracking.meta_pixel.access_token', $metaToken, 'tracking', true);
+        }
+
+        $this->settingsService->set('tracking.meta_pixel.test_event_code', trim((string) ($input['meta_pixel']['test_event_code'] ?? '')), 'tracking');
+
         $this->settingsService->set('tracking.ga4.enabled', ! empty($input['ga4']['enabled']) ? '1' : '0', 'tracking');
         $this->settingsService->set('tracking.ga4.measurement_id', strtoupper(trim((string) ($input['ga4']['measurement_id'] ?? ''))), 'tracking');
 
@@ -120,6 +131,11 @@ class TrackingService
                 $errors['meta_pixel.pixel_id'] = 'Meta (Facebook) Pixel চালু রাখতে Pixel ID প্রদান করা আবশ্যক।';
             } elseif (! preg_match(self::META_PIXEL_REGEX, $pixelId)) {
                 $errors['meta_pixel.pixel_id'] = 'Meta Pixel ID শুধুমাত্র ৮ থেকে ২০ ডিজিটের সংখ্যা হতে হবে (যেমন: 123456789012345)।';
+            }
+
+            $testCode = trim((string) ($settings['meta_pixel']['test_event_code'] ?? ''));
+            if ($testCode !== '' && ! preg_match(self::META_TEST_EVENT_CODE_REGEX, $testCode)) {
+                $errors['meta_pixel.test_event_code'] = 'Meta Test Event Code ফরম্যাট সঠিক নয় (যেমন: TEST12345)।';
             }
         }
 
@@ -196,6 +212,7 @@ class TrackingService
                     'meta_pixel' => [
                         'enabled' => ! empty($pageSettings['meta_pixel']['enabled']) && preg_match(self::META_PIXEL_REGEX, (string) ($pageSettings['meta_pixel']['pixel_id'] ?? '')),
                         'pixel_id' => (string) ($pageSettings['meta_pixel']['pixel_id'] ?? ''),
+                        'test_event_code' => (string) ($pageSettings['meta_pixel']['test_event_code'] ?? ''),
                     ],
                     'ga4' => [
                         'enabled' => ! empty($pageSettings['ga4']['enabled']) && preg_match(self::GA4_REGEX, (string) ($pageSettings['ga4']['measurement_id'] ?? '')),
@@ -231,6 +248,7 @@ class TrackingService
             'meta_pixel' => [
                 'enabled' => $global['meta_pixel']['enabled'] && preg_match(self::META_PIXEL_REGEX, (string) $global['meta_pixel']['pixel_id']),
                 'pixel_id' => (string) $global['meta_pixel']['pixel_id'],
+                'test_event_code' => (string) ($global['meta_pixel']['test_event_code'] ?? ''),
             ],
             'ga4' => [
                 'enabled' => $global['ga4']['enabled'] && preg_match(self::GA4_REGEX, (string) $global['ga4']['measurement_id']),
@@ -308,6 +326,10 @@ class TrackingService
         // Meta (Facebook) Pixel
         if (! empty($resolved['meta_pixel']['enabled']) && ! empty($resolved['meta_pixel']['pixel_id'])) {
             $fbId = htmlspecialchars($resolved['meta_pixel']['pixel_id'], ENT_QUOTES, 'UTF-8');
+            $testEventCode = ! empty($resolved['meta_pixel']['test_event_code'])
+                ? htmlspecialchars($resolved['meta_pixel']['test_event_code'], ENT_QUOTES, 'UTF-8')
+                : '';
+
             $html .= "<!-- Meta Pixel Code -->\n";
             $html .= "<script>\n";
             $html .= "!function(f,b,e,v,n,t,s)\n";
@@ -319,7 +341,12 @@ class TrackingService
             $html .= "s.parentNode.insertBefore(t,s)}(window, document,'script',\n";
             $html .= "'https://connect.facebook.net/en_US/fbevents.js');\n";
             $html .= "fbq('init', '{$fbId}');\n";
-            $html .= "fbq('track', 'PageView');\n";
+            if ($testEventCode !== '') {
+                $html .= "window._lcMetaTestEventCode = '{$testEventCode}';\n";
+                $html .= "fbq('track', 'PageView', {}, { test_event_code: '{$testEventCode}' });\n";
+            } else {
+                $html .= "fbq('track', 'PageView');\n";
+            }
             $html .= "</script>\n";
             $html .= "<!-- End Meta Pixel Code -->\n";
         }
@@ -349,6 +376,9 @@ class TrackingService
             $html .= "<!-- ViewContent Standard Event -->\n";
             $html .= "<script>\n";
             if (! empty($resolved['meta_pixel']['enabled'])) {
+                $metaEventOpts = ! empty($resolved['meta_pixel']['test_event_code'])
+                    ? ", { test_event_code: '".htmlspecialchars($resolved['meta_pixel']['test_event_code'], ENT_QUOTES, 'UTF-8')."' }"
+                    : '';
                 $html .= "  if (typeof fbq === 'function') {\n";
                 $html .= "    fbq('track', 'ViewContent', {\n";
                 $html .= "      content_name: '{$pTitle}',\n";
@@ -356,7 +386,7 @@ class TrackingService
                 $html .= "      content_type: 'product',\n";
                 $html .= "      value: {$price},\n";
                 $html .= "      currency: 'BDT'\n";
-                $html .= "    });\n";
+                $html .= "    }{$metaEventOpts});\n";
                 $html .= "  }\n";
             }
             if ($hasGa4) {

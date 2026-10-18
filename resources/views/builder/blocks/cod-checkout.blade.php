@@ -1,12 +1,12 @@
 @php
     $buttonText = $props['buttonText'] ?? 'Confirm Order - Cash on Delivery';
-    $nameLabel = $props['nameLabel'] ?? 'আপনার নাম (Your Name)';
+    $nameLabel = $props['nameLabel'] ?? 'আপনার নাম';
     $namePlaceholder = $props['namePlaceholder'] ?? 'আপনার পুরো নাম লিখুন...';
-    $phoneLabel = $props['phoneLabel'] ?? 'মোবাইল নাম্বার (Mobile Number)';
+    $phoneLabel = $props['phoneLabel'] ?? 'মোবাইল নাম্বার';
     $phonePlaceholder = $props['phonePlaceholder'] ?? '01XXXXXXXXX (১১ ডিজিট)';
-    $addressLabel = $props['addressLabel'] ?? 'সম্পূর্ণ ডেলিভারি ঠিকানা (Full Address)';
+    $addressLabel = $props['addressLabel'] ?? 'সম্পূর্ণ ডেলিভারি ঠিকানা';
     $addressPlaceholder = $props['addressPlaceholder'] ?? 'বাসা/হোল্ডিং নং, রোড নং, এলাকা, থানা ও জেলা...';
-    $shippingLabel = $props['shippingLabel'] ?? 'শিপিং মেথড (Shipping Method)';
+    $shippingLabel = $props['shippingLabel'] ?? 'শিপিং মেথড';
     $mode = $selectionMode ?? ($props['selectionMode'] ?? 'single');
     $defaultSelection = $props['defaultSelection'] ?? 'first';
     $defaultSelectedId = (int) ($props['defaultSelectedId'] ?? 0);
@@ -22,18 +22,31 @@
     $activeMethods = $shippingMethods ?? collect();
     if ($activeMethods->isEmpty()) {
         $activeMethods = collect([
-            (object) ['id' => 1, 'name' => 'Inside Dhaka', 'rate' => 70.00, 'delivery_time' => '24-48 hours', 'zone_code' => 'inside_dhaka'],
-            (object) ['id' => 2, 'name' => 'Outside Dhaka', 'rate' => 130.00, 'delivery_time' => '48-72 hours', 'zone_code' => 'outside_dhaka'],
+            (object) [
+                'id' => 1,
+                'name' => 'Inside Dhaka',
+                'rate' => 70.0,
+                'delivery_time' => '24-48 hours',
+                'zone_code' => 'inside_dhaka',
+            ],
+            (object) [
+                'id' => 2,
+                'name' => 'Outside Dhaka',
+                'rate' => 130.0,
+                'delivery_time' => '48-72 hours',
+                'zone_code' => 'outside_dhaka',
+            ],
         ]);
     }
     $firstMethod = $activeMethods->first();
-    $defaultShippingFee = (float) ($firstMethod?->rate ?? 70.00);
+    $defaultShippingFee = (float) ($firstMethod?->rate ?? 70.0);
 @endphp
 
 <section id="cod-checkout" {!! $styleAttribute !!} class="w-full py-12 bg-slate-50 border-t border-slate-200">
     <div class="max-w-2xl mx-auto px-4 sm:px-6">
         <div class="text-center mb-8">
-            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary-100 text-primary-800 mb-2">
+            <span
+                class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary-100 text-primary-800 mb-2">
                 Fast & Secure Checkout
             </span>
             <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">
@@ -47,7 +60,8 @@
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8">
             <form id="landing-cod-form" method="POST" action="{{ route('checkout.cod.store') }}" class="space-y-4">
                 @csrf
-                <input type="hidden" name="idempotency_key" id="cod_idempotency_key" value="{{ Str::uuid()->toString() }}" />
+                <input type="hidden" name="idempotency_key" id="cod_idempotency_key"
+                    value="{{ Str::uuid()->toString() }}" />
                 <input type="hidden" name="district" id="cod_district" value="Dhaka" />
 
                 {{-- Off-screen honeypot protection --}}
@@ -58,7 +72,7 @@
                 </div>
 
                 {{-- Product selection cards in Checkout form --}}
-                @if($hasMultiple)
+                @if ($hasMultiple)
                     <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 mb-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -70,15 +84,22 @@
                         </div>
 
                         <div class="space-y-2.5">
-                            @foreach($products as $pIndex => $pItem)
+                            @foreach ($products as $pIndex => $pItem)
                                 @php
                                     $pVar = $pItem->variants->first();
                                     $pVarId = $pVar?->id ?? 0;
-                                    $pEffPrice = (float) ($pVar?->sale_price ?? ($pVar?->regular_price ?? ($pItem->sale_price ?? $pItem->regular_price)));
+                                    $pEffPrice =
+                                        (float) ($pVar?->sale_price ??
+                                            ($pVar?->regular_price ?? ($pItem->sale_price ?? $pItem->regular_price)));
                                     $pRegPrice = (float) ($pVar?->regular_price ?? $pItem->regular_price);
-                                    $pHasDiscount = ($pEffPrice < $pRegPrice);
-                                    $pDiscountPct = $pHasDiscount && $pRegPrice > 0 ? round((($pRegPrice - $pEffPrice) / $pRegPrice) * 100) : 0;
-                                    $pImgUrl = $pVar?->images?->first()?->url ?? ($pItem->primaryImage?->url ?? ($pItem->images->first()?->url ?? null));
+                                    $pHasDiscount = $pEffPrice < $pRegPrice;
+                                    $pDiscountPct =
+                                        $pHasDiscount && $pRegPrice > 0
+                                            ? round((($pRegPrice - $pEffPrice) / $pRegPrice) * 100)
+                                            : 0;
+                                    $pImgUrl =
+                                        $pVar?->images?->first()?->url ??
+                                        ($pItem->primaryImage?->url ?? ($pItem->images->first()?->url ?? null));
 
                                     // Per-product badge customization
                                     $itemBadge = $productBadges[$pItem->id] ?? ($pIndex === 0 ? $badgeText : null);
@@ -87,26 +108,25 @@
                                     if ($defaultSelection === 'all') {
                                         $isItemChecked = true;
                                     } elseif ($defaultSelection === 'specific' && $defaultSelectedId > 0) {
-                                        $isItemChecked = ($pItem->id === $defaultSelectedId);
+                                        $isItemChecked = $pItem->id === $defaultSelectedId;
                                     } else {
-                                        $isItemChecked = ($pIndex === 0);
+                                        $isItemChecked = $pIndex === 0;
                                     }
                                 @endphp
-                                <div class="cod-product-card relative flex flex-col p-3 rounded-xl border bg-white transition hover:border-primary-400 {{ $isItemChecked ? 'border-primary-500 ring-2 ring-primary-500/20 bg-primary-50/20' : 'border-slate-200' }}">
+                                <div
+                                    class="cod-product-card relative flex flex-col p-3 rounded-xl border bg-white transition hover:border-primary-400 {{ $isItemChecked ? 'border-primary-500 ring-2 ring-primary-500/20 bg-primary-50/20' : 'border-slate-200' }}">
                                     <label class="flex items-center justify-between cursor-pointer w-full">
                                         <div class="flex items-center space-x-3 flex-1 min-w-0">
                                             {{-- Selector Input --}}
-                                            @if($mode === 'multiple')
+                                            @if ($mode === 'multiple')
                                                 <input type="checkbox"
                                                     class="cod-product-toggle rounded text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
                                                     data-product-id="{{ $pItem->id }}"
                                                     data-variant-id="{{ $pVarId }}"
-                                                    data-price="{{ $pEffPrice }}"
-                                                    data-title="{{ e($pItem->title) }}"
+                                                    data-price="{{ $pEffPrice }}" data-title="{{ e($pItem->title) }}"
                                                     {{ $isItemChecked ? 'checked' : '' }} />
                                             @else
-                                                <input type="radio"
-                                                    name="cod_radio_product"
+                                                <input type="radio" name="cod_radio_product"
                                                     class="cod-product-toggle text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
                                                     data-product-id="{{ $pItem->id }}"
                                                     data-variant-id="{{ $pVarId }}"
@@ -116,11 +136,18 @@
                                             @endif
 
                                             {{-- Product Thumbnail --}}
-                                            <div class="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                                @if($pImgUrl)
-                                                    <img src="{{ e($pImgUrl) }}" alt="{{ e($pItem->title) }}" class="cod-card-img w-full h-full object-cover" />
+                                            <div
+                                                class="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                                @if ($pImgUrl)
+                                                    <img src="{{ e($pImgUrl) }}" alt="{{ e($pItem->title) }}"
+                                                        class="cod-card-img w-full h-full object-cover" />
                                                 @else
-                                                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                                    <svg class="w-6 h-6 text-gray-300" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                    </svg>
                                                 @endif
                                             </div>
 
@@ -130,22 +157,24 @@
                                                     <span class="text-xs font-bold text-slate-800 truncate block">
                                                         {{ $pItem->title }}
                                                     </span>
-                                                    @if(!empty($itemBadge))
-                                                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white flex-shrink-0">
+                                                    @if (!empty($itemBadge))
+                                                        <span
+                                                            class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white flex-shrink-0">
                                                             {{ $itemBadge }}
                                                         </span>
                                                     @endif
                                                 </div>
 
                                                 <div class="flex items-baseline space-x-2">
-                                                    <span class="cod-card-price text-xs font-extrabold text-primary-600">
+                                                    <span
+                                                        class="cod-card-price text-xs font-extrabold text-primary-600">
                                                         ৳{{ number_format($pEffPrice, 0) }}
                                                     </span>
-                                                    @if($pHasDiscount)
+                                                    @if ($pHasDiscount)
                                                         <span class="text-[10px] text-gray-400 line-through">
                                                             ৳{{ number_format($pRegPrice, 0) }}
                                                         </span>
-                                                        @if($showDiscountBadge)
+                                                        @if ($showDiscountBadge)
                                                             <span class="text-[10px] font-bold text-rose-600">
                                                                 ({{ $pDiscountPct }}% OFF)
                                                             </span>
@@ -157,21 +186,22 @@
                                     </label>
 
                                     {{-- WooCommerce style variants selector inside card --}}
-                                    @if($pItem->variants->count() > 1)
-                                        <div class="cod-variant-container mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
-                                            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mr-1">ভ্যারিয়েন্ট:</span>
-                                            @foreach($pItem->variants as $vIdx => $vObj)
+                                    @if ($pItem->variants->count() > 1)
+                                        <div
+                                            class="cod-variant-container mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
+                                            <span
+                                                class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mr-1">ভ্যারিয়েন্ট:</span>
+                                            @foreach ($pItem->variants as $vIdx => $vObj)
                                                 @php
                                                     $vItemPrice = (float) ($vObj->sale_price ?? $vObj->regular_price);
                                                     $vItemImg = $vObj->images->first()?->url ?? $pImgUrl;
-                                                    $isVActive = ($vIdx === 0);
+                                                    $isVActive = $vIdx === 0;
                                                 @endphp
                                                 <button type="button"
                                                     class="cod-variant-btn px-2 py-0.5 text-[11px] font-medium rounded-md border transition {{ $isVActive ? 'border-primary-600 bg-primary-50 text-primary-900 ring-1 ring-primary-500 font-bold' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50' }}"
                                                     data-product-id="{{ $pItem->id }}"
                                                     data-variant-id="{{ $vObj->id }}"
-                                                    data-price="{{ $vItemPrice }}"
-                                                    data-image="{{ $vItemImg }}"
+                                                    data-price="{{ $vItemPrice }}" data-image="{{ $vItemImg }}"
                                                     data-name="{{ e($vObj->name) }}">
                                                     {{ $vObj->name }}
                                                 </button>
@@ -186,53 +216,69 @@
 
                 {{-- Hidden container for dynamic items inputs --}}
                 <div id="cod-items-container">
-                    @if($hasMultiple)
-                        @foreach($products as $idx => $item)
+                    @if ($hasMultiple)
+                        @foreach ($products as $idx => $item)
                             @php
                                 $varId = $item->variants->first()?->id ?? 0;
-                                $effectivePrice = (float) ($item->variants->first()?->sale_price ?? ($item->variants->first()?->regular_price ?? ($item->sale_price ?? $item->regular_price)));
+                                $effectivePrice =
+                                    (float) ($item->variants->first()?->sale_price ??
+                                        ($item->variants->first()?->regular_price ??
+                                            ($item->sale_price ?? $item->regular_price)));
                                 if ($defaultSelection === 'all') {
                                     $isChecked = true;
                                 } elseif ($defaultSelection === 'specific' && $defaultSelectedId > 0) {
-                                    $isChecked = ($item->id === $defaultSelectedId);
+                                    $isChecked = $item->id === $defaultSelectedId;
                                 } else {
-                                    $isChecked = ($idx === 0);
+                                    $isChecked = $idx === 0;
                                 }
                             @endphp
-                            @if($isChecked)
-                                <input type="hidden" class="cod-item-input" name="items[{{ $idx }}][variant_id]" value="{{ $varId }}" data-product-id="{{ $item->id }}" data-price="{{ $effectivePrice }}" data-title="{{ e($item->title) }}" />
-                                <input type="hidden" class="cod-item-qty" name="items[{{ $idx }}][quantity]" value="1" />
+                            @if ($isChecked)
+                                <input type="hidden" class="cod-item-input"
+                                    name="items[{{ $idx }}][variant_id]" value="{{ $varId }}"
+                                    data-product-id="{{ $item->id }}" data-price="{{ $effectivePrice }}"
+                                    data-title="{{ e($item->title) }}" />
+                                <input type="hidden" class="cod-item-qty" name="items[{{ $idx }}][quantity]"
+                                    value="1" />
                             @endif
                         @endforeach
                     @elseif($firstVariantId)
-                        <input type="hidden" class="cod-item-input" name="items[0][variant_id]" value="{{ $firstVariantId }}" data-price="{{ (float) ($firstProduct?->sale_price ?? $firstProduct?->regular_price ?? 0) }}" data-title="{{ e($firstProduct?->title ?? '') }}" />
+                        <input type="hidden" class="cod-item-input" name="items[0][variant_id]"
+                            value="{{ $firstVariantId }}"
+                            data-price="{{ (float) ($firstProduct?->sale_price ?? ($firstProduct?->regular_price ?? 0)) }}"
+                            data-title="{{ e($firstProduct?->title ?? '') }}" />
                         <input type="hidden" class="cod-item-qty" name="items[0][quantity]" value="1" />
                     @endif
                 </div>
 
                 {{-- Alert Box for Errors --}}
-                <div id="cod-error-box" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium"></div>
+                <div id="cod-error-box"
+                    class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
+                </div>
 
                 {{-- Customer Fields (Name, Phone, Address) - Fully Customizable --}}
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         {{ $nameLabel }} <span class="text-rose-500">*</span>
                     </label>
-                    <input type="text" name="customer_name" required placeholder="{{ $namePlaceholder }}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white" />
+                    <input type="text" name="customer_name" required placeholder="{{ $namePlaceholder }}"
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         {{ $phoneLabel }} <span class="text-rose-500">*</span>
                     </label>
-                    <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}" pattern="01[3-9][0-9]{8}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-mono" />
+                    <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}"
+                        pattern="01[3-9][0-9]{8}"
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-mono" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         {{ $addressLabel }} <span class="text-rose-500">*</span>
                     </label>
-                    <textarea name="delivery_address" required rows="2" placeholder="{{ $addressPlaceholder }}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white"></textarea>
+                    <textarea name="delivery_address" required rows="2" placeholder="{{ $addressPlaceholder }}"
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white"></textarea>
                 </div>
 
                 {{-- Shipping Method Dropdown --}}
@@ -241,14 +287,18 @@
                         {{ $shippingLabel }} <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
-                        <select name="shipping_method_id" id="cod_shipping_method" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-medium">
-                            @foreach($activeMethods as $sMethod)
+                        <select name="shipping_method_id" id="cod_shipping_method"
+                            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-medium">
+                            @foreach ($activeMethods as $sMethod)
                                 @php
-                                    $sRate = (float) ($sMethod->rate ?? 70.00);
+                                    $sRate = (float) ($sMethod->rate ?? 70.0);
                                     $sTime = $sMethod->delivery_time ? "({$sMethod->delivery_time})" : '';
-                                    $zoneStr = str_contains(strtolower($sMethod->name), 'inside') ? 'Dhaka' : 'Outside Dhaka';
+                                    $zoneStr = str_contains(strtolower($sMethod->name), 'inside')
+                                        ? 'Dhaka'
+                                        : 'Outside Dhaka';
                                 @endphp
-                                <option value="{{ $sMethod->id }}" data-rate="{{ $sRate }}" data-zone="{{ $zoneStr }}" {{ $loop->first ? 'selected' : '' }}>
+                                <option value="{{ $sMethod->id }}" data-rate="{{ $sRate }}"
+                                    data-zone="{{ $zoneStr }}" {{ $loop->first ? 'selected' : '' }}>
                                     {{ $sMethod->name }} — ৳{{ number_format($sRate, 0) }} {{ $sTime }}
                                 </option>
                             @endforeach
@@ -264,18 +314,26 @@
                     </div>
                     <div class="flex justify-between text-slate-600">
                         <span>Delivery Charge:</span>
-                        <span id="cod-summary-shipping" class="font-bold text-emerald-600">৳{{ number_format($defaultShippingFee, 0) }}</span>
+                        <span id="cod-summary-shipping"
+                            class="font-bold text-emerald-600">৳{{ number_format($defaultShippingFee, 0) }}</span>
                     </div>
-                    <div class="border-t border-slate-200 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
+                    <div
+                        class="border-t border-slate-200 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
                         <span>Total Payable:</span>
                         <span id="cod-summary-total" class="text-lg font-black text-primary-600">৳0</span>
                     </div>
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" id="cod-submit-btn" class="w-full py-4 px-6 rounded-xl text-white font-bold text-base bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                    <button type="submit" id="cod-submit-btn"
+                        class="w-full py-4 px-6 rounded-xl text-white font-bold text-base bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
                         <span id="cod-btn-spinner" class="hidden">
-                            <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                            <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10"
+                                    stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
                         </span>
                         <span id="cod-btn-text">{{ $buttonText }}</span>
                     </button>
@@ -286,302 +344,290 @@
 </section>
 
 <script>
-(function() {
-    function initCodCheckout() {
-        var form = document.getElementById('landing-cod-form');
-        if (!form) return;
+    (function() {
+        function initCodCheckout() {
+            var form = document.getElementById('landing-cod-form');
+            if (!form) return;
 
-        var itemsContainer = document.getElementById('cod-items-container');
-        var subtotalEl = document.getElementById('cod-summary-subtotal');
-        var shippingEl = document.getElementById('cod-summary-shipping');
-        var totalEl = document.getElementById('cod-summary-total');
-        var errorBox = document.getElementById('cod-error-box');
-        var submitBtn = document.getElementById('cod-submit-btn');
-        var btnSpinner = document.getElementById('cod-btn-spinner');
-        var btnText = document.getElementById('cod-btn-text');
-        var toggles = form.querySelectorAll('.cod-product-toggle');
-        var shippingSelect = document.getElementById('cod_shipping_method');
-        var districtInput = document.getElementById('cod_district');
-        var variantBtns = form.querySelectorAll('.cod-variant-btn');
+            var itemsContainer = document.getElementById('cod-items-container');
+            var subtotalEl = document.getElementById('cod-summary-subtotal');
+            var shippingEl = document.getElementById('cod-summary-shipping');
+            var totalEl = document.getElementById('cod-summary-total');
+            var errorBox = document.getElementById('cod-error-box');
+            var submitBtn = document.getElementById('cod-submit-btn');
+            var btnSpinner = document.getElementById('cod-btn-spinner');
+            var btnText = document.getElementById('cod-btn-text');
+            var toggles = form.querySelectorAll('.cod-product-toggle');
+            var shippingSelect = document.getElementById('cod_shipping_method');
+            var districtInput = document.getElementById('cod_district');
+            var variantBtns = form.querySelectorAll('.cod-variant-btn');
 
-        // Variant button click handler
-        variantBtns.forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+            // Variant button click handler
+            variantBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                var vid = btn.getAttribute('data-variant-id');
-                var vPrice = parseFloat(btn.getAttribute('data-price') || '0');
-                var vImg = btn.getAttribute('data-image');
-                var card = btn.closest('.cod-product-card');
-                if (!card) return;
+                    var vid = btn.getAttribute('data-variant-id');
+                    var vPrice = parseFloat(btn.getAttribute('data-price') || '0');
+                    var vImg = btn.getAttribute('data-image');
+                    var card = btn.closest('.cod-product-card');
+                    if (!card) return;
 
-                // Update toggle attributes and ensure checked
-                var toggle = card.querySelector('.cod-product-toggle');
-                if (toggle) {
-                    toggle.setAttribute('data-variant-id', vid);
-                    toggle.setAttribute('data-price', vPrice);
-                    if (!toggle.checked) {
-                        toggle.checked = true;
+                    // Update toggle attributes and ensure checked
+                    var toggle = card.querySelector('.cod-product-toggle');
+                    if (toggle) {
+                        toggle.setAttribute('data-variant-id', vid);
+                        toggle.setAttribute('data-price', vPrice);
+                        if (!toggle.checked) {
+                            toggle.checked = true;
+                        }
                     }
-                }
 
-                // Update active state in container
-                var container = card.querySelector('.cod-variant-container');
-                if (container) {
-                    container.querySelectorAll('.cod-variant-btn').forEach(function(b) {
-                        b.classList.remove('border-primary-600', 'bg-primary-50', 'text-primary-900', 'ring-1', 'ring-primary-500', 'font-bold');
-                        b.classList.add('border-gray-200', 'bg-white', 'text-gray-700');
-                    });
-                    btn.classList.add('border-primary-600', 'bg-primary-50', 'text-primary-900', 'ring-1', 'ring-primary-500', 'font-bold');
-                    btn.classList.remove('border-gray-200', 'bg-white', 'text-gray-700');
-                }
-
-                // Update card price text
-                var priceEl = card.querySelector('.cod-card-price');
-                if (priceEl) {
-                    priceEl.innerText = '৳' + Math.round(vPrice).toLocaleString();
-                }
-
-                // Update variant image if provided (WooCommerce style)
-                if (vImg) {
-                    var imgEl = card.querySelector('.cod-card-img');
-                    if (imgEl) {
-                        imgEl.src = vImg;
+                    // Update active state in container
+                    var container = card.querySelector('.cod-variant-container');
+                    if (container) {
+                        container.querySelectorAll('.cod-variant-btn').forEach(function(b) {
+                            b.classList.remove('border-primary-600', 'bg-primary-50',
+                                'text-primary-900', 'ring-1', 'ring-primary-500',
+                                'font-bold');
+                            b.classList.add('border-gray-200', 'bg-white', 'text-gray-700');
+                        });
+                        btn.classList.add('border-primary-600', 'bg-primary-50', 'text-primary-900',
+                            'ring-1', 'ring-primary-500', 'font-bold');
+                        btn.classList.remove('border-gray-200', 'bg-white', 'text-gray-700');
                     }
-                }
 
-                calculateFromToggles();
+                    // Update card price text
+                    var priceEl = card.querySelector('.cod-card-price');
+                    if (priceEl) {
+                        priceEl.innerText = '৳' + Math.round(vPrice).toLocaleString();
+                    }
+
+                    // Update variant image if provided (WooCommerce style)
+                    if (vImg) {
+                        var imgEl = card.querySelector('.cod-card-img');
+                        if (imgEl) {
+                            imgEl.src = vImg;
+                        }
+                    }
+
+                    calculateFromToggles();
+                });
             });
-        });
 
-        var currentSubtotal = 0;
+            var currentSubtotal = 0;
 
-        function getShippingRate() {
-            if (!shippingSelect) return 70;
-            var opt = shippingSelect.selectedOptions[0];
-            return opt ? parseFloat(opt.getAttribute('data-rate') || '70') : 70;
-        }
-
-        function updateTotals() {
-            var shipFee = getShippingRate();
-            if (shippingEl) shippingEl.innerText = '৳' + Math.round(shipFee).toLocaleString();
-            if (subtotalEl) subtotalEl.innerText = '৳' + Math.round(currentSubtotal).toLocaleString();
-            if (totalEl) totalEl.innerText = '৳' + Math.round(currentSubtotal + shipFee).toLocaleString();
-
-            if (shippingSelect && districtInput) {
+            function getShippingRate() {
+                if (!shippingSelect) return 70;
                 var opt = shippingSelect.selectedOptions[0];
-                var zoneStr = opt ? (opt.getAttribute('data-zone') || 'Dhaka') : 'Dhaka';
-                districtInput.value = zoneStr;
+                return opt ? parseFloat(opt.getAttribute('data-rate') || '70') : 70;
             }
-        }
 
-        function rebuildFromItems(items) {
-            if (!itemsContainer) return;
-            itemsContainer.innerHTML = '';
-            var subtotal = 0;
+            function updateTotals() {
+                var shipFee = getShippingRate();
+                if (shippingEl) shippingEl.innerText = '৳' + Math.round(shipFee).toLocaleString();
+                if (subtotalEl) subtotalEl.innerText = '৳' + Math.round(currentSubtotal).toLocaleString();
+                if (totalEl) totalEl.innerText = '৳' + Math.round(currentSubtotal + shipFee).toLocaleString();
 
-            items.forEach(function(item, idx) {
-                var inputVar = document.createElement('input');
-                inputVar.type = 'hidden';
-                inputVar.name = 'items[' + idx + '][variant_id]';
-                inputVar.value = item.variantId;
-                itemsContainer.appendChild(inputVar);
-
-                var inputQty = document.createElement('input');
-                inputQty.type = 'hidden';
-                inputQty.name = 'items[' + idx + '][quantity]';
-                inputQty.value = item.quantity || 1;
-                itemsContainer.appendChild(inputQty);
-
-                subtotal += (item.price || 0) * (item.quantity || 1);
-            });
-
-            currentSubtotal = subtotal;
-            updateTotals();
-        }
-
-        function calculateFromToggles() {
-            var selected = [];
-            toggles.forEach(function(t) {
-                var card = t.closest('.cod-product-card');
-                if (t.checked) {
-                    if (card) {
-                        card.classList.add('border-primary-500', 'ring-2', 'ring-primary-500/20', 'bg-primary-50/20');
-                        card.classList.remove('border-slate-200');
-                    }
-                    selected.push({
-                        productId: parseInt(t.getAttribute('data-product-id'), 10),
-                        variantId: parseInt(t.getAttribute('data-variant-id'), 10),
-                        price: parseFloat(t.getAttribute('data-price') || '0'),
-                        title: t.getAttribute('data-title'),
-                        quantity: 1
-                    });
-                } else {
-                    if (card) {
-                        card.classList.remove('border-primary-500', 'ring-2', 'ring-primary-500/20', 'bg-primary-50/20');
-                        card.classList.add('border-slate-200');
-                    }
+                if (shippingSelect && districtInput) {
+                    var opt = shippingSelect.selectedOptions[0];
+                    var zoneStr = opt ? (opt.getAttribute('data-zone') || 'Dhaka') : 'Dhaka';
+                    districtInput.value = zoneStr;
                 }
-            });
+            }
 
-            rebuildFromItems(selected);
-        }
+            function rebuildFromItems(items) {
+                if (!itemsContainer) return;
+                itemsContainer.innerHTML = '';
+                var subtotal = 0;
 
-        if (shippingSelect) {
-            shippingSelect.addEventListener('change', updateTotals);
-        }
+                items.forEach(function(item, idx) {
+                    var inputVar = document.createElement('input');
+                    inputVar.type = 'hidden';
+                    inputVar.name = 'items[' + idx + '][variant_id]';
+                    inputVar.value = item.variantId;
+                    itemsContainer.appendChild(inputVar);
 
-        if (toggles.length > 0) {
-            toggles.forEach(function(t) {
-                t.addEventListener('change', calculateFromToggles);
-            });
-            calculateFromToggles();
-        } else {
-            // Single product initial calculation
-            var existingInputs = itemsContainer.querySelectorAll('.cod-item-input');
-            var initialSubtotal = 0;
-            existingInputs.forEach(function(inp) {
-                initialSubtotal += parseFloat(inp.getAttribute('data-price') || '0');
-            });
-            currentSubtotal = initialSubtotal;
-            updateTotals();
-        }
+                    var inputQty = document.createElement('input');
+                    inputQty.type = 'hidden';
+                    inputQty.name = 'items[' + idx + '][quantity]';
+                    inputQty.value = item.quantity || 1;
+                    itemsContainer.appendChild(inputQty);
 
-        // Listen to event from external product-selector block
-        window.addEventListener('landing-selection-updated', function(e) {
-            if (e.detail && Array.isArray(e.detail.selectedItems)) {
-                var selectedPids = e.detail.selectedItems.map(function(i) { return i.productId; });
+                    subtotal += (item.price || 0) * (item.quantity || 1);
+                });
+
+                currentSubtotal = subtotal;
+                updateTotals();
+            }
+
+            function calculateFromToggles() {
+                var selected = [];
                 toggles.forEach(function(t) {
-                    var pid = parseInt(t.getAttribute('data-product-id'), 10);
-                    t.checked = selectedPids.indexOf(pid) !== -1;
                     var card = t.closest('.cod-product-card');
-                    if (card) {
-                        if (t.checked) {
-                            card.classList.add('border-primary-500', 'ring-2', 'ring-primary-500/20', 'bg-primary-50/20');
+                    if (t.checked) {
+                        if (card) {
+                            card.classList.add('border-primary-500', 'ring-2', 'ring-primary-500/20',
+                                'bg-primary-50/20');
                             card.classList.remove('border-slate-200');
-                        } else {
-                            card.classList.remove('border-primary-500', 'ring-2', 'ring-primary-500/20', 'bg-primary-50/20');
+                        }
+                        selected.push({
+                            productId: parseInt(t.getAttribute('data-product-id'), 10),
+                            variantId: parseInt(t.getAttribute('data-variant-id'), 10),
+                            price: parseFloat(t.getAttribute('data-price') || '0'),
+                            title: t.getAttribute('data-title'),
+                            quantity: 1
+                        });
+                    } else {
+                        if (card) {
+                            card.classList.remove('border-primary-500', 'ring-2', 'ring-primary-500/20',
+                                'bg-primary-50/20');
                             card.classList.add('border-slate-200');
                         }
                     }
                 });
 
-                rebuildFromItems(e.detail.selectedItems);
-            }
-        });
-
-        // Marketing pixel event: track InitiateCheckout once when customer begins interaction
-        var initiatedCheckoutTracked = false;
-        function triggerInitiateCheckout() {
-            if (initiatedCheckoutTracked) return;
-            initiatedCheckoutTracked = true;
-            try {
-                if (typeof window.fbq === 'function') {
-                    window.fbq('track', 'InitiateCheckout', {
-                        content_type: 'product',
-                        currency: 'BDT'
-                    });
-                }
-                if (typeof window.gtag === 'function') {
-                    window.gtag('event', 'begin_checkout', {
-                        currency: 'BDT'
-                    });
-                }
-                if (typeof window.ttq === 'object' && typeof window.ttq.track === 'function') {
-                    window.ttq.track('InitiateCheckout', {
-                        content_type: 'product',
-                        currency: 'BDT'
-                    });
-                }
-            } catch (err) {}
-        }
-        form.addEventListener('focusin', triggerInitiateCheckout, { once: true });
-
-        // Form submission via AJAX for seamless user experience
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            if (errorBox) {
-                errorBox.classList.add('hidden');
-                errorBox.innerText = '';
+                rebuildFromItems(selected);
             }
 
-            // Ensure at least one item is in the cart
-            var itemInputs = itemsContainer.querySelectorAll('input[name$="[variant_id]"]');
-            if (itemInputs.length === 0) {
-                if (errorBox) {
-                    errorBox.innerText = 'Please select at least one product to place your order.';
-                    errorBox.classList.remove('hidden');
-                }
-                return;
+            if (shippingSelect) {
+                shippingSelect.addEventListener('change', updateTotals);
             }
 
-            // Loading state
-            if (submitBtn) submitBtn.disabled = true;
-            if (btnSpinner) btnSpinner.classList.remove('hidden');
-            if (btnText) btnText.innerText = 'Processing Order...';
-
-            var formData = new FormData(form);
-
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(function(res) {
-                return res.json().then(function(data) {
-                    return { ok: res.ok, status: res.status, data: data };
+            if (toggles.length > 0) {
+                toggles.forEach(function(t) {
+                    t.addEventListener('change', calculateFromToggles);
                 });
-            })
-            .then(function(res) {
-                if (!res.ok) {
-                    var msg = 'Failed to place order. Please check inputs.';
-                    if (res.data.message) {
-                        msg = res.data.message;
-                    } else if (res.data.errors) {
-                        var firstKey = Object.keys(res.data.errors)[0];
-                        msg = res.data.errors[firstKey][0] || msg;
-                    }
+                calculateFromToggles();
+            } else {
+                // Single product initial calculation
+                var existingInputs = itemsContainer.querySelectorAll('.cod-item-input');
+                var initialSubtotal = 0;
+                existingInputs.forEach(function(inp) {
+                    initialSubtotal += parseFloat(inp.getAttribute('data-price') || '0');
+                });
+                currentSubtotal = initialSubtotal;
+                updateTotals();
+            }
 
+            // Listen to event from external product-selector block
+            window.addEventListener('landing-selection-updated', function(e) {
+                if (e.detail && Array.isArray(e.detail.selectedItems)) {
+                    var selectedPids = e.detail.selectedItems.map(function(i) {
+                        return i.productId;
+                    });
+                    toggles.forEach(function(t) {
+                        var pid = parseInt(t.getAttribute('data-product-id'), 10);
+                        t.checked = selectedPids.indexOf(pid) !== -1;
+                        var card = t.closest('.cod-product-card');
+                        if (card) {
+                            if (t.checked) {
+                                card.classList.add('border-primary-500', 'ring-2',
+                                    'ring-primary-500/20', 'bg-primary-50/20');
+                                card.classList.remove('border-slate-200');
+                            } else {
+                                card.classList.remove('border-primary-500', 'ring-2',
+                                    'ring-primary-500/20', 'bg-primary-50/20');
+                                card.classList.add('border-slate-200');
+                            }
+                        }
+                    });
+
+                    rebuildFromItems(e.detail.selectedItems);
+                }
+            });
+
+            // Form submission via AJAX for seamless user experience
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (errorBox) {
+                    errorBox.classList.add('hidden');
+                    errorBox.innerText = '';
+                }
+
+                // Ensure at least one item is in the cart
+                var itemInputs = itemsContainer.querySelectorAll('input[name$="[variant_id]"]');
+                if (itemInputs.length === 0) {
                     if (errorBox) {
-                        errorBox.innerText = msg;
+                        errorBox.innerText = 'Please select at least one product to place your order.';
                         errorBox.classList.remove('hidden');
                     }
-
-                    if (submitBtn) submitBtn.disabled = false;
-                    if (btnSpinner) btnSpinner.classList.add('hidden');
-                    if (btnText) btnText.innerText = 'Confirm Order - Cash on Delivery';
                     return;
                 }
 
-                // Redirect to thank-you page
-                var orderNum = res.data.order ? res.data.order.order_number : null;
-                if (orderNum) {
-                    window.location.href = '/checkout/thank-you/' + encodeURIComponent(orderNum);
-                } else {
-                    window.location.reload();
-                }
-            })
-            .catch(function(err) {
-                if (errorBox) {
-                    errorBox.innerText = 'Network error. Please check your internet connection and try again.';
-                    errorBox.classList.remove('hidden');
-                }
-                if (submitBtn) submitBtn.disabled = false;
-                if (btnSpinner) btnSpinner.classList.add('hidden');
-                if (btnText) btnText.innerText = 'Confirm Order - Cash on Delivery';
-            });
-        });
-    }
+                // Loading state
+                if (submitBtn) submitBtn.disabled = true;
+                if (btnSpinner) btnSpinner.classList.remove('hidden');
+                if (btnText) btnText.innerText = 'Processing Order...';
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCodCheckout);
-    } else {
-        initCodCheckout();
-    }
-})();
+                var formData = new FormData(form);
+
+                fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(function(res) {
+                        return res.json().then(function(data) {
+                            return {
+                                ok: res.ok,
+                                status: res.status,
+                                data: data
+                            };
+                        });
+                    })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            var msg = 'Failed to place order. Please check inputs.';
+                            if (res.data.message) {
+                                msg = res.data.message;
+                            } else if (res.data.errors) {
+                                var firstKey = Object.keys(res.data.errors)[0];
+                                msg = res.data.errors[firstKey][0] || msg;
+                            }
+
+                            if (errorBox) {
+                                errorBox.innerText = msg;
+                                errorBox.classList.remove('hidden');
+                            }
+
+                            if (submitBtn) submitBtn.disabled = false;
+                            if (btnSpinner) btnSpinner.classList.add('hidden');
+                            if (btnText) btnText.innerText = 'Confirm Order - Cash on Delivery';
+                            return;
+                        }
+
+                        // Redirect to thank-you page
+                        var orderNum = res.data.order ? res.data.order.order_number : null;
+                        if (orderNum) {
+                            window.location.href = '/checkout/thank-you/' + encodeURIComponent(
+                                orderNum);
+                        } else {
+                            window.location.reload();
+                        }
+                    })
+                    .catch(function(err) {
+                        if (errorBox) {
+                            errorBox.innerText =
+                                'Network error. Please check your internet connection and try again.';
+                            errorBox.classList.remove('hidden');
+                        }
+                        if (submitBtn) submitBtn.disabled = false;
+                        if (btnSpinner) btnSpinner.classList.add('hidden');
+                        if (btnText) btnText.innerText = 'Confirm Order - Cash on Delivery';
+                    });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCodCheckout);
+        } else {
+            initCodCheckout();
+        }
+    })();
 </script>

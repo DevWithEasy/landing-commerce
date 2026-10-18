@@ -6,6 +6,7 @@ namespace App\Modules\Tracking\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\PageBuilder\Models\LandingPage;
+use App\Modules\Settings\Services\SettingsService;
 use App\Modules\Tracking\Requests\UpdateTrackingSettingsRequest;
 use App\Modules\Tracking\Services\TrackingService;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +29,12 @@ class TrackingSettingsController extends Controller
         Gate::authorize('manage-settings');
 
         $globalSettings = $this->trackingService->getGlobalSettings();
+
+        $metaToken = $globalSettings['meta_pixel']['access_token'] ?? '';
+        $globalSettings['meta_pixel']['access_token_configured'] = ! empty($metaToken);
+        if (! empty($metaToken)) {
+            $globalSettings['meta_pixel']['access_token'] = SettingsService::SECRET_MASK;
+        }
 
         $landingPages = LandingPage::query()
             ->select(['id', 'title', 'slug', 'status', 'tracking_settings'])
@@ -74,6 +81,8 @@ class TrackingSettingsController extends Controller
             'meta_pixel' => ['nullable', 'array'],
             'meta_pixel.enabled' => ['boolean'],
             'meta_pixel.pixel_id' => ['nullable', 'string', 'regex:'.TrackingService::META_PIXEL_REGEX],
+            'meta_pixel.access_token' => ['nullable', 'string', 'max:500'],
+            'meta_pixel.test_event_code' => ['nullable', 'string', 'max:50', 'regex:'.TrackingService::META_TEST_EVENT_CODE_REGEX],
 
             'ga4' => ['nullable', 'array'],
             'ga4.enabled' => ['boolean'],

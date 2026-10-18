@@ -21,6 +21,8 @@ return [
     'meta_pixel' => [
         'enabled' => env('TRACKING_META_PIXEL_ENABLED', false),
         'pixel_id' => env('TRACKING_META_PIXEL_ID', ''),
+        'access_token' => env('TRACKING_META_ACCESS_TOKEN', ''),
+        'test_event_code' => env('TRACKING_META_TEST_EVENT_CODE', ''),
     ],
 
     'ga4' => [

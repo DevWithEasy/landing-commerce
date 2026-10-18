@@ -159,7 +159,7 @@ export function VariantGenerator({
         });
 
         if (validAttrs.length === 0) {
-            setMatrixError('কমপক্ষে একটি অ্যাট্রিবিউট (যেমন: Color বা Size) ও মান যোগ করুন।');
+            setMatrixError('Please add at least one attribute (e.g. Color or Size) with values.');
             return;
         }
 
@@ -202,7 +202,7 @@ export function VariantGenerator({
         }));
 
         onChangeVariants(newVariants);
-        setMatrixMessage(`সফলভাবে ${newVariants.length} টি ভ্যারিয়েন্ট কম্বিনেশন তৈরি হয়েছে!`);
+        setMatrixMessage(`Successfully generated ${newVariants.length} variant combinations!`);
     };
 
     const handleAddManualVariant = () => {
@@ -305,7 +305,7 @@ export function VariantGenerator({
                             </h4>
                         </div>
                         <p className="text-xs text-slate-500 mt-0.5">
-                            অ্যাট্রিবিউট (যেমন: Color, Size) ও মান যোগ করে স্বয়ংক্রিয় ভ্যারিয়েন্ট ম্যাট্রিক্স তৈরি করুন।
+                            Add attributes (e.g., Color, Size) and values to automatically generate the variant combinations matrix.
                         </p>
                     </div>
 
@@ -316,14 +316,14 @@ export function VariantGenerator({
                             onClick={() => handleAddAttribute('Color', ['Black', 'White', 'Red'])}
                             className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 hover:border-primary-500 hover:text-primary-600 shadow-2xs transition"
                         >
-                            + Color (রং)
+                            + Color
                         </button>
                         <button
                             type="button"
                             onClick={() => handleAddAttribute('Size', ['M', 'L', 'XL'])}
                             className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 hover:border-primary-500 hover:text-primary-600 shadow-2xs transition"
                         >
-                            + Size (সাইজ)
+                            + Size
                         </button>
                         <Button
                             type="button"
@@ -347,7 +347,7 @@ export function VariantGenerator({
                             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                 <div className="w-full sm:w-52">
                                     <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1">
-                                        Attribute Name (নাম)
+                                        Attribute Name
                                     </label>
                                     <input
                                         type="text"
@@ -362,12 +362,12 @@ export function VariantGenerator({
 
                                 <div className="flex-1">
                                     <label className="block text-[11px] font-semibold text-slate-600 uppercase mb-1">
-                                        Attribute Values (মান লিখুন বা কমা দিয়ে পেস্ট করুন)
+                                        Attribute Values (Type values and press Enter or comma)
                                     </label>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="text"
-                                            placeholder="e.g. Red, Blue, Green (Enter চাপুন)"
+                                            placeholder="e.g. Red, Blue, Green (Press Enter)"
                                             value={attr.currentInput}
                                             onChange={(e) =>
                                                 setAttributeOptions((prev) =>
@@ -550,7 +550,7 @@ export function VariantGenerator({
                         <Sparkles className="w-8 h-8 mx-auto text-slate-400" />
                         <p className="font-semibold text-slate-700">No variants generated yet.</p>
                         <p>
-                            উপরে অ্যাট্রিবিউট যোগ করে &quot;Generate Combinations Matrix&quot; বাটনে ক্লিক করুন অথবা সিঙ্গেল ভ্যারিয়েন্ট যোগ করুন।
+                            Add attributes above and click &quot;Generate Combinations Matrix&quot; or add single variants manually.
                         </p>
                     </div>
                 ) : (

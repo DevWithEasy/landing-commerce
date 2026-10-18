@@ -32,6 +32,17 @@ class UpdateTrackingSettingsRequest extends FormRequest
                 'string',
                 'regex:'.TrackingService::META_PIXEL_REGEX,
             ],
+            'meta_pixel.access_token' => [
+                'nullable',
+                'string',
+                'max:500',
+            ],
+            'meta_pixel.test_event_code' => [
+                'nullable',
+                'string',
+                'max:50',
+                'regex:'.TrackingService::META_TEST_EVENT_CODE_REGEX,
+            ],
 
             'ga4' => ['nullable', 'array'],
             'ga4.enabled' => ['boolean'],

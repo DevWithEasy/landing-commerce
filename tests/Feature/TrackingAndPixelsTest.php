@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use App\Modules\PageBuilder\Models\LandingPage;
+use App\Modules\Settings\Models\Setting;
 use App\Modules\Tracking\Services\TrackingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -368,4 +369,59 @@ test('contextual ViewContent event is rendered on landing page with price and ID
     expect($rendered)->not->toContain('customer_name');
     expect($rendered)->not->toContain('customer_phone');
     expect($rendered)->not->toContain('delivery_address');
+});
+
+test('meta pixel access token is securely encrypted and never leaked into rendered html or scripts', function () {
+    $superAdmin = createTrackingUser('super_admin');
+    $secretToken = 'EAABsb_SECRET_CAPI_ACCESS_TOKEN_1234567890';
+
+    $response = $this->actingAs($superAdmin)->post(route('admin.tracking.update'), [
+        'meta_pixel' => [
+            'enabled' => true,
+            'pixel_id' => '123456789012345',
+            'access_token' => $secretToken,
+            'test_event_code' => 'TEST12345',
+        ],
+    ]);
+
+    $response->assertRedirect(route('admin.tracking.index'));
+
+    $trackingService = app(TrackingService::class);
+    $settings = $trackingService->getGlobalSettings();
+
+    // In settings, access_token must be stored as the original decrypted value via SettingsService
+    expect($settings['meta_pixel']['access_token'])->toBe($secretToken);
+
+    // Verify in database: the raw setting value must be encrypted and is_encrypted true
+    $rawDbSetting = Setting::query()->where('key', 'tracking.meta_pixel.access_token')->first();
+    expect($rawDbSetting)->not->toBeNull();
+    expect($rawDbSetting->is_encrypted)->toBeTrue();
+    expect($rawDbSetting->value)->not->toBe($secretToken);
+
+    // When rendered into public page scripts:
+    $resolved = $trackingService->getResolvedSettings();
+    $headScripts = $trackingService->renderHeadScripts($resolved);
+    $bodyScripts = $trackingService->renderBodyScripts($resolved);
+
+    // Token must never appear in public client scripts
+    expect($headScripts)->not->toContain($secretToken);
+    expect($bodyScripts)->not->toContain($secretToken);
+
+    // Test event code should safely appear for debugging
+    expect($headScripts)->toContain("window._lcMetaTestEventCode = 'TEST12345'");
+    expect($headScripts)->toContain("test_event_code: 'TEST12345'");
+});
+
+test('meta test_event_code validation rejects invalid patterns', function () {
+    $superAdmin = createTrackingUser('super_admin');
+
+    $response = $this->actingAs($superAdmin)->post(route('admin.tracking.update'), [
+        'meta_pixel' => [
+            'enabled' => true,
+            'pixel_id' => '123456789012345',
+            'test_event_code' => '<script>alert(1)</script>',
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('meta_pixel.test_event_code');
 });

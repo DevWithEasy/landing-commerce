@@ -5,6 +5,8 @@ import {
     AlertTriangle,
     BarChart3,
     Edit3,
+    Eye,
+    EyeOff,
     Globe,
     Layers,
     Save,
@@ -21,6 +23,9 @@ interface GlobalTrackingSettings {
     meta_pixel: {
         enabled: boolean;
         pixel_id: string;
+        access_token?: string;
+        access_token_configured?: boolean;
+        test_event_code?: string;
     };
     ga4: {
         enabled: boolean;
@@ -58,6 +63,7 @@ interface TrackingIndexProps extends SharedProps {
 }
 
 const META_PIXEL_REGEX = /^\d{8,20}$/;
+const META_TEST_EVENT_CODE_REGEX = /^[A-Za-z0-9_-]{3,50}$/;
 const GA4_REGEX = /^G-[A-Z0-9]{4,15}$/i;
 const GOOGLE_ADS_ID_REGEX = /^(AW-)?\d{7,15}$/i;
 const GOOGLE_ADS_LABEL_REGEX = /^[A-Za-z0-9_-]{8,30}$/;
@@ -67,12 +73,15 @@ const GTM_REGEX = /^GTM-[A-Z0-9]{5,12}$/i;
 export default function TrackingIndex({ settings, landingPages }: TrackingIndexProps) {
     const [activeTab, setActiveTab] = useState<'global' | 'pages' | 'diagnostics'>('global');
     const [editingPage, setEditingPage] = useState<LandingPageSummary | null>(null);
+    const [showMetaToken, setShowMetaToken] = useState<boolean>(false);
 
     // Global settings form
     const { data, setData, post, processing, errors } = useForm<GlobalTrackingSettings>({
         meta_pixel: {
             enabled: Boolean(settings.meta_pixel?.enabled),
             pixel_id: settings.meta_pixel?.pixel_id || '',
+            access_token: settings.meta_pixel?.access_token || '',
+            test_event_code: settings.meta_pixel?.test_event_code || '',
         },
         ga4: {
             enabled: Boolean(settings.ga4?.enabled),
@@ -98,7 +107,7 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
     // Page-specific override modal form state
     const [pageOverrideForm, setPageOverrideForm] = useState({
         override_global: false,
-        meta_pixel: { enabled: false, pixel_id: '' },
+        meta_pixel: { enabled: false, pixel_id: '', test_event_code: '' },
         ga4: { enabled: false, measurement_id: '' },
         google_ads: { enabled: false, conversion_id: '', conversion_label: '' },
         tiktok_pixel: { enabled: false, pixel_id: '' },
@@ -122,6 +131,7 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
             meta_pixel: {
                 enabled: Boolean(pSettings.meta_pixel?.enabled),
                 pixel_id: pSettings.meta_pixel?.pixel_id || '',
+                test_event_code: pSettings.meta_pixel?.test_event_code || '',
             },
             ga4: {
                 enabled: Boolean(pSettings.ga4?.enabled),
@@ -158,7 +168,7 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                     setEditingPage(null);
                     setIsSavingPage(false);
                 },
-                onError: (errs) => {
+                onError: (errs: Record<string, string>) => {
                     setIsSavingPage(false);
                     const first = Object.values(errs)[0];
                     setPageSaveError(typeof first === 'string' ? first : 'Validation error occurred.');
@@ -170,13 +180,14 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
     const toggleTargetPage = (pageId: number) => {
         setData('target_page_ids', 
             data.target_page_ids.includes(pageId)
-                ? data.target_page_ids.filter((id) => id !== pageId)
+                ? data.target_page_ids.filter((id: number) => id !== pageId)
                 : [...data.target_page_ids, pageId]
         );
     };
 
     // Client-side quick validation helpers
     const isMetaValid = !data.meta_pixel.enabled || META_PIXEL_REGEX.test(data.meta_pixel.pixel_id.trim());
+    const isMetaTestEventCodeValid = !data.meta_pixel.test_event_code?.trim() || META_TEST_EVENT_CODE_REGEX.test(data.meta_pixel.test_event_code.trim());
     const isGa4Valid = !data.ga4.enabled || GA4_REGEX.test(data.ga4.measurement_id.trim());
     const isGadsValid = !data.google_ads.enabled || (
         GOOGLE_ADS_ID_REGEX.test(data.google_ads.conversion_id.trim()) &&
@@ -275,7 +286,8 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                     </label>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-4">
+                                    {/* 1. Meta Pixel ID */}
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                                             Meta Pixel ID
@@ -304,6 +316,69 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                             </p>
                                         )}
                                     </div>
+
+                                    {/* 2. Conversions API (CAPI) Access Token */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                                Conversions API (CAPI) Access Token
+                                            </label>
+                                            <span className="text-[11px] text-slate-400 font-medium">Server CAPI Token</span>
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type={showMetaToken ? 'text' : 'password'}
+                                                value={data.meta_pixel.access_token || ''}
+                                                onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, access_token: e.target.value.trim() })}
+                                                placeholder={settings.meta_pixel?.access_token_configured ? '•••••••• (Encrypted in database)' : 'Paste your Meta CAPI Access Token'}
+                                                disabled={!data.meta_pixel.enabled}
+                                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-300 focus:ring-primary-500 focus:border-primary-500 text-sm font-mono bg-white disabled:bg-slate-50 disabled:text-slate-400"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowMetaToken(!showMetaToken)}
+                                                disabled={!data.meta_pixel.enabled}
+                                                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 p-1"
+                                            >
+                                                {showMetaToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 mt-1">
+                                            Generated in Meta Events Manager &gt; Settings &gt; Generate Access Token. Stored securely with AES-256 encryption.
+                                        </p>
+                                    </div>
+
+                                    {/* 3. Test Event Code */}
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                                Test Event Code
+                                            </label>
+                                            <span className="text-[11px] text-amber-600 font-medium">For Events Manager Debugging</span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={data.meta_pixel.test_event_code || ''}
+                                            onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, test_event_code: e.target.value.trim().toUpperCase() })}
+                                            placeholder="e.g. TEST12345"
+                                            disabled={!data.meta_pixel.enabled}
+                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                !isMetaTestEventCodeValid
+                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                            } disabled:bg-slate-50 disabled:text-slate-400`}
+                                        />
+                                        {!isMetaTestEventCodeValid && (
+                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                <span>Test Event Code must be 3-50 alphanumeric characters (e.g. TEST12345).</span>
+                                            </p>
+                                        )}
+                                        <p className="text-[11px] text-slate-500 mt-1">
+                                            Found in Meta Events Manager &gt; Test Events tab. Clear this field before launching live paid ads.
+                                        </p>
+                                    </div>
+
                                     <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
                                         <p className="font-semibold text-slate-700">Supported Events:</p>
                                         <div className="flex flex-wrap gap-1.5">
@@ -961,19 +1036,34 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                                 className="rounded text-primary-600"
                                             />
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={pageOverrideForm.meta_pixel.pixel_id}
-                                            onChange={(e) =>
-                                                setPageOverrideForm({
-                                                    ...pageOverrideForm,
-                                                    meta_pixel: { ...pageOverrideForm.meta_pixel, pixel_id: e.target.value.trim() },
-                                                })
-                                            }
-                                            placeholder="Leave empty to use global Meta Pixel ID"
-                                            disabled={!pageOverrideForm.meta_pixel.enabled}
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                        />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            <input
+                                                type="text"
+                                                value={pageOverrideForm.meta_pixel.pixel_id}
+                                                onChange={(e) =>
+                                                    setPageOverrideForm({
+                                                        ...pageOverrideForm,
+                                                        meta_pixel: { ...pageOverrideForm.meta_pixel, pixel_id: e.target.value.trim() },
+                                                    })
+                                                }
+                                                placeholder="Custom Pixel ID (e.g. 12345...)"
+                                                disabled={!pageOverrideForm.meta_pixel.enabled}
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={pageOverrideForm.meta_pixel.test_event_code || ''}
+                                                onChange={(e) =>
+                                                    setPageOverrideForm({
+                                                        ...pageOverrideForm,
+                                                        meta_pixel: { ...pageOverrideForm.meta_pixel, test_event_code: e.target.value.trim().toUpperCase() },
+                                                    })
+                                                }
+                                                placeholder="Test Event Code (e.g. TEST12345)"
+                                                disabled={!pageOverrideForm.meta_pixel.enabled}
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* GA4 Override */}

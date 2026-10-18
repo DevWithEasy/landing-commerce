@@ -20,7 +20,7 @@ declare global {
             action: string,
             eventName: string,
             params?: Record<string, unknown>,
-            options?: { eventID?: string }
+            options?: { eventID?: string; test_event_code?: string }
         ) => void;
         gtag?: (
             command: string,
@@ -36,6 +36,7 @@ declare global {
             page: () => void;
         };
         dataLayer?: Array<Record<string, unknown> | unknown[]>;
+        _lcMetaTestEventCode?: string;
     }
 }
 
@@ -53,13 +54,22 @@ export function trackInitiateCheckout(payload?: {
 
     // Meta Pixel
     if (typeof window.fbq === 'function') {
-        window.fbq('track', 'InitiateCheckout', {
-            content_type: 'product',
-            content_ids: contentIds,
-            num_items: numItems,
-            value,
-            currency: 'BDT',
-        });
+        const metaOpts: { eventID?: string; test_event_code?: string } = {};
+        if (window._lcMetaTestEventCode) {
+            metaOpts.test_event_code = window._lcMetaTestEventCode;
+        }
+        window.fbq(
+            'track',
+            'InitiateCheckout',
+            {
+                content_type: 'product',
+                content_ids: contentIds,
+                num_items: numItems,
+                value,
+                currency: 'BDT',
+            },
+            metaOpts
+        );
     }
 
     // Google Analytics 4 / Google Ads
@@ -91,11 +101,20 @@ export function trackAddPaymentInfo(paymentType: string, value?: number): void {
 
     // Meta Pixel
     if (typeof window.fbq === 'function') {
-        window.fbq('track', 'AddPaymentInfo', {
-            content_category: paymentType,
-            value: val,
-            currency: 'BDT',
-        });
+        const metaOpts: { eventID?: string; test_event_code?: string } = {};
+        if (window._lcMetaTestEventCode) {
+            metaOpts.test_event_code = window._lcMetaTestEventCode;
+        }
+        window.fbq(
+            'track',
+            'AddPaymentInfo',
+            {
+                content_category: paymentType,
+                value: val,
+                currency: 'BDT',
+            },
+            metaOpts
+        );
     }
 
     // Google Analytics 4
@@ -148,6 +167,10 @@ export function trackPurchase(order: PurchaseOrderPayload): boolean {
 
     // Meta Pixel
     if (typeof window.fbq === 'function') {
+        const metaOpts: { eventID?: string; test_event_code?: string } = { eventID: order.order_number };
+        if (window._lcMetaTestEventCode) {
+            metaOpts.test_event_code = window._lcMetaTestEventCode;
+        }
         window.fbq(
             'track',
             'Purchase',
@@ -158,7 +181,7 @@ export function trackPurchase(order: PurchaseOrderPayload): boolean {
                 value,
                 currency: 'BDT',
             },
-            { eventID: order.order_number }
+            metaOpts
         );
     }
 
