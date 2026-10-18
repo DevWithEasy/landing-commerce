@@ -29,6 +29,11 @@ class PublicLandingPageController extends Controller
         'horizon',
         '_debugbar',
         'sanctum',
+        '.env',
+        '.git',
+        'backups',
+        'backup',
+        'snapshots',
     ];
 
     /**
@@ -36,9 +41,9 @@ class PublicLandingPageController extends Controller
      */
     public function show(string $slug, BlockRendererService $renderer, Request $request): View
     {
-        // 1. Check reserved slugs
+        // 1. Check reserved slugs and prevent dotfiles
         $normalizedSlug = strtolower(trim($slug));
-        if (in_array($normalizedSlug, self::RESERVED_SLUGS, true)) {
+        if (str_starts_with($normalizedSlug, '.') || in_array($normalizedSlug, self::RESERVED_SLUGS, true)) {
             abort(404, 'Reserved path cannot be used as landing page.');
         }
 

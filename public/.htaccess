@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Defense-in-depth: Block access to hidden files, environment files, git, and backups
+    RewriteRule ^(\.env|\.git|\.well-known/|storage/app/backups) - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
