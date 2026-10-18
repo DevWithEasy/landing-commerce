@@ -393,3 +393,216 @@ test('enforces RBAC permissions: fulfillment_agent and guests cannot manage land
         ->get('/admin/landing-pages')
         ->assertOk();
 });
+
+test('saving builder revision immediately updates published_revision_id and syncs live page content', function (): void {
+    $page = LandingPage::create([
+        'title' => 'Live Sync Campaign',
+        'slug' => 'live-sync-test',
+        'status' => 'published',
+        'product_id' => $this->productA->id,
+    ]);
+
+    // Initial revision #1
+    $rev1 = LandingPageRevision::create([
+        'landing_page_id' => $page->id,
+        'revision_number' => 1,
+        'ast_content' => [
+            'version' => 1,
+            'blocks' => [
+                [
+                    'id' => 'hero_1',
+                    'type' => 'HeroBlock',
+                    'props' => ['headline' => 'Initial Version Headline', 'ctaText' => 'Order Now', 'ctaTarget' => '#cod-checkout'],
+                ],
+            ],
+        ],
+    ]);
+    $page->update(['published_revision_id' => $rev1->id]);
+
+    // Verify initial live view has Initial Version Headline
+    $this->get('/live-sync-test')
+        ->assertOk()
+        ->assertSee('Initial Version Headline');
+
+    // Merchant edits and saves new revision in builder changing headline and selecting productB
+    $updatedAst = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'hero_1',
+                'type' => 'HeroBlock',
+                'props' => ['headline' => 'Updated Live Headline After Edit', 'ctaText' => 'Order Now', 'ctaTarget' => '#cod-checkout'],
+            ],
+            [
+                'id' => 'prod_1',
+                'type' => 'ProductSelectorBlock',
+                'props' => [
+                    'productIds' => [$this->productB->id],
+                    'productId' => $this->productB->id,
+                    'selectionMode' => 'single',
+                ],
+            ],
+        ],
+    ];
+
+    $saveResponse = $this->actingAs($this->storeManager)
+        ->postJson("/admin/landing-pages/{$page->id}/revisions", [
+            'ast' => $updatedAst,
+        ]);
+
+    $saveResponse->assertCreated()
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $page->refresh();
+    expect($page->published_revision_id)->not->toBe($rev1->id)
+        ->and($page->product_id)->toBe($this->productB->id);
+
+    // Live page must immediately reflect the updated revision headline and product
+    $this->get('/live-sync-test')
+        ->assertOk()
+        ->assertSee('Updated Live Headline After Edit')
+        ->assertSee($this->productB->title);
+});
+
+test('public landing page renders multi-product in single (radio) and multiple (checkbox) modes', function (): void {
+    $page = LandingPage::create([
+        'title' => 'Multi Product Deal',
+        'slug' => 'multi-prod-deal',
+        'status' => 'published',
+    ]);
+
+    // 1. Radio mode (single selection)
+    $radioAst = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'prod_blk',
+                'type' => 'ProductSelectorBlock',
+                'props' => [
+                    'productIds' => [$this->productA->id, $this->productB->id],
+                    'selectionMode' => 'single',
+                ],
+            ],
+            [
+                'id' => 'cod_blk',
+                'type' => 'CodCheckoutBlock',
+                'props' => [
+                    'productIds' => [$this->productA->id, $this->productB->id],
+                    'selectionMode' => 'single',
+                ],
+            ],
+        ],
+    ];
+
+    $this->actingAs($this->superAdmin)
+        ->postJson("/admin/landing-pages/{$page->id}/revisions", ['ast' => $radioAst])
+        ->assertCreated();
+
+    $radioResponse = $this->get('/multi-prod-deal');
+    $radioResponse->assertOk()
+        ->assertSee('type="radio"', false)
+        ->assertSee($this->productA->title)
+        ->assertSee($this->productB->title)
+        ->assertSee('Radio Selection');
+
+    // 2. Checkbox mode (multiple selection)
+    $checkboxAst = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'prod_blk',
+                'type' => 'ProductSelectorBlock',
+                'props' => [
+                    'productIds' => [$this->productA->id, $this->productB->id],
+                    'selectionMode' => 'multiple',
+                ],
+            ],
+            [
+                'id' => 'cod_blk',
+                'type' => 'CodCheckoutBlock',
+                'props' => [
+                    'productIds' => [$this->productA->id, $this->productB->id],
+                    'selectionMode' => 'multiple',
+                ],
+            ],
+        ],
+    ];
+
+    $this->actingAs($this->superAdmin)
+        ->postJson("/admin/landing-pages/{$page->id}/revisions", ['ast' => $checkboxAst])
+        ->assertCreated();
+
+    $checkboxResponse = $this->get('/multi-prod-deal');
+    $checkboxResponse->assertOk()
+        ->assertSee('type="checkbox"', false)
+        ->assertSee('Checkbox Selection')
+        ->assertSee('Order Items (Check Multiple):');
+});
+
+test('admin can restore a historical revision and make it active live', function (): void {
+    $page = LandingPage::create([
+        'title' => 'Restore History Test',
+        'slug' => 'restore-test-page',
+        'status' => 'published',
+    ]);
+
+    // Revision 1
+    $rev1 = LandingPageRevision::create([
+        'landing_page_id' => $page->id,
+        'revision_number' => 1,
+        'ast_content' => [
+            'version' => 1,
+            'blocks' => [
+                [
+                    'id' => 'h1',
+                    'type' => 'HeroBlock',
+                    'props' => ['headline' => 'Original First Headline', 'ctaText' => 'Order', 'ctaTarget' => '#cod-checkout'],
+                ],
+            ],
+        ],
+        'created_by' => 'Admin',
+    ]);
+    $page->update(['published_revision_id' => $rev1->id]);
+
+    // Revision 2 (Newer change)
+    $rev2 = LandingPageRevision::create([
+        'landing_page_id' => $page->id,
+        'revision_number' => 2,
+        'ast_content' => [
+            'version' => 1,
+            'blocks' => [
+                [
+                    'id' => 'h1',
+                    'type' => 'HeroBlock',
+                    'props' => ['headline' => 'Second Modified Headline', 'ctaText' => 'Order', 'ctaTarget' => '#cod-checkout'],
+                ],
+            ],
+        ],
+        'created_by' => 'Admin',
+    ]);
+    $page->update(['published_revision_id' => $rev2->id]);
+
+    $this->get('/restore-test-page')->assertSee('Second Modified Headline');
+
+    // Admin restores Revision 1
+    $restoreResponse = $this->actingAs($this->superAdmin)
+        ->postJson("/admin/landing-pages/{$page->id}/revisions/{$rev1->id}/restore");
+
+    $restoreResponse->assertOk()
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $page->refresh();
+    // Revision #3 should be created with Revision #1 content
+    expect($page->revisions()->count())->toBe(3)
+        ->and($page->published_revision_id)->not->toBe($rev2->id);
+
+    // Live page must now render the restored original content
+    $this->get('/restore-test-page')
+        ->assertOk()
+        ->assertSee('Original First Headline')
+        ->assertDontSee('Second Modified Headline');
+});

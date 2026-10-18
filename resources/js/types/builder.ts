@@ -53,14 +53,18 @@ export interface HeroBlockProps {
 }
 
 export interface ProductSelectorBlockProps {
-    productId: number;
+    productId?: number;
+    productIds?: number[];
+    selectionMode?: 'single' | 'multiple';
     showDescription?: boolean;
     showPrice?: boolean;
     displayMode?: 'grid' | 'carousel';
 }
 
 export interface CodCheckoutBlockProps {
-    productId: number;
+    productId?: number;
+    productIds?: number[];
+    selectionMode?: 'single' | 'multiple';
     variantSelectionType?: 'swatches' | 'dropdown' | 'radio';
     showQuantity?: boolean;
     buttonText?: string;
@@ -175,6 +179,7 @@ export interface LandingPageRevisionSummary {
     id: number;
     landing_page_id: number;
     revision_number: number;
+    ast_content?: PageAst;
     created_by: string | null;
     created_at: string;
 }

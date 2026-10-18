@@ -70,16 +70,26 @@ class BlockRendererService
         $styles = $block['styles'] ?? [];
         $styleAttribute = $this->convertStylesToCssAttribute($styles);
 
-        // Preload product for product-dependent blocks if needed
+        // Preload product(s) for product-dependent blocks if needed
         $product = null;
+        $products = collect();
         if (in_array($type, ['ProductSelectorBlock', 'CodCheckoutBlock'], true)) {
-            $productId = $props['productId'] ?? null;
-            if ($productId) {
-                if (isset($context['products'][$productId])) {
-                    $product = $context['products'][$productId];
-                } else {
-                    $product = Product::with(['variants', 'images'])->find($productId);
-                }
+            $rawProductIds = ! empty($props['productIds']) && is_array($props['productIds'])
+                ? $props['productIds']
+                : (! empty($props['productId']) ? [$props['productId']] : []);
+
+            $productIds = array_values(array_filter(array_map('intval', $rawProductIds)));
+
+            if (! empty($productIds)) {
+                $products = Product::with(['variants', 'images', 'primaryImage'])
+                    ->whereIn('id', $productIds)
+                    ->get()
+                    ->sortBy(function ($p) use ($productIds) {
+                        return array_search($p->id, $productIds, true);
+                    })
+                    ->values();
+
+                $product = $products->first();
             }
         }
 
@@ -89,6 +99,8 @@ class BlockRendererService
             'styles' => $styles,
             'styleAttribute' => $styleAttribute,
             'product' => $product,
+            'products' => $products,
+            'selectionMode' => $props['selectionMode'] ?? 'single',
             'context' => $context,
         ])->render();
     }

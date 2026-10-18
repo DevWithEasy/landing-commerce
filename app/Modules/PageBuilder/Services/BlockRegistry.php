@@ -61,12 +61,16 @@ class BlockRegistry
             ],
             'ProductSelectorBlock' => [
                 'productId' => 0,
+                'productIds' => [],
+                'selectionMode' => 'single',
                 'showDescription' => true,
                 'showPrice' => true,
                 'displayMode' => 'grid',
             ],
             'CodCheckoutBlock' => [
                 'productId' => 0,
+                'productIds' => [],
+                'selectionMode' => 'single',
                 'variantSelectionType' => 'swatches',
                 'showQuantity' => true,
                 'buttonText' => 'Confirm Order - Cash on Delivery',
@@ -299,6 +303,8 @@ class BlockRegistry
                     'type' => 'ProductSelectorBlock',
                     'props' => array_merge(self::getDefaultProps('ProductSelectorBlock'), [
                         'productId' => $productId ?? 0,
+                        'productIds' => $productId ? [$productId] : [],
+                        'selectionMode' => 'single',
                     ]),
                     'styles' => self::getDefaultStyles('ProductSelectorBlock'),
                 ],
@@ -307,6 +313,8 @@ class BlockRegistry
                     'type' => 'CodCheckoutBlock',
                     'props' => array_merge(self::getDefaultProps('CodCheckoutBlock'), [
                         'productId' => $productId ?? 0,
+                        'productIds' => $productId ? [$productId] : [],
+                        'selectionMode' => 'single',
                     ]),
                     'styles' => self::getDefaultStyles('CodCheckoutBlock'),
                 ],

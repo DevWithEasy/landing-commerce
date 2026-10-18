@@ -13,9 +13,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Canvas } from '@/Builder/components/Canvas';
 import { Inspector } from '@/Builder/components/Inspector';
 import { LeftSidebar } from '@/Builder/components/LeftSidebar';
+import { RevisionsDrawer } from '@/Builder/components/RevisionsDrawer';
 import { TopBar } from '@/Builder/components/TopBar';
 import { useBuilderStore } from '@/Builder/stores/useBuilderStore';
-import type { Block, BlockType, BuilderEditorProps } from '@/types';
+import type { Block, BlockType, BuilderEditorProps, LandingPageRevisionSummary } from '@/types';
 
 export default function Editor({
     landingPage,
@@ -29,6 +30,7 @@ export default function Editor({
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [isRevisionsOpen, setIsRevisionsOpen] = useState(false);
 
     // Initialize AST into Zustand store on mount
     useEffect(() => {
@@ -62,6 +64,13 @@ export default function Editor({
                 success?: boolean;
                 message?: string;
                 errors?: Record<string, string[]>;
+                revision?: {
+                    id: number;
+                    revision_number: number;
+                    created_by: string | null;
+                    created_at: string;
+                };
+                published_revision_id?: number;
             };
 
             if (!response.ok) {
@@ -74,6 +83,19 @@ export default function Editor({
                 return;
             }
 
+            if (data.revision) {
+                const newRev: LandingPageRevisionSummary = {
+                    id: data.revision.id,
+                    landing_page_id: landingPage.id,
+                    revision_number: data.revision.revision_number,
+                    ast_content: ast,
+                    created_by: data.revision.created_by,
+                    created_at: data.revision.created_at || new Date().toISOString(),
+                };
+                landingPage.revisions = [newRev, ...(landingPage.revisions || [])];
+                landingPage.published_revision_id = data.published_revision_id || data.revision.id;
+            }
+
             setSaveSuccess(data.message || 'Revision saved successfully.');
             setTimeout(() => setSaveSuccess(null), 3500);
         } catch {
@@ -81,7 +103,7 @@ export default function Editor({
         } finally {
             setIsSaving(false);
         }
-    }, [ast, landingPage.id]);
+    }, [ast, landingPage]);
 
     // Global keyboard shortcuts (Save, Undo, Redo)
     useEffect(() => {
@@ -186,6 +208,7 @@ export default function Editor({
                     saveSuccess={saveSuccess}
                     saveError={saveError}
                     onSave={handleSave}
+                    onOpenRevisions={() => setIsRevisionsOpen(true)}
                 />
 
                 {/* Main 3-Column Studio Workspace */}
@@ -202,6 +225,17 @@ export default function Editor({
 
                     <Inspector blockDefinitions={blockDefinitions} products={products} />
                 </div>
+
+                {/* Slide-over Revisions & Restore Drawer */}
+                <RevisionsDrawer
+                    isOpen={isRevisionsOpen}
+                    landingPage={landingPage}
+                    onClose={() => setIsRevisionsOpen(false)}
+                    onRestored={(msg) => {
+                        setSaveSuccess(msg);
+                        setTimeout(() => setSaveSuccess(null), 4000);
+                    }}
+                />
             </div>
         </>
     );

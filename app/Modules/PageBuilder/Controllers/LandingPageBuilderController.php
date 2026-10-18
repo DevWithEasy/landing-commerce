@@ -29,7 +29,7 @@ class LandingPageBuilderController extends Controller
             'revisions' => function ($query) {
                 $query->select(['id', 'landing_page_id', 'revision_number', 'ast_content', 'created_by', 'created_at'])
                     ->orderByDesc('revision_number')
-                    ->limit(20);
+                    ->limit(50);
             },
         ]);
 

@@ -47,6 +47,29 @@ export function CodCheckoutBlock({
 
                     {/* Preview Form Controls */}
                     <div className="pt-6 space-y-4">
+                        {Boolean(props.productIds && props.productIds.length > 1) && (
+                            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-2">
+                                <div className="flex items-center justify-between text-xs font-bold text-gray-700">
+                                    <span>Included Products:</span>
+                                    <span className="text-emerald-700 font-semibold">
+                                        {props.selectionMode === 'multiple' ? 'Checkbox Selection' : 'Radio Selection'}
+                                    </span>
+                                </div>
+                                <div className="space-y-1.5">
+                                    {props.productIds!.map((pid) => (
+                                        <div key={pid} className="flex items-center justify-between p-2 rounded-lg bg-white border border-gray-200 text-xs">
+                                            <div className="flex items-center space-x-2">
+                                                <span className={`w-3.5 h-3.5 ${props.selectionMode === 'multiple' ? 'rounded' : 'rounded-full'} border border-emerald-600 bg-emerald-600 flex items-center justify-center text-white text-[9px]`}>
+                                                    ✓
+                                                </span>
+                                                <span className="font-semibold text-gray-800">Product #{pid}</span>
+                                            </div>
+                                            <span className="font-extrabold text-emerald-600">৳1,250.00</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {/* Customer Name */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">

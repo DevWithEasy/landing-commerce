@@ -64,6 +64,8 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
         ->name('landing-pages.builder');
     Route::post('landing-pages/{landing_page}/revisions', [LandingPageRevisionController::class, 'store'])
         ->name('landing-pages.revisions.store');
+    Route::post('landing-pages/{landing_page}/revisions/{revision}/restore', [LandingPageRevisionController::class, 'restore'])
+        ->name('landing-pages.revisions.restore');
     Route::resource('landing-pages', LandingPageController::class)->except(['create', 'show', 'edit']);
 
     // Settings & Integration Credentials Management

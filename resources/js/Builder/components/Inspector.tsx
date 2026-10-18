@@ -242,24 +242,15 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
             const p = props as unknown as ProductSelectorBlockProps;
             return (
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Product
-                        </label>
-                        <select
-                            value={p.productId || ''}
-                            onChange={(e) => onChange('productId', Number(e.target.value))}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        >
-                            <option value={0}>-- Select Product --</option>
-                            {products.map((prod) => (
-                                <option key={prod.id} value={prod.id}>
-                                    {prod.title} (ID: {prod.id})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex items-center space-x-2 pt-1">
+                    <ProductPickerSection
+                        productIds={p.productIds}
+                        productId={p.productId}
+                        selectionMode={p.selectionMode}
+                        products={products}
+                        onChange={onChange}
+                    />
+
+                    <div className="flex items-center space-x-2 pt-1 border-t border-gray-100">
                         <input
                             type="checkbox"
                             id="ps_price"
@@ -291,24 +282,15 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
             const p = props as unknown as CodCheckoutBlockProps;
             return (
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Target Product
-                        </label>
-                        <select
-                            value={p.productId || ''}
-                            onChange={(e) => onChange('productId', Number(e.target.value))}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        >
-                            <option value={0}>-- Select Product --</option>
-                            {products.map((prod) => (
-                                <option key={prod.id} value={prod.id}>
-                                    {prod.title} (ID: {prod.id})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div>
+                    <ProductPickerSection
+                        productIds={p.productIds}
+                        productId={p.productId}
+                        selectionMode={p.selectionMode}
+                        products={products}
+                        onChange={onChange}
+                    />
+
+                    <div className="pt-2 border-t border-gray-100">
                         <label className="block text-xs font-bold text-gray-700 mb-1">
                             Submit Button Text
                         </label>
@@ -884,3 +866,178 @@ function BlockStylesForm({ styles, onChange }: BlockStylesFormProps) {
         </div>
     );
 }
+
+interface ProductPickerSectionProps {
+    productIds?: number[];
+    productId?: number;
+    selectionMode?: 'single' | 'multiple';
+    products: Array<{ id: number; title: string }>;
+    onChange: (key: string, value: unknown) => void;
+}
+
+function ProductPickerSection({
+    productIds = [],
+    productId,
+    selectionMode = 'single',
+    products,
+    onChange,
+}: ProductPickerSectionProps) {
+    const [search, setSearch] = useState('');
+
+    const selectedIds =
+        Array.isArray(productIds) && productIds.length > 0
+            ? productIds
+            : productId
+            ? [productId]
+            : [];
+
+    const handleToggleProduct = (id: number) => {
+        let next: number[];
+        if (selectedIds.includes(id)) {
+            next = selectedIds.filter((p) => p !== id);
+        } else {
+            next = [...selectedIds, id];
+        }
+        onChange('productIds', next);
+        onChange('productId', next[0] || 0);
+    };
+
+    const handleSelectAll = () => {
+        const allIds = products.map((p) => p.id);
+        onChange('productIds', allIds);
+        onChange('productId', allIds[0] || 0);
+    };
+
+    const handleClearAll = () => {
+        onChange('productIds', []);
+        onChange('productId', 0);
+    };
+
+    const filtered = products.filter((p) =>
+        p.title.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return (
+        <div className="space-y-3">
+            {/* Selection Mode Control (Radio vs Checkbox) */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
+                <label className="block text-xs font-bold text-gray-800 mb-1.5">
+                    Customer Selection Mode
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                    <button
+                        type="button"
+                        onClick={() => onChange('selectionMode', 'single')}
+                        className={`p-2 rounded-lg border text-left transition flex flex-col ${
+                            selectionMode === 'single'
+                                ? 'border-primary-600 bg-primary-50 text-primary-900 font-bold ring-1 ring-primary-500'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                    >
+                        <span className="flex items-center">
+                            <span className="w-3 h-3 rounded-full border border-primary-600 mr-1.5 flex items-center justify-center">
+                                {selectionMode === 'single' && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-600" />
+                                )}
+                            </span>
+                            Radio Style
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-normal mt-0.5">
+                            Customer picks 1 item
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => onChange('selectionMode', 'multiple')}
+                        className={`p-2 rounded-lg border text-left transition flex flex-col ${
+                            selectionMode === 'multiple'
+                                ? 'border-primary-600 bg-primary-50 text-primary-900 font-bold ring-1 ring-primary-500'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                    >
+                        <span className="flex items-center">
+                            <span className="w-3 h-3 rounded border border-primary-600 mr-1.5 flex items-center justify-center text-[10px] leading-none text-primary-600">
+                                {selectionMode === 'multiple' && '✓'}
+                            </span>
+                            Checkbox Style
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-normal mt-0.5">
+                            Customer picks multiple
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Product Checkbox Selection List */}
+            <div>
+                <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700">
+                        Products ({selectedIds.length} selected)
+                    </label>
+                    <div className="space-x-2 text-[11px]">
+                        <button
+                            type="button"
+                            onClick={handleSelectAll}
+                            className="text-primary-600 hover:underline font-medium"
+                        >
+                            Select All
+                        </button>
+                        <span className="text-gray-300">|</span>
+                        <button
+                            type="button"
+                            onClick={handleClearAll}
+                            className="text-gray-500 hover:underline"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                {products.length > 5 && (
+                    <input
+                        type="text"
+                        placeholder="Filter products..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-1.5 mb-2"
+                    />
+                )}
+
+                <div className="max-h-44 overflow-y-auto space-y-1 border border-gray-200 rounded-xl p-2 bg-white">
+                    {filtered.length === 0 ? (
+                        <div className="text-center py-4 text-xs text-gray-400">
+                            No products match search
+                        </div>
+                    ) : (
+                        filtered.map((prod) => {
+                            const isChecked = selectedIds.includes(prod.id);
+                            return (
+                                <label
+                                    key={prod.id}
+                                    className={`flex items-center space-x-2.5 p-1.5 rounded-lg cursor-pointer text-xs transition ${
+                                        isChecked
+                                            ? 'bg-primary-50 text-primary-900 font-medium'
+                                            : 'hover:bg-gray-50 text-gray-700'
+                                    }`}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => handleToggleProduct(prod.id)}
+                                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5"
+                                    />
+                                    <span className="truncate flex-1">{prod.title}</span>
+                                    <span className="text-[10px] text-gray-400 font-mono">
+                                        #{prod.id}
+                                    </span>
+                                </label>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
