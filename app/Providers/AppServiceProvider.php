@@ -13,6 +13,8 @@ use App\Modules\Orders\Policies\OrderPolicy;
 use App\Modules\Settings\Models\Setting;
 use App\Modules\Settings\Policies\SettingPolicy;
 use App\Modules\Settings\Services\SettingsService;
+use App\Modules\Setup\Commands\CommerceInstallCommand;
+use App\Modules\Setup\Commands\CommercePreflightCommand;
 use App\Modules\Sms\Services\SmsManager;
 use App\Modules\Sms\Services\SmsTemplateService;
 use Illuminate\Support\Facades\Gate;
@@ -53,6 +55,8 @@ class AppServiceProvider extends ServiceProvider
             $this->commands([
                 CommerceBackupCommand::class,
                 CommerceRestoreCommand::class,
+                CommercePreflightCommand::class,
+                CommerceInstallCommand::class,
             ]);
         }
     }
