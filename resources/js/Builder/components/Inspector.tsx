@@ -263,7 +263,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             type="text"
                             value={p.orderButtonText || ''}
                             onChange={(e) => onChange('orderButtonText', e.target.value)}
-                            placeholder="অর্ডার করুন — ক্যাশ অন ডেলিভারি"
+                            placeholder="অর্ডার করুন"
                             className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
                         />
                     </div>
