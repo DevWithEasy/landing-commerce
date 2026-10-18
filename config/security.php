@@ -67,6 +67,10 @@ return [
             'script-src' => [
                 "'self'",
                 "'unsafe-inline'", // Required for Vite chunk bootstrapping and Blade countdown timer islands
+                'https://connect.facebook.net',
+                'https://www.googletagmanager.com',
+                'https://www.google-analytics.com',
+                'https://analytics.tiktok.com',
             ],
 
             'style-src' => [
@@ -98,6 +102,7 @@ return [
                 'https://www.youtube.com',
                 'https://www.youtube-nocookie.com',
                 'https://player.vimeo.com',
+                'https://www.googletagmanager.com',
             ],
 
             'frame-ancestors' => ["'self'"],

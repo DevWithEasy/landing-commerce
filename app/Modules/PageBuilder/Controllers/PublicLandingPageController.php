@@ -7,6 +7,7 @@ namespace App\Modules\PageBuilder\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\PageBuilder\Models\LandingPage;
 use App\Modules\PageBuilder\Services\BlockRendererService;
+use App\Modules\Tracking\Services\TrackingService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -81,12 +82,35 @@ class PublicLandingPageController extends Controller
         $settings = $ast['settings'] ?? [];
         $metaSeo = $landingPage->meta_seo ?? [];
 
+        $trackingService = app(TrackingService::class);
+        $resolvedTracking = $trackingService->getResolvedSettings($landingPage);
+
+        $contextProduct = $landingPage->product ? [
+            'id' => $landingPage->product->id,
+            'title' => $landingPage->product->title,
+            'regular_price' => $landingPage->product->regular_price,
+            'sale_price' => $landingPage->product->sale_price,
+        ] : null;
+
+        $trackingHead = $trackingService->renderHeadScripts($resolvedTracking, [
+            'event' => 'ViewContent',
+            'product' => $contextProduct,
+            'landingPage' => [
+                'id' => $landingPage->id,
+                'title' => $landingPage->title,
+            ],
+        ]);
+
+        $trackingBody = $trackingService->renderBodyScripts($resolvedTracking);
+
         return view('landing-page.show', [
             'landingPage' => $landingPage,
             'revision' => $revision,
             'renderedBlocksHtml' => $renderedBlocksHtml,
             'settings' => $settings,
             'metaSeo' => $metaSeo,
+            'trackingHead' => $trackingHead,
+            'trackingBody' => $trackingBody,
         ]);
     }
 }

@@ -11,6 +11,7 @@ import {
     Truck,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { trackAddPaymentInfo, trackInitiateCheckout } from '@/Shared/Tracking';
 import type { CheckoutShowProps, District, ProductVariant } from '@/types';
 
 function generateUuid(): string {
@@ -211,6 +212,15 @@ export default function CheckoutShow({
     const grandTotal = useMemo(() => {
         return subtotal + shippingFee;
     }, [subtotal, shippingFee]);
+
+    // Track InitiateCheckout on page view
+    useEffect(() => {
+        trackInitiateCheckout({
+            value: grandTotal,
+            contentIds: [String(selectedVariant?.id || product.id)],
+            numItems: quantity,
+        });
+    }, []);
 
     // Primary image resolution
     const primaryImage = useMemo(() => {
@@ -596,7 +606,10 @@ export default function CheckoutShow({
                                         return (
                                             <div
                                                 key={pm.id}
-                                                onClick={() => setSelectedPaymentMethod(pm.code)}
+                                                onClick={() => {
+                                                    setSelectedPaymentMethod(pm.code);
+                                                    trackAddPaymentInfo(pm.code, grandTotal);
+                                                }}
                                                 className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                                                     isSelected
                                                         ? 'border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500'

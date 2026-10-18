@@ -12,6 +12,7 @@ use App\Modules\Payments\Controllers\PaymentMethodController;
 use App\Modules\Settings\Controllers\SettingController;
 use App\Modules\Shipping\Controllers\ShippingMethodController;
 use App\Modules\Sms\Controllers\OrderSmsController;
+use App\Modules\Tracking\Controllers\TrackingSettingsController;
 use Illuminate\Support\Facades\Route;
 
 // Authentication & Session Routes (with brute-force rate limiting)
@@ -71,6 +72,11 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+
+    // Marketing Pixels & Analytics Tracking Management
+    Route::get('tracking', [TrackingSettingsController::class, 'index'])->name('tracking.index');
+    Route::post('tracking', [TrackingSettingsController::class, 'update'])->name('tracking.update');
+    Route::post('tracking/landing-pages/{landing_page}', [TrackingSettingsController::class, 'updatePage'])->name('tracking.page.update');
 
     // Shipping Methods Management
     Route::post('shipping-methods/{shipping_method}/toggle', [ShippingMethodController::class, 'toggle'])

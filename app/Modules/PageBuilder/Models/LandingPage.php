@@ -24,6 +24,7 @@ class LandingPage extends Model
         'is_default',
         'status',
         'meta_seo',
+        'tracking_settings',
         'published_revision_id',
     ];
 
@@ -35,6 +36,7 @@ class LandingPage extends Model
         return [
             'is_default' => 'boolean',
             'meta_seo' => 'array',
+            'tracking_settings' => 'array',
         ];
     }
 

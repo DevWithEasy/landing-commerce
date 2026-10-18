@@ -51,8 +51,14 @@
 
     {{-- Pre-compiled CSS & Fonts --}}
     @vite(['resources/css/app.css'])
+
+    {{-- Marketing Pixels & Analytics (Head) --}}
+    {!! $trackingHead ?? '' !!}
 </head>
 <body class="font-sans antialiased text-slate-800">
+    {{-- Marketing Pixels & Analytics (Body Noscript) --}}
+    {!! $trackingBody ?? '' !!}
+
     <div class="min-h-screen flex flex-col justify-between">
         <main>
             {!! $renderedBlocksHtml !!}

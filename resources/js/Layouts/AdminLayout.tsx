@@ -12,6 +12,7 @@ import {
     ShoppingCart,
     Store,
     Truck,
+    Activity,
     X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -84,6 +85,12 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
             : []),
         ...(user?.role === 'super_admin'
             ? [
+                  {
+                      name: 'Tracking & Pixels',
+                      href: '/admin/tracking',
+                      icon: Activity,
+                      current: window.location.pathname.startsWith('/admin/tracking'),
+                  },
                   {
                       name: 'Settings & Integrations',
                       href: '/admin/settings',

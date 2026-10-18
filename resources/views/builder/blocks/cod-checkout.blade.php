@@ -471,6 +471,33 @@
             }
         });
 
+        // Marketing pixel event: track InitiateCheckout once when customer begins interaction
+        var initiatedCheckoutTracked = false;
+        function triggerInitiateCheckout() {
+            if (initiatedCheckoutTracked) return;
+            initiatedCheckoutTracked = true;
+            try {
+                if (typeof window.fbq === 'function') {
+                    window.fbq('track', 'InitiateCheckout', {
+                        content_type: 'product',
+                        currency: 'BDT'
+                    });
+                }
+                if (typeof window.gtag === 'function') {
+                    window.gtag('event', 'begin_checkout', {
+                        currency: 'BDT'
+                    });
+                }
+                if (typeof window.ttq === 'object' && typeof window.ttq.track === 'function') {
+                    window.ttq.track('InitiateCheckout', {
+                        content_type: 'product',
+                        currency: 'BDT'
+                    });
+                }
+            } catch (err) {}
+        }
+        form.addEventListener('focusin', triggerInitiateCheckout, { once: true });
+
         // Form submission via AJAX for seamless user experience
         form.addEventListener('submit', function(e) {
             e.preventDefault();

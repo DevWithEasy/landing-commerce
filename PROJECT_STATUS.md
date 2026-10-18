@@ -86,8 +86,17 @@
 - **Phase 5:** Bangladesh Couriers (Steadfast, Pathao, RedX), SMS Gateways, Encrypted Vault & 3-Tier RBAC (100% Complete)
 - **Phase 6:** Pure-PHP Backup/Restore Engine, Preflight Checks, CLI Setup Wizard & Production Hardening (100% Complete)
 - **Deployment:** cPanel One-Time Web Installation Wizard & Safe Zero-SSH Setup (100% Complete)
-- **Commerce Operations:** Complete Shipping & Payment Method Management with Bangladesh MFS Readiness (100% Complete)
 - **Landing Pages:** Multiple Independent Landing Page Management & Dashboard (100% Complete)
+- **Marketing Pixels & Analytics:** Meta Pixel, Google Analytics 4, Google Ads Conversion Tracking, TikTok Pixel & GTM with Deduplication & Privacy Shields (100% Complete)
+
+### Marketing Pixels, Analytics & Conversion Tracking Architecture
+- **Multi-Platform Integrations:** Meta (Facebook) Pixel, Google Analytics 4 (GA4), Google Ads Conversion Tracking (with optional Conversion Label), TikTok Pixel, and Google Tag Manager (GTM).
+- **Admin Management & Diagnostics:** Dedicated `/admin/tracking` settings page with live regex format validation, enable/disable provider toggles, and real-time event integrity diagnostics.
+- **Per-Landing Page Overrides:** Supports global defaults with granular, per-campaign landing page overrides (`tracking_settings` JSON column). Draft landing pages strictly return empty tracking scripts to prevent test skew.
+- **E-Commerce Standard Events:** `PageView`, `ViewContent` (product/landing page), `InitiateCheckout` (form open & interaction), `AddPaymentInfo` (payment method selection), `Purchase` (order confirmation), and `Contact` (WhatsApp inquiry).
+- **Zero-Inflation Purchase Deduplication:** Multi-layered `sessionStorage` + `localStorage` deduplication preventing duplicate purchase events on browser reloads or back navigation.
+- **Enterprise Security & Privacy Shield:** Zero PII (customer names, phone numbers, delivery addresses) in pixel payloads. Strict regex sanitization prevents XSS script injection. Tracking scripts strictly isolated from admin routes (`/admin/*`) and authentication pages (`/login`).
+- **CSP & Verification:** Content Security Policy updated in `config/security.php` allowing official pixel endpoints (`connect.facebook.net`, `googletagmanager.com`, `analytics.tiktok.com`). Covered by 12 dedicated Pest tests in `tests/Feature/TrackingAndPixelsTest.php` with 75 assertions.
 
 ## 3. Verified Local Environment & Important Paths
 - **OS:** Windows (Laragon development environment)

@@ -11,7 +11,8 @@ import {
     ShieldCheck,
     User,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { trackContact, trackPurchase } from '@/Shared/Tracking';
 import type { ThankYouProps } from '@/types';
 
 function formatBdt(amount: number | string): string {
@@ -23,6 +24,22 @@ function formatBdt(amount: number | string): string {
 }
 
 export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
+    // Track Purchase event exactly once per order (with client-side deduplication)
+    useEffect(() => {
+        if (order) {
+            trackPurchase({
+                id: order.id,
+                order_number: order.order_number,
+                total_amount: order.total,
+                items: order.items?.map((item) => ({
+                    id: item.id,
+                    variant_id: item.variant_id,
+                    price: item.unit_price,
+                    quantity: item.quantity,
+                })),
+            });
+        }
+    }, [order]);
     // Generate sanitized WhatsApp URL
     const whatsappUrl = useMemo(() => {
         if (!merchantWhatsapp) return null;
@@ -87,6 +104,7 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                                 href={whatsappUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={() => trackContact('WhatsApp')}
                                 className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                             >
                                 <MessageCircle className="w-5 h-5 fill-current" />
