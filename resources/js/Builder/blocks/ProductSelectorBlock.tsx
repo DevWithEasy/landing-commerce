@@ -37,7 +37,6 @@ export function ProductSelectorBlock({
         ? props.productIds
         : (props.productId ? [props.productId] : []);
 
-    const count = productIds.length;
     const isMultiple = Boolean(productIds.length > 1);
     const orderButtonText = props.orderButtonText || 'অর্ডার করুন';
     const productBadges = props.productBadges || {};
@@ -233,21 +232,6 @@ export function ProductSelectorBlock({
                                 </div>
                             );
                         })}
-                    </div>
-
-                    {/* Bottom Checkout CTA Bar */}
-                    <div className="mt-8 bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-                        <div className="text-xs text-gray-600">
-                            <span className="font-bold text-gray-900">{count} products</span> available in this collection.
-                        </div>
-                        <a
-                            href="#cod-checkout"
-                            onClick={(e) => isEditor && e.preventDefault()}
-                            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition"
-                        >
-                            <ShoppingBag className="w-4 h-4 mr-2" />
-                            <span>Proceed to Checkout</span>
-                        </a>
                     </div>
                 </div>
 

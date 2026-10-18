@@ -187,16 +187,6 @@
                 @endforeach
             </div>
 
-            {{-- Summary & Call to Action Bar --}}
-            <div class="mt-8 bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="text-xs text-gray-600">
-                    <span class="font-bold text-gray-900">{{ $products->count() }} Products</span> available in this section.
-                </div>
-                <a href="#cod-checkout" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 text-xs sm:text-sm font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-xs transition text-center">
-                    Proceed to Cash on Delivery Checkout
-                </a>
-            </div>
-
         @elseif($product)
             {{-- Single Product Showcase --}}
             @php
