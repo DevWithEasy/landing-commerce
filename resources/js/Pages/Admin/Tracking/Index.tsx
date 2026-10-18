@@ -286,111 +286,117 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                     </label>
                                 </div>
 
-                                <div className="space-y-4">
-                                    {/* 1. Meta Pixel ID */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                            Meta Pixel ID
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.meta_pixel.pixel_id}
-                                            onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, pixel_id: e.target.value.trim() })}
-                                            placeholder="e.g. 123456789012345"
-                                            disabled={!data.meta_pixel.enabled}
-                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
-                                                !isMetaValid
-                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
-                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
-                                            } disabled:bg-slate-50 disabled:text-slate-400`}
-                                        />
-                                        {!isMetaValid && (
-                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
-                                                <AlertCircle className="w-3.5 h-3.5" />
-                                                <span>Pixel ID must be 8-20 numeric digits without letters or symbols.</span>
-                                            </p>
-                                        )}
-                                        {errors['meta_pixel.pixel_id' as keyof typeof errors] && (
-                                            <p className="text-xs text-red-600 mt-1">
-                                                {errors['meta_pixel.pixel_id' as keyof typeof errors]}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* 2. Conversions API (CAPI) Access Token */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                                Conversions API (CAPI) Access Token
+                                {data.meta_pixel.enabled ? (
+                                    <div className="space-y-4 pt-1 animate-in fade-in duration-200">
+                                        {/* 1. Meta Pixel ID */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                                Meta Pixel ID
                                             </label>
-                                            <span className="text-[11px] text-slate-400 font-medium">Server CAPI Token</span>
-                                        </div>
-                                        <div className="relative">
                                             <input
-                                                type={showMetaToken ? 'text' : 'password'}
-                                                value={data.meta_pixel.access_token || ''}
-                                                onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, access_token: e.target.value.trim() })}
-                                                placeholder={settings.meta_pixel?.access_token_configured ? '•••••••• (Encrypted in database)' : 'Paste your Meta CAPI Access Token'}
-                                                disabled={!data.meta_pixel.enabled}
-                                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-300 focus:ring-primary-500 focus:border-primary-500 text-sm font-mono bg-white disabled:bg-slate-50 disabled:text-slate-400"
+                                                type="text"
+                                                value={data.meta_pixel.pixel_id}
+                                                onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, pixel_id: e.target.value.trim() })}
+                                                placeholder="e.g. 123456789012345"
+                                                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                    !isMetaValid
+                                                        ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                        : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                                }`}
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowMetaToken(!showMetaToken)}
-                                                disabled={!data.meta_pixel.enabled}
-                                                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 p-1"
-                                            >
-                                                {showMetaToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
+                                            {!isMetaValid && (
+                                                <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    <span>Pixel ID must be 8-20 numeric digits without letters or symbols.</span>
+                                                </p>
+                                            )}
+                                            {errors['meta_pixel.pixel_id' as keyof typeof errors] && (
+                                                <p className="text-xs text-red-600 mt-1">
+                                                    {errors['meta_pixel.pixel_id' as keyof typeof errors]}
+                                                </p>
+                                            )}
                                         </div>
-                                        <p className="text-[11px] text-slate-500 mt-1">
-                                            Generated in Meta Events Manager &gt; Settings &gt; Generate Access Token. Stored securely with AES-256 encryption.
-                                        </p>
-                                    </div>
 
-                                    {/* 3. Test Event Code */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                                                Test Event Code
-                                            </label>
-                                            <span className="text-[11px] text-amber-600 font-medium">For Events Manager Debugging</span>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={data.meta_pixel.test_event_code || ''}
-                                            onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, test_event_code: e.target.value.trim().toUpperCase() })}
-                                            placeholder="e.g. TEST12345"
-                                            disabled={!data.meta_pixel.enabled}
-                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
-                                                !isMetaTestEventCodeValid
-                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
-                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
-                                            } disabled:bg-slate-50 disabled:text-slate-400`}
-                                        />
-                                        {!isMetaTestEventCodeValid && (
-                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
-                                                <AlertCircle className="w-3.5 h-3.5" />
-                                                <span>Test Event Code must be 3-50 alphanumeric characters (e.g. TEST12345).</span>
+                                        {/* 2. Conversions API (CAPI) Access Token */}
+                                        <div>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                                    Conversions API (CAPI) Access Token
+                                                </label>
+                                                <span className="text-[11px] text-slate-400 font-medium">Server CAPI Token</span>
+                                            </div>
+                                            <div className="relative">
+                                                <input
+                                                    type={showMetaToken ? 'text' : 'password'}
+                                                    value={data.meta_pixel.access_token || ''}
+                                                    onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, access_token: e.target.value.trim() })}
+                                                    placeholder={settings.meta_pixel?.access_token_configured ? '•••••••• (Encrypted in database)' : 'Paste your Meta CAPI Access Token'}
+                                                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-300 focus:ring-primary-500 focus:border-primary-500 text-sm font-mono bg-white"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowMetaToken(!showMetaToken)}
+                                                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 p-1"
+                                                >
+                                                    {showMetaToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                </button>
+                                            </div>
+                                            <p className="text-[11px] text-slate-500 mt-1">
+                                                Generated in Meta Events Manager &gt; Settings &gt; Generate Access Token. Stored securely with AES-256 encryption.
                                             </p>
-                                        )}
-                                        <p className="text-[11px] text-slate-500 mt-1">
-                                            Found in Meta Events Manager &gt; Test Events tab. Clear this field before launching live paid ads.
-                                        </p>
-                                    </div>
+                                        </div>
 
-                                    <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
-                                        <p className="font-semibold text-slate-700">Supported Events:</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">PageView</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">ViewContent</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">InitiateCheckout</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">AddPaymentInfo</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">Purchase (Deduplicated)</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">Contact</span>
+                                        {/* 3. Test Event Code */}
+                                        <div>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                                    Test Event Code
+                                                </label>
+                                                <span className="text-[11px] text-amber-600 font-medium">For Events Manager Debugging</span>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={data.meta_pixel.test_event_code || ''}
+                                                onChange={(e) => setData('meta_pixel', { ...data.meta_pixel, test_event_code: e.target.value.trim().toUpperCase() })}
+                                                placeholder="e.g. TEST12345"
+                                                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                    !isMetaTestEventCodeValid
+                                                        ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                        : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                                }`}
+                                            />
+                                            {!isMetaTestEventCodeValid && (
+                                                <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    <span>Test Event Code must be 3-50 alphanumeric characters (e.g. TEST12345).</span>
+                                                </p>
+                                            )}
+                                            <p className="text-[11px] text-slate-500 mt-1">
+                                                Found in Meta Events Manager &gt; Test Events tab. Clear this field before launching live paid ads.
+                                            </p>
+                                        </div>
+
+                                        <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
+                                            <p className="font-semibold text-slate-700">Supported Events:</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">PageView</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">ViewContent</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">InitiateCheckout</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">AddPaymentInfo</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">Purchase (Deduplicated)</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">Contact</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="py-2 px-1 flex items-center justify-between text-xs text-slate-500">
+                                        <span className="inline-flex items-center space-x-1.5 text-slate-400 font-medium">
+                                            <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                                            <span>Disabled</span>
+                                        </span>
+                                        <span className="text-[11px] text-slate-400">Toggle switch to configure Pixel ID, CAPI & Test Events</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* 2. Google Analytics 4 (GA4) Card */}
@@ -416,46 +422,55 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                     </label>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                            GA4 Measurement ID
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.ga4.measurement_id}
-                                            onChange={(e) => setData('ga4', { ...data.ga4, measurement_id: e.target.value.trim().toUpperCase() })}
-                                            placeholder="G-XXXXXXXXXX"
-                                            disabled={!data.ga4.enabled}
-                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
-                                                !isGa4Valid
-                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
-                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
-                                            } disabled:bg-slate-50 disabled:text-slate-400`}
-                                        />
-                                        {!isGa4Valid && (
-                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
-                                                <AlertCircle className="w-3.5 h-3.5" />
-                                                <span>Measurement ID must start with "G-" followed by alphanumeric characters.</span>
-                                            </p>
-                                        )}
-                                        {errors['ga4.measurement_id' as keyof typeof errors] && (
-                                            <p className="text-xs text-red-600 mt-1">
-                                                {errors['ga4.measurement_id' as keyof typeof errors]}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
-                                        <p className="font-semibold text-slate-700">Supported Events:</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">page_view</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">view_item</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">begin_checkout</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">add_payment_info</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">purchase (transaction_id deduplicated)</span>
+                                {data.ga4.enabled ? (
+                                    <div className="space-y-3 pt-1 animate-in fade-in duration-200">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                                GA4 Measurement ID
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={data.ga4.measurement_id}
+                                                onChange={(e) => setData('ga4', { ...data.ga4, measurement_id: e.target.value.trim().toUpperCase() })}
+                                                placeholder="G-XXXXXXXXXX"
+                                                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                    !isGa4Valid
+                                                        ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                        : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                                }`}
+                                            />
+                                            {!isGa4Valid && (
+                                                <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    <span>Measurement ID must start with "G-" followed by alphanumeric characters.</span>
+                                                </p>
+                                            )}
+                                            {errors['ga4.measurement_id' as keyof typeof errors] && (
+                                                <p className="text-xs text-red-600 mt-1">
+                                                    {errors['ga4.measurement_id' as keyof typeof errors]}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
+                                            <p className="font-semibold text-slate-700">Supported Events:</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">page_view</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">view_item</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">begin_checkout</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">add_payment_info</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">purchase (transaction_id deduplicated)</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="py-2 px-1 flex items-center justify-between text-xs text-slate-500">
+                                        <span className="inline-flex items-center space-x-1.5 text-slate-400 font-medium">
+                                            <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                                            <span>Disabled</span>
+                                        </span>
+                                        <span className="text-[11px] text-slate-400">Toggle switch to configure GA4 Measurement ID</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* 3. Google Ads Conversion Tracking Card */}
@@ -481,45 +496,55 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                     </label>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                            Conversion ID
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.google_ads.conversion_id}
-                                            onChange={(e) => setData('google_ads', { ...data.google_ads, conversion_id: e.target.value.trim() })}
-                                            placeholder="AW-123456789"
-                                            disabled={!data.google_ads.enabled}
-                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
-                                                !isGadsValid
-                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
-                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
-                                            } disabled:bg-slate-50 disabled:text-slate-400`}
-                                        />
+                                {data.google_ads.enabled ? (
+                                    <div className="space-y-3 pt-1 animate-in fade-in duration-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                                    Conversion ID
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={data.google_ads.conversion_id}
+                                                    onChange={(e) => setData('google_ads', { ...data.google_ads, conversion_id: e.target.value.trim() })}
+                                                    placeholder="AW-123456789"
+                                                    className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                        !isGadsValid
+                                                            ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                            : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                                    }`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                                    Conversion Label <span className="text-slate-400 font-normal">(Optional)</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={data.google_ads.conversion_label}
+                                                    onChange={(e) => setData('google_ads', { ...data.google_ads, conversion_label: e.target.value.trim() })}
+                                                    placeholder="e.g. AbC-D_ef123"
+                                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-primary-500 focus:border-primary-500 text-sm font-mono bg-white"
+                                                />
+                                            </div>
+                                        </div>
+                                        {(!isGadsValid || errors['google_ads.conversion_id' as keyof typeof errors]) && (
+                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                <span>
+                                                    {errors['google_ads.conversion_id' as keyof typeof errors] || 'Conversion ID must be formatted as AW-123456789 or 123456789.'}
+                                                </span>
+                                            </p>
+                                        )}
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                            Conversion Label <span className="text-slate-400 font-normal">(Optional)</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.google_ads.conversion_label}
-                                            onChange={(e) => setData('google_ads', { ...data.google_ads, conversion_label: e.target.value.trim() })}
-                                            placeholder="e.g. AbC-D_ef123"
-                                            disabled={!data.google_ads.enabled}
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-primary-500 focus:border-primary-500 text-sm font-mono bg-white disabled:bg-slate-50 disabled:text-slate-400"
-                                        />
-                                    </div>
-                                </div>
-                                {(!isGadsValid || errors['google_ads.conversion_id' as keyof typeof errors]) && (
-                                    <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
-                                        <AlertCircle className="w-3.5 h-3.5" />
-                                        <span>
-                                            {errors['google_ads.conversion_id' as keyof typeof errors] || 'Conversion ID must be formatted as AW-123456789 or 123456789.'}
+                                ) : (
+                                    <div className="py-2 px-1 flex items-center justify-between text-xs text-slate-500">
+                                        <span className="inline-flex items-center space-x-1.5 text-slate-400 font-medium">
+                                            <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                                            <span>Disabled</span>
                                         </span>
-                                    </p>
+                                        <span className="text-[11px] text-slate-400">Toggle switch to configure Google Ads Conversion Tracking</span>
+                                    </div>
                                 )}
                             </div>
 
@@ -546,45 +571,54 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                     </label>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                            TikTok Pixel ID
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={data.tiktok_pixel.pixel_id}
-                                            onChange={(e) => setData('tiktok_pixel', { ...data.tiktok_pixel, pixel_id: e.target.value.trim() })}
-                                            placeholder="e.g. C1234567890ABCDEF"
-                                            disabled={!data.tiktok_pixel.enabled}
-                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
-                                                !isTiktokValid
-                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
-                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
-                                            } disabled:bg-slate-50 disabled:text-slate-400`}
-                                        />
-                                        {!isTiktokValid && (
-                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
-                                                <AlertCircle className="w-3.5 h-3.5" />
-                                                <span>TikTok Pixel ID must be 10-25 alphanumeric characters.</span>
-                                            </p>
-                                        )}
-                                        {errors['tiktok_pixel.pixel_id' as keyof typeof errors] && (
-                                            <p className="text-xs text-red-600 mt-1">
-                                                {errors['tiktok_pixel.pixel_id' as keyof typeof errors]}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
-                                        <p className="font-semibold text-slate-700">Supported Events:</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">ViewContent</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">InitiateCheckout</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">AddPaymentInfo</span>
-                                            <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">CompletePayment (Purchase)</span>
+                                {data.tiktok_pixel.enabled ? (
+                                    <div className="space-y-3 pt-1 animate-in fade-in duration-200">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                                TikTok Pixel ID
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={data.tiktok_pixel.pixel_id}
+                                                onChange={(e) => setData('tiktok_pixel', { ...data.tiktok_pixel, pixel_id: e.target.value.trim() })}
+                                                placeholder="e.g. C1234567890ABCDEF"
+                                                className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                    !isTiktokValid
+                                                        ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                        : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                                }`}
+                                            />
+                                            {!isTiktokValid && (
+                                                <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                    <span>TikTok Pixel ID must be 10-25 alphanumeric characters.</span>
+                                                </p>
+                                            )}
+                                            {errors['tiktok_pixel.pixel_id' as keyof typeof errors] && (
+                                                <p className="text-xs text-red-600 mt-1">
+                                                    {errors['tiktok_pixel.pixel_id' as keyof typeof errors]}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-500 space-y-1">
+                                            <p className="font-semibold text-slate-700">Supported Events:</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">ViewContent</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">InitiateCheckout</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">AddPaymentInfo</span>
+                                                <span className="bg-white border px-2 py-0.5 rounded text-[11px] font-mono">CompletePayment (Purchase)</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="py-2 px-1 flex items-center justify-between text-xs text-slate-500">
+                                        <span className="inline-flex items-center space-x-1.5 text-slate-400 font-medium">
+                                            <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                                            <span>Disabled</span>
+                                        </span>
+                                        <span className="text-[11px] text-slate-400">Toggle switch to configure TikTok Pixel ID</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* 5. Google Tag Manager (GTM) Card */}
@@ -615,34 +649,43 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                     </label>
                                 </div>
 
-                                <div className="max-w-xl">
-                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                                        GTM Container ID
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.gtm.container_id}
-                                        onChange={(e) => setData('gtm', { ...data.gtm, container_id: e.target.value.trim().toUpperCase() })}
-                                        placeholder="GTM-XXXXXXX"
-                                        disabled={!data.gtm.enabled}
-                                        className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
-                                            !isGtmValid
-                                                ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
-                                                : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
-                                        } disabled:bg-slate-50 disabled:text-slate-400`}
-                                    />
-                                    {!isGtmValid && (
-                                        <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
-                                            <AlertCircle className="w-3.5 h-3.5" />
-                                            <span>Container ID must start with "GTM-" followed by alphanumeric characters.</span>
-                                        </p>
-                                    )}
-                                    {errors['gtm.container_id' as keyof typeof errors] && (
-                                        <p className="text-xs text-red-600 mt-1">
-                                            {errors['gtm.container_id' as keyof typeof errors]}
-                                        </p>
-                                    )}
-                                </div>
+                                {data.gtm.enabled ? (
+                                    <div className="max-w-xl pt-1 animate-in fade-in duration-200">
+                                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                            GTM Container ID
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.gtm.container_id}
+                                            onChange={(e) => setData('gtm', { ...data.gtm, container_id: e.target.value.trim().toUpperCase() })}
+                                            placeholder="GTM-XXXXXXX"
+                                            className={`w-full px-3.5 py-2.5 rounded-xl border text-sm font-mono transition ${
+                                                !isGtmValid
+                                                    ? 'border-red-400 focus:ring-red-400 bg-red-50/20'
+                                                    : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 bg-white'
+                                            }`}
+                                        />
+                                        {!isGtmValid && (
+                                            <p className="text-xs text-red-600 mt-1 flex items-center space-x-1">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                <span>Container ID must start with "GTM-" followed by alphanumeric characters.</span>
+                                            </p>
+                                        )}
+                                        {errors['gtm.container_id' as keyof typeof errors] && (
+                                            <p className="text-xs text-red-600 mt-1">
+                                                {errors['gtm.container_id' as keyof typeof errors]}
+                                            </p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="py-2 px-1 flex items-center justify-between text-xs text-slate-500">
+                                        <span className="inline-flex items-center space-x-1.5 text-slate-400 font-medium">
+                                            <span className="w-2 h-2 rounded-full bg-slate-300"></span>
+                                            <span>Disabled</span>
+                                        </span>
+                                        <span className="text-[11px] text-slate-400">Toggle switch to configure GTM Container ID</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -1033,37 +1076,39 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                                         meta_pixel: { ...pageOverrideForm.meta_pixel, enabled: e.target.checked },
                                                     })
                                                 }
-                                                className="rounded text-primary-600"
+                                                className="rounded text-primary-600 cursor-pointer"
                                             />
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            <input
-                                                type="text"
-                                                value={pageOverrideForm.meta_pixel.pixel_id}
-                                                onChange={(e) =>
-                                                    setPageOverrideForm({
-                                                        ...pageOverrideForm,
-                                                        meta_pixel: { ...pageOverrideForm.meta_pixel, pixel_id: e.target.value.trim() },
-                                                    })
-                                                }
-                                                placeholder="Custom Pixel ID (e.g. 12345...)"
-                                                disabled={!pageOverrideForm.meta_pixel.enabled}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={pageOverrideForm.meta_pixel.test_event_code || ''}
-                                                onChange={(e) =>
-                                                    setPageOverrideForm({
-                                                        ...pageOverrideForm,
-                                                        meta_pixel: { ...pageOverrideForm.meta_pixel, test_event_code: e.target.value.trim().toUpperCase() },
-                                                    })
-                                                }
-                                                placeholder="Test Event Code (e.g. TEST12345)"
-                                                disabled={!pageOverrideForm.meta_pixel.enabled}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                            />
-                                        </div>
+                                        {pageOverrideForm.meta_pixel.enabled ? (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 animate-in fade-in duration-150">
+                                                <input
+                                                    type="text"
+                                                    value={pageOverrideForm.meta_pixel.pixel_id}
+                                                    onChange={(e) =>
+                                                        setPageOverrideForm({
+                                                            ...pageOverrideForm,
+                                                            meta_pixel: { ...pageOverrideForm.meta_pixel, pixel_id: e.target.value.trim() },
+                                                        })
+                                                    }
+                                                    placeholder="Custom Pixel ID (e.g. 12345...)"
+                                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={pageOverrideForm.meta_pixel.test_event_code || ''}
+                                                    onChange={(e) =>
+                                                        setPageOverrideForm({
+                                                            ...pageOverrideForm,
+                                                            meta_pixel: { ...pageOverrideForm.meta_pixel, test_event_code: e.target.value.trim().toUpperCase() },
+                                                        })
+                                                    }
+                                                    placeholder="Test Event Code (e.g. TEST12345)"
+                                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <p className="text-[11px] text-slate-400">Disabled — will not override global Meta Pixel</p>
+                                        )}
                                     </div>
 
                                     {/* GA4 Override */}
@@ -1079,22 +1124,25 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                                         ga4: { ...pageOverrideForm.ga4, enabled: e.target.checked },
                                                     })
                                                 }
-                                                className="rounded text-primary-600"
+                                                className="rounded text-primary-600 cursor-pointer"
                                             />
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={pageOverrideForm.ga4.measurement_id}
-                                            onChange={(e) =>
-                                                setPageOverrideForm({
-                                                    ...pageOverrideForm,
-                                                    ga4: { ...pageOverrideForm.ga4, measurement_id: e.target.value.trim().toUpperCase() },
-                                                })
-                                            }
-                                            placeholder="Leave empty to use global GA4 Measurement ID"
-                                            disabled={!pageOverrideForm.ga4.enabled}
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                        />
+                                        {pageOverrideForm.ga4.enabled ? (
+                                            <input
+                                                type="text"
+                                                value={pageOverrideForm.ga4.measurement_id}
+                                                onChange={(e) =>
+                                                    setPageOverrideForm({
+                                                        ...pageOverrideForm,
+                                                        ga4: { ...pageOverrideForm.ga4, measurement_id: e.target.value.trim().toUpperCase() },
+                                                    })
+                                                }
+                                                placeholder="Custom GA4 Measurement ID (e.g. G-XXXXXXX)"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono animate-in fade-in duration-150"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] text-slate-400">Disabled — will not override global GA4</p>
+                                        )}
                                     </div>
 
                                     {/* Google Ads Override */}
@@ -1110,37 +1158,39 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                                         google_ads: { ...pageOverrideForm.google_ads, enabled: e.target.checked },
                                                     })
                                                 }
-                                                className="rounded text-primary-600"
+                                                className="rounded text-primary-600 cursor-pointer"
                                             />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <input
-                                                type="text"
-                                                value={pageOverrideForm.google_ads.conversion_id}
-                                                onChange={(e) =>
-                                                    setPageOverrideForm({
-                                                        ...pageOverrideForm,
-                                                        google_ads: { ...pageOverrideForm.google_ads, conversion_id: e.target.value.trim() },
-                                                    })
-                                                }
-                                                placeholder="Conversion ID (e.g. AW-12345)"
-                                                disabled={!pageOverrideForm.google_ads.enabled}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                            />
-                                            <input
-                                                type="text"
-                                                value={pageOverrideForm.google_ads.conversion_label}
-                                                onChange={(e) =>
-                                                    setPageOverrideForm({
-                                                        ...pageOverrideForm,
-                                                        google_ads: { ...pageOverrideForm.google_ads, conversion_label: e.target.value.trim() },
-                                                    })
-                                                }
-                                                placeholder="Label (optional)"
-                                                disabled={!pageOverrideForm.google_ads.enabled}
-                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                            />
-                                        </div>
+                                        {pageOverrideForm.google_ads.enabled ? (
+                                            <div className="grid grid-cols-2 gap-2 pt-1 animate-in fade-in duration-150">
+                                                <input
+                                                    type="text"
+                                                    value={pageOverrideForm.google_ads.conversion_id}
+                                                    onChange={(e) =>
+                                                        setPageOverrideForm({
+                                                            ...pageOverrideForm,
+                                                            google_ads: { ...pageOverrideForm.google_ads, conversion_id: e.target.value.trim() },
+                                                        })
+                                                    }
+                                                    placeholder="Conversion ID (e.g. AW-12345)"
+                                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={pageOverrideForm.google_ads.conversion_label}
+                                                    onChange={(e) =>
+                                                        setPageOverrideForm({
+                                                            ...pageOverrideForm,
+                                                            google_ads: { ...pageOverrideForm.google_ads, conversion_label: e.target.value.trim() },
+                                                        })
+                                                    }
+                                                    placeholder="Label (optional)"
+                                                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <p className="text-[11px] text-slate-400">Disabled — will not override global Google Ads</p>
+                                        )}
                                     </div>
 
                                     {/* TikTok Override */}
@@ -1156,22 +1206,25 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                                         tiktok_pixel: { ...pageOverrideForm.tiktok_pixel, enabled: e.target.checked },
                                                     })
                                                 }
-                                                className="rounded text-primary-600"
+                                                className="rounded text-primary-600 cursor-pointer"
                                             />
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={pageOverrideForm.tiktok_pixel.pixel_id}
-                                            onChange={(e) =>
-                                                setPageOverrideForm({
-                                                    ...pageOverrideForm,
-                                                    tiktok_pixel: { ...pageOverrideForm.tiktok_pixel, pixel_id: e.target.value.trim() },
-                                                })
-                                            }
-                                            placeholder="Leave empty to use global TikTok Pixel ID"
-                                            disabled={!pageOverrideForm.tiktok_pixel.enabled}
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                        />
+                                        {pageOverrideForm.tiktok_pixel.enabled ? (
+                                            <input
+                                                type="text"
+                                                value={pageOverrideForm.tiktok_pixel.pixel_id}
+                                                onChange={(e) =>
+                                                    setPageOverrideForm({
+                                                        ...pageOverrideForm,
+                                                        tiktok_pixel: { ...pageOverrideForm.tiktok_pixel, pixel_id: e.target.value.trim() },
+                                                    })
+                                                }
+                                                placeholder="Custom TikTok Pixel ID (e.g. C12345...)"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono animate-in fade-in duration-150"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] text-slate-400">Disabled — will not override global TikTok Pixel</p>
+                                        )}
                                     </div>
 
                                     {/* GTM Override */}
@@ -1187,22 +1240,25 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                                                         gtm: { ...pageOverrideForm.gtm, enabled: e.target.checked },
                                                     })
                                                 }
-                                                className="rounded text-primary-600"
+                                                className="rounded text-primary-600 cursor-pointer"
                                             />
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={pageOverrideForm.gtm.container_id}
-                                            onChange={(e) =>
-                                                setPageOverrideForm({
-                                                    ...pageOverrideForm,
-                                                    gtm: { ...pageOverrideForm.gtm, container_id: e.target.value.trim().toUpperCase() },
-                                                })
-                                            }
-                                            placeholder="GTM-XXXXXXX"
-                                            disabled={!pageOverrideForm.gtm.enabled}
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono disabled:bg-slate-50 disabled:text-slate-400"
-                                        />
+                                        {pageOverrideForm.gtm.enabled ? (
+                                            <input
+                                                type="text"
+                                                value={pageOverrideForm.gtm.container_id}
+                                                onChange={(e) =>
+                                                    setPageOverrideForm({
+                                                        ...pageOverrideForm,
+                                                        gtm: { ...pageOverrideForm.gtm, container_id: e.target.value.trim().toUpperCase() },
+                                                    })
+                                                }
+                                                placeholder="Custom GTM Container ID (e.g. GTM-XXXXXXX)"
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono animate-in fade-in duration-150"
+                                            />
+                                        ) : (
+                                            <p className="text-[11px] text-slate-400">Disabled — will not override global GTM Container</p>
+                                        )}
                                     </div>
                                 </div>
                             )}
