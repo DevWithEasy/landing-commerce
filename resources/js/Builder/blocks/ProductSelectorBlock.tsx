@@ -10,6 +10,40 @@ export interface ProductSelectorBlockComponentProps {
     isEditor?: boolean;
 }
 
+function SafeImage({
+    src,
+    alt,
+    className,
+    fallbackIconSize = 'w-10 h-10',
+    fallbackText = 'No Image',
+}: {
+    src?: string | null;
+    alt: string;
+    className: string;
+    fallbackIconSize?: string;
+    fallbackText?: string;
+}) {
+    const [hasError, setHasError] = useState(false);
+
+    if (!src || hasError) {
+        return (
+            <div className="text-gray-400 text-xs flex flex-col items-center justify-center p-2 text-center select-none w-full h-full">
+                <Package className={`${fallbackIconSize} mb-1 text-gray-300`} />
+                {fallbackText ? <span className="text-[10px] font-medium leading-none">{fallbackText}</span> : null}
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={src}
+            alt={alt}
+            className={className}
+            onError={() => setHasError(true)}
+        />
+    );
+}
+
 export function ProductSelectorBlock({
     props,
     styles = {},
@@ -148,15 +182,13 @@ export function ProductSelectorBlock({
 
                                         {/* Product Thumbnail with Blur Hover & Eye Quick-View Icon */}
                                         <div className="relative aspect-square w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden mb-3.5 flex items-center justify-center group/img">
-                                            {imgUrl ? (
-                                                <img
-                                                    src={imgUrl}
-                                                    alt={realProd?.title || `Product #${pid}`}
-                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
-                                                />
-                                            ) : (
-                                                <Package className="w-12 h-12 text-gray-300" />
-                                            )}
+                                            <SafeImage
+                                                src={imgUrl}
+                                                alt={realProd?.title || `Product #${pid}`}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+                                                fallbackIconSize="w-10 h-10"
+                                                fallbackText="No Image"
+                                            />
 
                                             {/* Translucent / Blurry hover overlay with Quick View button */}
                                             <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px] opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">
@@ -277,12 +309,14 @@ export function ProductSelectorBlock({
                                     return (
                                         <>
                                             <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                                                <div className="w-14 h-14 rounded-lg bg-white border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
-                                                    {varImg ? (
-                                                        <img src={varImg} alt={activeVar?.name || 'Variant'} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Package className="w-6 h-6 text-gray-300" />
-                                                    )}
+                                                <div className="w-14 h-14 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                                    <SafeImage
+                                                        src={varImg}
+                                                        alt={activeVar?.name || 'Variant'}
+                                                        className="w-full h-full object-cover"
+                                                        fallbackIconSize="w-6 h-6"
+                                                        fallbackText="No Image"
+                                                    />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <span className="text-xs font-bold text-gray-900 block truncate">
@@ -386,11 +420,13 @@ export function ProductSelectorBlock({
                                         {/* Gallery View */}
                                         <div>
                                             <div className="aspect-square rounded-xl bg-gray-50 border border-gray-200 overflow-hidden flex items-center justify-center mb-3">
-                                                {currentMainImg ? (
-                                                    <img src={currentMainImg} alt={quickViewProduct.title} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <Package className="w-16 h-16 text-gray-300" />
-                                                )}
+                                                <SafeImage
+                                                    src={currentMainImg}
+                                                    alt={quickViewProduct.title}
+                                                    className="w-full h-full object-cover"
+                                                    fallbackIconSize="w-16 h-16"
+                                                    fallbackText="No Image"
+                                                />
                                             </div>
 
                                             {/* Thumbnail Strip */}
@@ -401,13 +437,19 @@ export function ProductSelectorBlock({
                                                             key={i}
                                                             type="button"
                                                             onClick={() => setQuickViewSelectedImage(img)}
-                                                            className={`w-14 h-14 rounded-lg overflow-hidden border shrink-0 transition ${
+                                                            className={`w-14 h-14 rounded-lg overflow-hidden border shrink-0 transition cursor-pointer ${
                                                                 currentMainImg === img
                                                                     ? 'border-emerald-600 ring-2 ring-emerald-500/30'
                                                                     : 'border-gray-200 hover:border-gray-400 opacity-80'
                                                             }`}
                                                         >
-                                                            <img src={img} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
+                                                            <SafeImage
+                                                                src={img}
+                                                                alt={`Gallery ${i}`}
+                                                                className="w-full h-full object-cover"
+                                                                fallbackIconSize="w-5 h-5"
+                                                                fallbackText=""
+                                                            />
                                                         </button>
                                                     ))}
                                                 </div>
@@ -457,6 +499,8 @@ export function ProductSelectorBlock({
                                                                     setSelectedVariantMap((prev) => ({ ...prev, [quickViewProduct.id]: v.id }));
                                                                     if (v.images?.[0]?.url) {
                                                                         setQuickViewSelectedImage(v.images[0].url);
+                                                                    } else {
+                                                                        setQuickViewSelectedImage(quickViewProduct.primaryImage?.url || quickViewProduct.images?.[0]?.url || null);
                                                                     }
                                                                 }}
                                                                 className={`px-3 py-1.5 text-xs rounded-lg border font-medium transition ${
@@ -523,16 +567,13 @@ export function ProductSelectorBlock({
                     <div className="flex flex-col md:flex-row gap-8 items-center">
                         {/* Product Visual Container with Hover Quick View */}
                         <div className="w-full md:w-1/2 aspect-square bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center p-4 text-center overflow-hidden relative group/single">
-                            {singleImg ? (
-                                <img src={singleImg} alt={singleProd?.title || 'Product'} className="w-full h-full object-cover rounded-lg" />
-                            ) : (
-                                <div>
-                                    <Package className="w-16 h-16 text-emerald-400 mx-auto mb-3" />
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                                        Product ID: #{props.productId || 'Active Product'}
-                                    </span>
-                                </div>
-                            )}
+                            <SafeImage
+                                src={singleImg}
+                                alt={singleProd?.title || 'Product'}
+                                className="w-full h-full object-cover rounded-lg"
+                                fallbackIconSize="w-16 h-16"
+                                fallbackText="No Image Available"
+                            />
 
                             {singleProd && (
                                 <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px] opacity-0 group-hover/single:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2">

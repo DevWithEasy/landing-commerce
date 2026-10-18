@@ -122,9 +122,13 @@
                             {{-- Product Image Thumbnail with Hover Blur & Quick View Eye Icon --}}
                             <div class="relative aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-3 flex items-center justify-center group/img">
                                 @if($imgUrl)
-                                    <img src="{{ e($imgUrl) }}" alt="{{ e($item->title) }}" class="selector-card-img w-full h-full object-cover transition duration-500 group-hover/img:scale-105" />
+                                    <img src="{{ e($imgUrl) }}" alt="{{ e($item->title) }}" class="selector-card-img w-full h-full object-cover transition duration-500 group-hover/img:scale-105" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');" />
+                                    <div class="text-gray-400 text-xs flex flex-col items-center justify-center p-2 hidden">
+                                        <svg class="w-10 h-10 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                        <span>No Image</span>
+                                    </div>
                                 @else
-                                    <div class="text-gray-400 text-xs flex flex-col items-center">
+                                    <div class="text-gray-400 text-xs flex flex-col items-center justify-center p-2">
                                         <svg class="w-10 h-10 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                         <span>No Image</span>
                                     </div>
@@ -251,9 +255,16 @@
                     <div>
                         <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100 flex items-center justify-center relative group/single">
                             @if($singleImg)
-                                <img src="{{ e($singleImg) }}" alt="{{ e($product->title) }}" id="single-product-main-img" class="w-full h-full object-cover" />
+                                <img src="{{ e($singleImg) }}" alt="{{ e($product->title) }}" id="single-product-main-img" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');" />
+                                <div class="text-gray-400 text-xs flex flex-col items-center justify-center p-4 hidden">
+                                    <svg class="w-14 h-14 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    <span>No Image Available</span>
+                                </div>
                             @else
-                                <span class="text-gray-400">No Image Available</span>
+                                <div class="text-gray-400 text-xs flex flex-col items-center justify-center p-4">
+                                    <svg class="w-14 h-14 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    <span>No Image Available</span>
+                                </div>
                             @endif
 
                             <div class="absolute inset-0 bg-slate-900/30 backdrop-blur-[2px] opacity-0 group-hover/single:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2 z-10">
@@ -354,8 +365,12 @@
             </div>
             <div class="p-5 space-y-4">
                 <div class="flex items-center space-x-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <div class="w-14 h-14 rounded-lg bg-white border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
-                        <img id="ps-vmodal-img" src="" alt="Variant" class="w-full h-full object-cover" />
+                    <div class="w-14 h-14 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center relative">
+                        <img id="ps-vmodal-img" src="" alt="Variant" class="w-full h-full object-cover hidden" />
+                        <div id="ps-vmodal-no-img" class="text-gray-400 text-[10px] flex flex-col items-center justify-center p-1 text-center">
+                            <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <span class="scale-75 text-[9px] -mt-0.5">No Image</span>
+                        </div>
                     </div>
                     <div class="min-w-0 flex-1">
                         <span id="ps-vmodal-selected-name" class="text-xs font-bold text-gray-900 block truncate">Selected: Standard</span>
@@ -395,8 +410,12 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 <div>
-                    <div class="aspect-square rounded-xl bg-gray-50 border border-gray-200 overflow-hidden flex items-center justify-center mb-3">
-                        <img id="ps-qvmodal-main-img" src="" alt="Main Product Preview" class="w-full h-full object-cover" />
+                    <div class="aspect-square rounded-xl bg-gray-50 border border-gray-200 overflow-hidden flex items-center justify-center mb-3 relative">
+                        <img id="ps-qvmodal-main-img" src="" alt="Main Product Preview" class="w-full h-full object-cover hidden" />
+                        <div id="ps-qvmodal-no-img" class="text-gray-400 text-xs flex flex-col items-center justify-center p-2 text-center">
+                            <svg class="w-12 h-12 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <span>No Image</span>
+                        </div>
                     </div>
                     <div id="ps-qvmodal-gallery-strip" class="flex items-center gap-2 overflow-x-auto pb-1">
                         {{-- Populated dynamically --}}
@@ -458,6 +477,7 @@
         var vModalClose = document.getElementById('ps-vmodal-close-btn');
         var vModalTitle = document.getElementById('ps-vmodal-title');
         var vModalImg = document.getElementById('ps-vmodal-img');
+        var vModalNoImg = document.getElementById('ps-vmodal-no-img');
         var vModalSelectedName = document.getElementById('ps-vmodal-selected-name');
         var vModalPrice = document.getElementById('ps-vmodal-price');
         var vModalRegPrice = document.getElementById('ps-vmodal-regprice');
@@ -469,6 +489,7 @@
         var qvModalClose = document.getElementById('ps-qvmodal-close-btn');
         var qvModalTitle = document.getElementById('ps-qvmodal-title');
         var qvModalMainImg = document.getElementById('ps-qvmodal-main-img');
+        var qvModalNoImg = document.getElementById('ps-qvmodal-no-img');
         var qvModalGalleryStrip = document.getElementById('ps-qvmodal-gallery-strip');
         var qvModalPrice = document.getElementById('ps-qvmodal-price');
         var qvModalRegPrice = document.getElementById('ps-qvmodal-regprice');
@@ -477,6 +498,20 @@
         var qvModalVariantsList = document.getElementById('ps-qvmodal-variants-list');
         var qvModalDesc = document.getElementById('ps-qvmodal-desc');
         var qvModalOrderBtn = document.getElementById('ps-qvmodal-order-btn');
+
+        // Graceful error handling for broken image URLs in modals
+        if (vModalImg) {
+            vModalImg.onerror = function() {
+                vModalImg.classList.add('hidden');
+                if (vModalNoImg) vModalNoImg.classList.remove('hidden');
+            };
+        }
+        if (qvModalMainImg) {
+            qvModalMainImg.onerror = function() {
+                qvModalMainImg.classList.add('hidden');
+                if (qvModalNoImg) qvModalNoImg.classList.remove('hidden');
+            };
+        }
 
         var activeVariantState = {};
         var currentModalProduct = null;
@@ -548,7 +583,15 @@
                 activeVariantState[prodData.id] = v.id;
                 vModalSelectedName.innerText = 'Selected: ' + v.name;
                 vModalPrice.innerText = '৳' + Math.round(v.price).toLocaleString();
-                if (v.image) vModalImg.src = v.image;
+                if (v.image && v.image.trim() !== '') {
+                    vModalImg.src = v.image;
+                    vModalImg.classList.remove('hidden');
+                    if (vModalNoImg) vModalNoImg.classList.add('hidden');
+                } else {
+                    vModalImg.src = '';
+                    vModalImg.classList.add('hidden');
+                    if (vModalNoImg) vModalNoImg.classList.remove('hidden');
+                }
 
                 if (v.regular_price && v.regular_price > v.price) {
                     vModalRegPrice.innerText = '৳' + Math.round(v.regular_price).toLocaleString();
@@ -640,7 +683,15 @@
             }
 
             var mainImg = (activeVariant && activeVariant.image) ? activeVariant.image : prodData.main_image;
-            qvModalMainImg.src = mainImg || '';
+            if (mainImg && mainImg.trim() !== '') {
+                qvModalMainImg.src = mainImg;
+                qvModalMainImg.classList.remove('hidden');
+                if (qvModalNoImg) qvModalNoImg.classList.add('hidden');
+            } else {
+                qvModalMainImg.src = '';
+                qvModalMainImg.classList.add('hidden');
+                if (qvModalNoImg) qvModalNoImg.classList.remove('hidden');
+            }
 
             // Gallery Thumbnails
             qvModalGalleryStrip.innerHTML = '';
@@ -650,9 +701,17 @@
                     var thumbBtn = document.createElement('button');
                     thumbBtn.type = 'button';
                     thumbBtn.className = 'w-14 h-14 rounded-lg overflow-hidden border shrink-0 transition cursor-pointer ' + (gUrl === mainImg ? 'border-primary-600 ring-2 ring-primary-500/30' : 'border-gray-200 hover:border-gray-400 opacity-80');
-                    thumbBtn.innerHTML = '<img src="' + gUrl + '" class="w-full h-full object-cover" />';
+                    thumbBtn.innerHTML = '<img src="' + gUrl + '" class="w-full h-full object-cover" onerror="this.style.display=\'none\';" />';
                     thumbBtn.addEventListener('click', function() {
-                        qvModalMainImg.src = gUrl;
+                        if (gUrl && gUrl.trim() !== '') {
+                            qvModalMainImg.src = gUrl;
+                            qvModalMainImg.classList.remove('hidden');
+                            if (qvModalNoImg) qvModalNoImg.classList.add('hidden');
+                        } else {
+                            qvModalMainImg.src = '';
+                            qvModalMainImg.classList.add('hidden');
+                            if (qvModalNoImg) qvModalNoImg.classList.remove('hidden');
+                        }
                         qvModalGalleryStrip.querySelectorAll('button').forEach(function(b) {
                             b.className = 'w-14 h-14 rounded-lg overflow-hidden border shrink-0 transition cursor-pointer border-gray-200 hover:border-gray-400 opacity-80';
                         });
@@ -676,7 +735,16 @@
                     vBtn.addEventListener('click', function() {
                         activeVariantState[prodData.id] = v.id;
                         qvModalPrice.innerText = '৳' + Math.round(v.price).toLocaleString();
-                        if (v.image) qvModalMainImg.src = v.image;
+                        var chosenImg = (v.image && v.image.trim() !== '') ? v.image : (prodData.main_image && prodData.main_image.trim() !== '' ? prodData.main_image : '');
+                        if (chosenImg) {
+                            qvModalMainImg.src = chosenImg;
+                            qvModalMainImg.classList.remove('hidden');
+                            if (qvModalNoImg) qvModalNoImg.classList.add('hidden');
+                        } else {
+                            qvModalMainImg.src = '';
+                            qvModalMainImg.classList.add('hidden');
+                            if (qvModalNoImg) qvModalNoImg.classList.remove('hidden');
+                        }
 
                         qvModalVariantsList.querySelectorAll('button').forEach(function(b) {
                             b.className = 'px-3 py-1.5 text-xs rounded-lg border font-medium transition cursor-pointer bg-white border-gray-200 text-gray-700 hover:bg-gray-50';
@@ -777,7 +845,17 @@
                     if (priceEl) priceEl.innerText = '৳' + Math.round(vPrice).toLocaleString();
 
                     var imgEl = document.getElementById('single-product-main-img');
-                    if (imgEl && vImg) imgEl.src = vImg;
+                    if (imgEl) {
+                        if (vImg && vImg.trim() !== '') {
+                            imgEl.src = vImg;
+                            imgEl.classList.remove('hidden');
+                            if (imgEl.nextElementSibling) imgEl.nextElementSibling.classList.add('hidden');
+                        } else {
+                            imgEl.src = '';
+                            imgEl.classList.add('hidden');
+                            if (imgEl.nextElementSibling) imgEl.nextElementSibling.classList.remove('hidden');
+                        }
+                    }
                 });
             });
         }
