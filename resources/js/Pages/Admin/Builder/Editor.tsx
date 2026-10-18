@@ -109,6 +109,19 @@ export default function Editor({
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleSave, undo, redo, canUndo, canRedo]);
 
+    // Warn about unsaved changes on browser close or navigation away
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (canUndo()) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [canUndo]);
+
     // Configure sensors for drag and drop
     const sensors = useSensors(
         useSensor(PointerSensor, {

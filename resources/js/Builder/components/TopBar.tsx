@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import {
     ArrowLeft,
     CheckCircle2,
+    ExternalLink,
     Loader2,
     Monitor,
     Redo2,
@@ -35,12 +36,12 @@ export function TopBar({ landingPage, isSaving, saveSuccess, saveError, onSave }
             {/* Left: Back Link & Page Metadata */}
             <div className="flex items-center space-x-3 sm:space-x-4">
                 <Link
-                    href="/admin/products"
+                    href="/admin/landing-pages"
                     className="inline-flex items-center text-xs font-semibold text-gray-500 hover:text-gray-900 transition p-1.5 rounded-lg hover:bg-gray-100"
-                    title="Back to Admin"
+                    title="Back to Landing Pages"
                 >
                     <ArrowLeft className="w-4 h-4 mr-1" />
-                    <span className="hidden sm:inline">Products</span>
+                    <span className="hidden sm:inline">Landing Pages</span>
                 </Link>
 
                 <div className="h-4 w-px bg-gray-200" />
@@ -50,13 +51,27 @@ export function TopBar({ landingPage, isSaving, saveSuccess, saveError, onSave }
                         <span className="font-bold text-sm sm:text-base text-gray-900 truncate max-w-[140px] sm:max-w-xs">
                             {{ title: landingPage.title }.title}
                         </span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wide bg-gray-100 text-gray-700">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium uppercase tracking-wide ${
+                            landingPage.status === 'published' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-700'
+                        }`}>
                             {landingPage.status}
                         </span>
                     </div>
-                    <span className="text-[11px] text-gray-400 block -mt-0.5">
-                        Slug: /{landingPage.slug}
-                    </span>
+                    <div className="flex items-center space-x-2 text-[11px] text-gray-400 -mt-0.5">
+                        <span>Slug: /{landingPage.slug}</span>
+                        {landingPage.status === 'published' && (
+                            <a
+                                href={`/${landingPage.slug}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center text-primary-600 hover:text-primary-700 hover:underline font-medium"
+                                title="View live page"
+                            >
+                                <ExternalLink className="w-3 h-3 mr-0.5" />
+                                <span>Preview</span>
+                            </a>
+                        )}
+                    </div>
                 </div>
             </div>
 

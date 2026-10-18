@@ -197,6 +197,7 @@ export interface LandingPageData {
         regular_price: string | number;
         sale_price: string | number | null;
     } | null;
+    revisions_count?: number;
     revisions?: LandingPageRevisionSummary[];
 }
 

@@ -3,12 +3,11 @@
 use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
-use App\Modules\Catalog\Models\Product;
 use App\Modules\Orders\Controllers\OrderController;
 use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
+use App\Modules\PageBuilder\Controllers\LandingPageController;
 use App\Modules\PageBuilder\Controllers\LandingPageRevisionController;
-use App\Modules\PageBuilder\Models\LandingPage;
 use App\Modules\Payments\Controllers\PaymentMethodController;
 use App\Modules\Settings\Controllers\SettingController;
 use App\Modules\Shipping\Controllers\ShippingMethodController;
@@ -56,32 +55,16 @@ Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(funct
     Route::post('orders/{order}/sms/send', [OrderSmsController::class, 'sendOrderSms'])->name('orders.sms.send');
     Route::resource('orders', OrderController::class)->only(['index', 'show']);
 
-    // Page Builder & Landing Pages
-    Route::get('landing-pages', function () {
-        $landingPage = LandingPage::where('is_default', true)->first()
-            ?? LandingPage::first();
-
-        if (! $landingPage) {
-            $product = Product::first();
-            if (! $product) {
-                return redirect()->route('admin.products.create')->with('info', 'Please create a product before designing a landing page.');
-            }
-            $landingPage = LandingPage::create([
-                'product_id' => $product->id,
-                'title' => $product->title.' Landing Page',
-                'slug' => $product->slug.'-deal',
-                'is_default' => true,
-                'status' => 'published',
-            ]);
-        }
-
-        return redirect()->route('admin.landing-pages.builder', $landingPage);
-    })->name('landing-pages.index');
-
+    // Page Builder & Landing Pages Management
+    Route::post('landing-pages/{landing_page}/publish', [LandingPageController::class, 'publish'])
+        ->name('landing-pages.publish');
+    Route::post('landing-pages/{landing_page}/unpublish', [LandingPageController::class, 'unpublish'])
+        ->name('landing-pages.unpublish');
     Route::get('landing-pages/{landing_page}/builder', [LandingPageBuilderController::class, 'edit'])
         ->name('landing-pages.builder');
     Route::post('landing-pages/{landing_page}/revisions', [LandingPageRevisionController::class, 'store'])
         ->name('landing-pages.revisions.store');
+    Route::resource('landing-pages', LandingPageController::class)->except(['create', 'show', 'edit']);
 
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

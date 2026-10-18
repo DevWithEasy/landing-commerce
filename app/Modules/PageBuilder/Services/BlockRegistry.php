@@ -271,4 +271,46 @@ class BlockRegistry
 
         return $definitions;
     }
+
+    /**
+     * Generate a complete, valid initial AST document for a new or unrevised landing page.
+     *
+     * @param  array<string, mixed>  $settings
+     * @return array<string, mixed>
+     */
+    public static function generateDefaultAst(?int $productId = null, array $settings = []): array
+    {
+        return [
+            'version' => 1,
+            'settings' => array_merge([
+                'primaryColor' => '#16a34a',
+                'fontFamily' => 'Inter',
+                'containerMaxWidth' => '1200px',
+            ], $settings),
+            'blocks' => [
+                [
+                    'id' => 'blk_hero_'.bin2hex(random_bytes(4)),
+                    'type' => 'HeroBlock',
+                    'props' => self::getDefaultProps('HeroBlock'),
+                    'styles' => self::getDefaultStyles('HeroBlock'),
+                ],
+                [
+                    'id' => 'blk_product_'.bin2hex(random_bytes(4)),
+                    'type' => 'ProductSelectorBlock',
+                    'props' => array_merge(self::getDefaultProps('ProductSelectorBlock'), [
+                        'productId' => $productId ?? 0,
+                    ]),
+                    'styles' => self::getDefaultStyles('ProductSelectorBlock'),
+                ],
+                [
+                    'id' => 'blk_cod_'.bin2hex(random_bytes(4)),
+                    'type' => 'CodCheckoutBlock',
+                    'props' => array_merge(self::getDefaultProps('CodCheckoutBlock'), [
+                        'productId' => $productId ?? 0,
+                    ]),
+                    'styles' => self::getDefaultStyles('CodCheckoutBlock'),
+                ],
+            ],
+        ];
+    }
 }
