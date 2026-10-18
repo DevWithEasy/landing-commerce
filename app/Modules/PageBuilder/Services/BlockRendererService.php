@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\PageBuilder\Services;
 
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Shipping\Models\ShippingMethod;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 
@@ -93,6 +94,18 @@ class BlockRendererService
             }
         }
 
+        $shippingMethods = collect();
+        if ($type === 'CodCheckoutBlock') {
+            try {
+                $shippingMethods = ShippingMethod::with('zone')
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get();
+            } catch (\Throwable) {
+                $shippingMethods = collect();
+            }
+        }
+
         return View::make($viewName, [
             'id' => $block['id'] ?? Str::uuid()->toString(),
             'props' => $props,
@@ -101,6 +114,7 @@ class BlockRendererService
             'product' => $product,
             'products' => $products,
             'selectionMode' => $props['selectionMode'] ?? 'single',
+            'shippingMethods' => $shippingMethods,
             'context' => $context,
         ])->render();
     }

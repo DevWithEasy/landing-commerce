@@ -50,89 +50,125 @@ export function CodCheckoutBlock({
                         {Boolean(props.productIds && props.productIds.length > 1) && (
                             <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-2">
                                 <div className="flex items-center justify-between text-xs font-bold text-gray-700">
-                                    <span>Included Products:</span>
+                                    <span>Selected Products:</span>
                                     <span className="text-emerald-700 font-semibold">
-                                        {props.selectionMode === 'multiple' ? 'Checkbox Selection' : 'Radio Selection'}
+                                        {props.selectionMode === 'multiple' ? 'Multiple Selection (Checkbox)' : 'Single Selection (Radio)'}
                                     </span>
                                 </div>
-                                <div className="space-y-1.5">
-                                    {props.productIds!.map((pid) => (
-                                        <div key={pid} className="flex items-center justify-between p-2 rounded-lg bg-white border border-gray-200 text-xs">
-                                            <div className="flex items-center space-x-2">
-                                                <span className={`w-3.5 h-3.5 ${props.selectionMode === 'multiple' ? 'rounded' : 'rounded-full'} border border-emerald-600 bg-emerald-600 flex items-center justify-center text-white text-[9px]`}>
-                                                    ✓
-                                                </span>
-                                                <span className="font-semibold text-gray-800">Product #{pid}</span>
+                                <div className="space-y-2">
+                                    {props.productIds!.map((pid, idx) => {
+                                        const isSelected = props.defaultSelection === 'all'
+                                            ? true
+                                            : props.defaultSelection === 'specific'
+                                                ? props.defaultSelectedId === pid
+                                                : idx === 0;
+
+                                        return (
+                                            <div
+                                                key={pid}
+                                                className={`flex items-center justify-between p-2.5 rounded-xl border text-xs transition ${
+                                                    isSelected
+                                                        ? 'bg-emerald-50/70 border-emerald-500 shadow-xs'
+                                                        : 'bg-white border-gray-200 opacity-80'
+                                                }`}
+                                            >
+                                                <div className="flex items-center space-x-2.5">
+                                                    <span className={`w-4 h-4 ${props.selectionMode === 'multiple' ? 'rounded' : 'rounded-full'} border ${
+                                                        isSelected ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-gray-300 bg-white'
+                                                    } flex items-center justify-center text-[10px] font-bold`}>
+                                                        {isSelected ? '✓' : ''}
+                                                    </span>
+                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                                                        <span className="text-[10px] font-bold text-gray-400">IMG</span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center space-x-1.5">
+                                                            <span className="font-bold text-gray-900">Product #{pid}</span>
+                                                            {props.badgeText && idx === 0 && (
+                                                                <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                                                                    {props.badgeText}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-[10px] text-gray-500 block">In Stock & Verified</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-extrabold text-emerald-600 text-sm">৳1,250.00</div>
+                                                    <div className="flex items-center justify-end space-x-1">
+                                                        <span className="text-[10px] text-gray-400 line-through">৳1,500.00</span>
+                                                        {props.showDiscountBadge !== false && (
+                                                            <span className="text-[9px] font-bold text-rose-600 bg-rose-50 px-1 rounded">17% OFF</span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <span className="font-extrabold text-emerald-600">৳1,250.00</span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
-                        {/* Customer Name */}
+
+                        {/* 1. Customer Name */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Your Full Name <span className="text-rose-500">*</span>
+                                আপনার নাম (Your Name) <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative">
                                 <User className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                                 <input
                                     type="text"
                                     disabled={isEditor}
-                                    placeholder="e.g. Tanvir Hasan"
+                                    placeholder="আপনার পুরো নাম লিখুন..."
                                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                                 />
                             </div>
                         </div>
 
-                        {/* Customer Phone */}
+                        {/* 2. Customer Phone */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Mobile Number (Bangladeshi 11-digit){' '}
-                                <span className="text-rose-500">*</span>
+                                মোবাইল নাম্বার (Mobile Number) <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative">
                                 <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                                 <input
                                     type="tel"
                                     disabled={isEditor}
-                                    placeholder="01712-345678"
+                                    placeholder="01XXXXXXXXX (১১ ডিজিট)"
                                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white font-mono"
                                 />
                             </div>
                         </div>
 
-                        {/* District Selector */}
+                        {/* 3. Detailed Address */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Delivery District <span className="text-rose-500">*</span>
+                                সম্পূর্ণ ঠিকানা (Full Delivery Address) <span className="text-rose-500">*</span>
                             </label>
                             <div className="relative">
                                 <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                                <select
+                                <textarea
+                                    rows={2}
                                     disabled={isEditor}
-                                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-                                >
-                                    <option>Dhaka (Inside Dhaka - ৳70)</option>
-                                    <option>Gazipur (Suburbs - ৳100)</option>
-                                    <option>Chittagong (Outside Dhaka - ৳130)</option>
-                                    <option>Sylhet (Outside Dhaka - ৳130)</option>
-                                </select>
+                                    placeholder="বাসা নং, রোড নং, থানা, জেলা সহ বিস্তারিত ঠিকানা..."
+                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                                />
                             </div>
                         </div>
 
-                        {/* Full Address */}
+                        {/* 4. Shipping Method Dropdown */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                Detailed Delivery Address <span className="text-rose-500">*</span>
+                                শিপিং মেথড (Shipping Method) <span className="text-rose-500">*</span>
                             </label>
-                            <textarea
-                                rows={2}
+                            <select
                                 disabled={isEditor}
-                                placeholder="House / Flat #, Road #, Area..."
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-                            />
+                                className="w-full px-3 py-2.5 text-sm font-semibold border-2 border-emerald-500 rounded-xl focus:ring-emerald-500 focus:border-emerald-500 bg-emerald-50/30 text-gray-900"
+                            >
+                                <option>ঢাকার ভিতরে (Inside Dhaka) — ৳70.00</option>
+                                <option>ঢাকার বাইরে (Outside Dhaka) — ৳130.00</option>
+                            </select>
                         </div>
 
                         {/* Submit Button */}
@@ -144,7 +180,7 @@ export function CodCheckoutBlock({
                             >
                                 <ShoppingCart className="w-5 h-5" />
                                 <span>
-                                    {props.buttonText || 'Confirm Order - Cash on Delivery'}
+                                    {props.buttonText || 'অর্ডার কনফার্ম করুন — ক্যাশ অন ডেলিভারি'}
                                 </span>
                             </button>
                         </div>
@@ -152,11 +188,11 @@ export function CodCheckoutBlock({
                         <div className="flex items-center justify-center space-x-4 pt-2 text-xs text-gray-500 text-center">
                             <span className="inline-flex items-center">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mr-1" />
-                                100% Risk Free
+                                ১০০% ক্যাশ অন ডেলিভারি
                             </span>
                             <span className="inline-flex items-center">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mr-1" />
-                                Inspect Upon Arrival
+                                প্রোডাক্ট দেখে মূল্য পরিশোধ
                             </span>
                         </div>
                     </div>

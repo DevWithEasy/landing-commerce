@@ -23,6 +23,27 @@ class StoreCodOrderRequest extends FormRequest
     }
 
     /**
+     * Prepare inputs for validation: derive district from shipping_method_id if district is omitted.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (empty($this->input('district'))) {
+            $shippingMethodId = $this->input('shipping_method_id');
+            if ($shippingMethodId) {
+                $method = ShippingMethod::with('zone')->find($shippingMethodId);
+                $zoneName = $method?->zone?->name ?? $method?->name ?? '';
+                $this->merge([
+                    'district' => str_contains(strtolower($zoneName), 'inside') ? 'Dhaka' : ($zoneName ?: 'Dhaka'),
+                ]);
+            } else {
+                $this->merge([
+                    'district' => 'Dhaka',
+                ]);
+            }
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, ValidationRule|array<mixed>|string>

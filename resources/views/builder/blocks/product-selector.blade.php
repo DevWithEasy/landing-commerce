@@ -1,7 +1,11 @@
 @php
     $showDescription = $props['showDescription'] ?? true;
     $showPrice = $props['showPrice'] ?? true;
+    $showDiscountBadge = $props['showDiscountBadge'] ?? true;
+    $badgeText = $props['badgeText'] ?? 'Most Popular';
     $mode = $selectionMode ?? ($props['selectionMode'] ?? 'single');
+    $defaultSelection = $props['defaultSelection'] ?? 'first';
+    $defaultSelectedId = (int) ($props['defaultSelectedId'] ?? 0);
     $hasMultiple = isset($products) && $products->count() > 1;
 @endphp
 
@@ -26,7 +30,7 @@
                 </h2>
                 <p class="text-sm text-gray-500 mt-1 max-w-xl mx-auto">
                     @if($mode === 'multiple')
-                        Check all the items you want delivered. You can select one or multiple products.
+                        Check the items you want delivered. You can select one or multiple products.
                     @else
                         Select one option below to proceed with Cash on Delivery.
                     @endif
@@ -38,19 +42,32 @@
                     @php
                         $itemEffectivePrice = (float) ($item->sale_price ?? $item->regular_price);
                         $itemRegPrice = (float) $item->regular_price;
+                        $hasDiscount = ($item->sale_price && $item->sale_price < $item->regular_price);
+                        $discountPercent = $hasDiscount && $itemRegPrice > 0 ? round((($itemRegPrice - $itemEffectivePrice) / $itemRegPrice) * 100) : 0;
                         $firstVariant = $item->variants->first();
                         $firstVariantId = $firstVariant?->id ?? 0;
                         $imgUrl = $item->primaryImage?->url ?? ($item->images->first()?->url ?? null);
-                        $isChecked = $index === 0 || $mode === 'multiple';
+
+                        // Determine initial checked state based on defaultSelection
+                        if ($defaultSelection === 'all') {
+                            $isChecked = true;
+                        } elseif ($defaultSelection === 'specific' && $defaultSelectedId > 0) {
+                            $isChecked = ($item->id === $defaultSelectedId);
+                        } else {
+                            // 'first' is default: only the first product is selected on load
+                            $isChecked = ($index === 0);
+                        }
+
+                        $isHighlighted = $isChecked || ($index === 0);
                     @endphp
-                    <label class="product-selection-card relative block rounded-2xl border-2 transition-all cursor-pointer overflow-hidden p-5 bg-white shadow-sm hover:shadow-md {{ $isChecked ? 'border-primary-600 ring-2 ring-primary-500/20 bg-primary-50/10' : 'border-gray-200' }}"
+                    <label class="product-selection-card relative flex flex-col justify-between rounded-2xl border-2 transition-all cursor-pointer overflow-hidden p-5 bg-white shadow-sm hover:shadow-md {{ $isChecked ? 'border-primary-600 ring-2 ring-primary-500/20 bg-primary-50/10' : 'border-gray-200' }}"
                         data-product-id="{{ $item->id }}"
                         data-variant-id="{{ $firstVariantId }}"
                         data-price="{{ $itemEffectivePrice }}"
                         data-title="{{ e($item->title) }}">
                         
-                        {{-- Selection Control Indicator (Radio or Checkbox) --}}
-                        <div class="flex items-center justify-between mb-4">
+                        {{-- Top Bar: Checkbox/Radio + Badges --}}
+                        <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center space-x-2.5">
                                 @if($mode === 'multiple')
                                     <input type="checkbox"
@@ -61,7 +78,7 @@
                                         data-title="{{ e($item->title) }}"
                                         {{ $isChecked ? 'checked' : '' }}
                                         class="product-picker-input w-5 h-5 rounded text-primary-600 focus:ring-primary-500 border-gray-300" />
-                                    <span class="text-xs font-bold text-gray-700">Add to Package</span>
+                                    <span class="text-xs font-bold text-gray-800">Select Item</span>
                                 @else
                                     <input type="radio"
                                         name="selected_product_picker"
@@ -71,21 +88,29 @@
                                         data-title="{{ e($item->title) }}"
                                         {{ $isChecked ? 'checked' : '' }}
                                         class="product-picker-input w-5 h-5 text-primary-600 focus:ring-primary-500 border-gray-300" />
-                                    <span class="text-xs font-bold text-gray-700">Select This</span>
+                                    <span class="text-xs font-bold text-gray-800">Select Item</span>
                                 @endif
                             </div>
 
-                            @if($item->sale_price && $item->sale_price < $item->regular_price)
-                                <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-100 text-rose-700">
-                                    SAVE ৳{{ number_format($itemRegPrice - $itemEffectivePrice, 0) }}
-                                </span>
-                            @endif
+                            <div class="flex items-center space-x-1.5">
+                                @if(!empty($badgeText) && $index === 0)
+                                    <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-500 text-white shadow-xs">
+                                        🔥 {{ $badgeText }}
+                                    </span>
+                                @endif
+
+                                @if($showDiscountBadge && $hasDiscount)
+                                    <span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-rose-100 text-rose-700">
+                                        {{ $discountPercent }}% OFF
+                                    </span>
+                                @endif
+                            </div>
                         </div>
 
-                        {{-- Product Image --}}
-                        <div class="aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-4 flex items-center justify-center">
+                        {{-- Product Image Thumbnail --}}
+                        <div class="aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-3 flex items-center justify-center relative group">
                             @if($imgUrl)
-                                <img src="{{ e($imgUrl) }}" alt="{{ e($item->title) }}" class="w-full h-full object-cover" />
+                                <img src="{{ e($imgUrl) }}" alt="{{ e($item->title) }}" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" />
                             @else
                                 <div class="text-gray-400 text-xs flex flex-col items-center">
                                     <svg class="w-8 h-8 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
@@ -95,41 +120,43 @@
                         </div>
 
                         {{-- Title & Pricing --}}
-                        <h3 class="text-base font-bold text-gray-900 line-clamp-2 mb-2">
-                            {{ $item->title }}
-                        </h3>
+                        <div>
+                            <h3 class="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 mb-1.5">
+                                {{ $item->title }}
+                            </h3>
 
-                        @if($showPrice)
-                            <div class="flex items-baseline space-x-2 mb-2">
-                                <span class="text-xl font-extrabold text-primary-600">
-                                    ৳{{ number_format($itemEffectivePrice, 0) }}
-                                </span>
-                                @if($item->sale_price && $item->sale_price < $item->regular_price)
-                                    <span class="text-xs text-gray-400 line-through">
-                                        ৳{{ number_format($itemRegPrice, 0) }}
+                            @if($showPrice)
+                                <div class="flex items-baseline space-x-2 mb-2">
+                                    <span class="text-xl font-black text-primary-600">
+                                        ৳{{ number_format($itemEffectivePrice, 0) }}
                                     </span>
-                                @endif
-                            </div>
-                        @endif
+                                    @if($hasDiscount)
+                                        <span class="text-xs text-gray-400 line-through">
+                                            ৳{{ number_format($itemRegPrice, 0) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
 
-                        @if($showDescription && $item->description)
-                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">
-                                {{ $item->description }}
-                            </p>
-                        @endif
+                            @if($showDescription && $item->description)
+                                <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">
+                                    {{ $item->description }}
+                                </p>
+                            @endif
 
-                        @if($item->variants && $item->variants->count() > 1)
-                            <div class="mt-2 pt-2 border-t border-gray-100">
-                                <label class="block text-[11px] font-semibold text-gray-600 mb-1">Variant:</label>
-                                <select class="card-variant-select w-full text-xs rounded-lg border-gray-200 bg-white p-1.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500" data-product-id="{{ $item->id }}">
-                                    @foreach($item->variants as $v)
-                                        <option value="{{ $v->id }}" data-price="{{ (float) ($v->sale_price ?? $v->regular_price ?? $itemEffectivePrice) }}">
-                                            {{ $v->name }} (৳{{ number_format((float) ($v->sale_price ?? $v->regular_price ?? $itemEffectivePrice), 0) }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        @endif
+                            @if($item->variants && $item->variants->count() > 1)
+                                <div class="mt-2 pt-2 border-t border-gray-100">
+                                    <label class="block text-[11px] font-semibold text-gray-600 mb-1">Variant:</label>
+                                    <select class="card-variant-select w-full text-xs rounded-lg border-gray-200 bg-white p-1.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500" data-product-id="{{ $item->id }}">
+                                        @foreach($item->variants as $v)
+                                            <option value="{{ $v->id }}" data-price="{{ (float) ($v->sale_price ?? $v->regular_price ?? $itemEffectivePrice) }}">
+                                                {{ $v->name }} (৳{{ number_format((float) ($v->sale_price ?? $v->regular_price ?? $itemEffectivePrice), 0) }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                        </div>
                     </label>
                 @endforeach
             </div>
@@ -151,6 +178,12 @@
 
         @elseif($product)
             {{-- Single Product Showcase --}}
+            @php
+                $effPrice = (float) ($product->sale_price ?? $product->regular_price);
+                $regPrice = (float) $product->regular_price;
+                $hasDisc = ($product->sale_price && $product->sale_price < $product->regular_price);
+                $discPct = $hasDisc && $regPrice > 0 ? round((($regPrice - $effPrice) / $regPrice) * 100) : 0;
+            @endphp
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-6 sm:p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     <div>
@@ -166,6 +199,19 @@
                     </div>
 
                     <div>
+                        <div class="flex items-center space-x-2 mb-2">
+                            @if(!empty($badgeText))
+                                <span class="px-2.5 py-0.5 text-xs font-black uppercase tracking-wider rounded-md bg-amber-500 text-white">
+                                    🔥 {{ $badgeText }}
+                                </span>
+                            @endif
+                            @if($showDiscountBadge && $hasDisc)
+                                <span class="px-2.5 py-0.5 text-xs font-bold rounded-md bg-rose-100 text-rose-700">
+                                    {{ $discPct }}% OFF
+                                </span>
+                            @endif
+                        </div>
+
                         <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
                             {{ $product->title }}
                         </h2>
@@ -173,11 +219,11 @@
                         @if($showPrice)
                             <div class="flex items-baseline space-x-3 mb-4">
                                 <span class="text-3xl font-black text-primary-600">
-                                    ৳{{ number_format((float) ($product->sale_price ?? $product->regular_price), 0) }}
+                                    ৳{{ number_format($effPrice, 0) }}
                                 </span>
-                                @if($product->sale_price && $product->sale_price < $product->regular_price)
+                                @if($hasDisc)
                                     <span class="text-lg text-gray-400 line-through">
-                                        ৳{{ number_format((float) $product->regular_price, 0) }}
+                                        ৳{{ number_format($regPrice, 0) }}
                                     </span>
                                 @endif
                             </div>

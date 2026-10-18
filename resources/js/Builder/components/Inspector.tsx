@@ -246,6 +246,10 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         productIds={p.productIds}
                         productId={p.productId}
                         selectionMode={p.selectionMode}
+                        defaultSelection={p.defaultSelection}
+                        defaultSelectedId={p.defaultSelectedId}
+                        showDiscountBadge={p.showDiscountBadge}
+                        badgeText={p.badgeText}
                         products={products}
                         onChange={onChange}
                     />
@@ -286,6 +290,10 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         productIds={p.productIds}
                         productId={p.productId}
                         selectionMode={p.selectionMode}
+                        defaultSelection={p.defaultSelection}
+                        defaultSelectedId={p.defaultSelectedId}
+                        showDiscountBadge={p.showDiscountBadge}
+                        badgeText={p.badgeText}
                         products={products}
                         onChange={onChange}
                     />
@@ -871,6 +879,10 @@ interface ProductPickerSectionProps {
     productIds?: number[];
     productId?: number;
     selectionMode?: 'single' | 'multiple';
+    defaultSelection?: 'first' | 'all' | 'specific';
+    defaultSelectedId?: number;
+    showDiscountBadge?: boolean;
+    badgeText?: string;
     products: Array<{ id: number; title: string }>;
     onChange: (key: string, value: unknown) => void;
 }
@@ -879,6 +891,10 @@ function ProductPickerSection({
     productIds = [],
     productId,
     selectionMode = 'single',
+    defaultSelection = 'first',
+    defaultSelectedId = 0,
+    showDiscountBadge = true,
+    badgeText = '',
     products,
     onChange,
 }: ProductPickerSectionProps) {
@@ -918,8 +934,8 @@ function ProductPickerSection({
     );
 
     return (
-        <div className="space-y-3">
-            {/* Selection Mode Control (Radio vs Checkbox) */}
+        <div className="space-y-4">
+            {/* Customer Selection Mode Control (Radio vs Checkbox) */}
             <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
                 <label className="block text-xs font-bold text-gray-800 mb-1.5">
                     Customer Selection Mode
@@ -969,11 +985,100 @@ function ProductPickerSection({
                 </div>
             </div>
 
+            {/* Default Pre-Selected State on Page Load */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-2">
+                <label className="block text-xs font-bold text-gray-800">
+                    Default Selected on Page Load
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    <button
+                        type="button"
+                        onClick={() => onChange('defaultSelection', 'first')}
+                        className={`p-1.5 rounded-md border text-center transition font-medium ${
+                            defaultSelection === 'first'
+                                ? 'border-primary-600 bg-primary-50 text-primary-900 font-bold'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                    >
+                        First Item Only
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onChange('defaultSelection', 'all')}
+                        className={`p-1.5 rounded-md border text-center transition font-medium ${
+                            defaultSelection === 'all'
+                                ? 'border-primary-600 bg-primary-50 text-primary-900 font-bold'
+                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                        }`}
+                    >
+                        All Items Checked
+                    </button>
+                </div>
+
+                {selectedIds.length > 1 && (
+                    <div className="pt-1">
+                        <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                            Or pre-select specific product:
+                        </label>
+                        <select
+                            value={defaultSelectedId || ''}
+                            onChange={(e) => {
+                                const val = Number(e.target.value);
+                                onChange('defaultSelectedId', val);
+                                if (val > 0) onChange('defaultSelection', 'specific');
+                            }}
+                            className="w-full text-xs rounded-lg border-gray-300 bg-white p-1.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        >
+                            <option value={0}>-- Auto (First Product) --</option>
+                            {products
+                                .filter((p) => selectedIds.includes(p.id))
+                                .map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.title}
+                                    </option>
+                                ))}
+                        </select>
+                    </div>
+                )}
+            </div>
+
+            {/* Product Card Badges & Discount Options */}
+            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-2.5">
+                <label className="block text-xs font-bold text-gray-800">
+                    Card Badges & Pricing Display
+                </label>
+                <div className="flex items-center space-x-2">
+                    <input
+                        type="checkbox"
+                        id="show_discount_badge"
+                        checked={showDiscountBadge !== false}
+                        onChange={(e) => onChange('showDiscountBadge', e.target.checked)}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-4 h-4"
+                    />
+                    <label htmlFor="show_discount_badge" className="text-xs text-gray-700 cursor-pointer">
+                        Show Discount % Badge (e.g. SAVE ৳...)
+                    </label>
+                </div>
+
+                <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        Highlight Badge Text (e.g. Popular / Hot Deal)
+                    </label>
+                    <input
+                        type="text"
+                        value={badgeText || ''}
+                        onChange={(e) => onChange('badgeText', e.target.value)}
+                        placeholder="e.g. Most Popular"
+                        className="w-full text-xs rounded-lg border-gray-300 bg-white p-1.5 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                    />
+                </div>
+            </div>
+
             {/* Product Checkbox Selection List */}
             <div>
                 <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-gray-700">
-                        Products ({selectedIds.length} selected)
+                        Products ({selectedIds.length} selected for checkout)
                     </label>
                     <div className="space-x-2 text-[11px]">
                         <button

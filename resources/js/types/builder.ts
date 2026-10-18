@@ -56,8 +56,12 @@ export interface ProductSelectorBlockProps {
     productId?: number;
     productIds?: number[];
     selectionMode?: 'single' | 'multiple';
+    defaultSelection?: 'first' | 'all' | 'specific';
+    defaultSelectedId?: number;
     showDescription?: boolean;
     showPrice?: boolean;
+    showDiscountBadge?: boolean;
+    badgeText?: string;
     displayMode?: 'grid' | 'carousel';
 }
 
@@ -65,6 +69,10 @@ export interface CodCheckoutBlockProps {
     productId?: number;
     productIds?: number[];
     selectionMode?: 'single' | 'multiple';
+    defaultSelection?: 'first' | 'all' | 'specific';
+    defaultSelectedId?: number;
+    showDiscountBadge?: boolean;
+    badgeText?: string;
     variantSelectionType?: 'swatches' | 'dropdown' | 'radio';
     showQuantity?: boolean;
     buttonText?: string;

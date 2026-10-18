@@ -43,43 +43,64 @@ export function ProductSelectorBlock({
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {(props.productIds || []).map((pid, idx) => (
-                            <div
-                                key={pid}
-                                className={`rounded-2xl border-2 p-4 transition-all bg-white shadow-xs ${
-                                    idx === 0 || mode === 'multiple'
-                                        ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/10'
-                                        : 'border-gray-200'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center space-x-2 text-xs font-bold text-gray-700">
-                                        {mode === 'multiple' ? (
-                                            <CheckSquare className="w-4 h-4 text-emerald-600" />
-                                        ) : (
-                                            <CircleDot className="w-4 h-4 text-emerald-600" />
+                        {(props.productIds || []).map((pid, idx) => {
+                            const isSelected = props.defaultSelection === 'all'
+                                ? true
+                                : props.defaultSelection === 'specific'
+                                    ? props.defaultSelectedId === pid
+                                    : idx === 0;
+
+                            return (
+                                <div
+                                    key={pid}
+                                    className={`relative rounded-2xl border-2 p-4 transition-all bg-white shadow-xs ${
+                                        isSelected
+                                            ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/10'
+                                            : 'border-gray-200'
+                                    }`}
+                                >
+                                    {props.badgeText && idx === 0 && (
+                                        <div className="absolute -top-3 left-4 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold shadow-sm">
+                                            {props.badgeText}
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center justify-between mb-3 mt-1">
+                                        <div className="flex items-center space-x-2 text-xs font-bold text-gray-700">
+                                            {mode === 'multiple' ? (
+                                                <CheckSquare className={`w-4 h-4 ${isSelected ? 'text-emerald-600' : 'text-gray-400'}`} />
+                                            ) : (
+                                                <CircleDot className={`w-4 h-4 ${isSelected ? 'text-emerald-600' : 'text-gray-400'}`} />
+                                            )}
+                                            <span>Product #{pid}</span>
+                                        </div>
+                                        {props.showDiscountBadge !== false && (
+                                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-rose-100 text-rose-700">
+                                                17% OFF
+                                            </span>
                                         )}
-                                        <span>Product #{pid}</span>
                                     </div>
-                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                                        Active
-                                    </span>
-                                </div>
 
-                                <div className="aspect-square bg-gray-50 rounded-xl flex items-center justify-center mb-3">
-                                    <Package className="w-10 h-10 text-gray-400" />
-                                </div>
-
-                                <h3 className="text-sm font-bold text-gray-900 mb-1">
-                                    Product Item #{pid}
-                                </h3>
-                                {props.showPrice !== false && (
-                                    <div className="text-base font-extrabold text-emerald-600">
-                                        ৳1,250.00
+                                    <div className="aspect-square bg-gray-50 rounded-xl flex items-center justify-center mb-3 border border-gray-100">
+                                        <Package className="w-10 h-10 text-gray-400" />
                                     </div>
-                                )}
-                            </div>
-                        ))}
+
+                                    <h3 className="text-sm font-bold text-gray-900 mb-1">
+                                        Product Item #{pid}
+                                    </h3>
+                                    {props.showPrice !== false && (
+                                        <div className="flex items-baseline space-x-2">
+                                            <span className="text-base font-extrabold text-emerald-600">
+                                                ৳1,250.00
+                                            </span>
+                                            <span className="text-xs text-gray-400 line-through">
+                                                ৳1,500.00
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
