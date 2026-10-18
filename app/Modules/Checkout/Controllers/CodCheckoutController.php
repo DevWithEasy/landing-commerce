@@ -11,6 +11,7 @@ use App\Modules\Checkout\Requests\StoreCodOrderRequest;
 use App\Modules\Checkout\Services\OrderRateLimiter;
 use App\Modules\Orders\Models\Order;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class CodCheckoutController extends Controller
 {
@@ -76,6 +77,20 @@ class CodCheckoutController extends Controller
                 'variant_id' => $e->variantId,
                 'available' => $e->available,
             ], 422);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => 'invalid_input',
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('COD Order placement error: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
+
+            return response()->json([
+                'message' => 'অর্ডার সম্পন্ন করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন। ('.$e->getMessage().')',
+                'error' => 'server_error',
+            ], 500);
         }
     }
 }

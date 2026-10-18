@@ -1,5 +1,5 @@
 import { CheckCircle2, MapPin, Phone, ShieldCheck, ShoppingCart, User } from 'lucide-react';
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useBuilderStore } from '../stores/useBuilderStore';
 import type { BlockStyles, CodCheckoutBlockProps } from '@/types/builder';
 
@@ -17,6 +17,40 @@ export function CodCheckoutBlock({
     const availableProducts = useBuilderStore((state) => state.availableProducts);
     const [selectedVariantMap, setSelectedVariantMap] = useState<Record<number, number>>({});
 
+    const productIds = props.productIds && props.productIds.length > 0
+        ? props.productIds
+        : (props.productId ? [props.productId] : []);
+
+    const [selectedProductIds, setSelectedProductIds] = useState<number[]>(() => {
+        if (props.defaultSelection === 'all') {
+            return productIds;
+        }
+        if (props.defaultSelection === 'specific' && props.defaultSelectedId) {
+            return [props.defaultSelectedId];
+        }
+        return productIds.length > 0 ? [productIds[0]] : [];
+    });
+
+    useEffect(() => {
+        if (props.defaultSelection === 'all') {
+            setSelectedProductIds(productIds);
+        } else if (props.defaultSelection === 'specific' && props.defaultSelectedId) {
+            setSelectedProductIds([props.defaultSelectedId]);
+        } else {
+            setSelectedProductIds(productIds.length > 0 ? [productIds[0]] : []);
+        }
+    }, [props.defaultSelection, props.defaultSelectedId, JSON.stringify(productIds)]);
+
+    const handleToggleProduct = (pid: number) => {
+        if (props.selectionMode === 'multiple') {
+            setSelectedProductIds((prev) =>
+                prev.includes(pid) ? prev.filter((id) => id !== pid) : [...prev, pid]
+            );
+        } else {
+            setSelectedProductIds([pid]);
+        }
+    };
+
     const inlineStyles: CSSProperties = {
         backgroundColor: styles.backgroundColor,
         paddingTop: styles.paddingTop,
@@ -30,10 +64,6 @@ export function CodCheckoutBlock({
         borderWidth: styles.borderWidth,
         borderStyle: styles.borderStyle,
     };
-
-    const productIds = props.productIds && props.productIds.length > 0
-        ? props.productIds
-        : (props.productId ? [props.productId] : []);
 
     const nameLabel = props.nameLabel || 'আপনার নাম (Your Name)';
     const namePlaceholder = props.namePlaceholder || 'আপনার পুরো নাম লিখুন...';
@@ -76,11 +106,7 @@ export function CodCheckoutBlock({
                                 <div className="space-y-2">
                                     {productIds.map((pid, idx) => {
                                         const realProd = availableProducts.find((p) => p.id === pid);
-                                        const isSelected = props.defaultSelection === 'all'
-                                            ? true
-                                            : props.defaultSelection === 'specific'
-                                                ? props.defaultSelectedId === pid
-                                                : idx === 0;
+                                        const isSelected = selectedProductIds.includes(pid);
 
                                         const activeVariantId = selectedVariantMap[pid] || realProd?.variants?.[0]?.id || 0;
                                         const activeVariant = realProd?.variants?.find((v) => v.id === activeVariantId) || realProd?.variants?.[0];
@@ -97,10 +123,11 @@ export function CodCheckoutBlock({
                                         return (
                                             <div
                                                 key={pid}
-                                                className={`flex flex-col p-2.5 rounded-xl border text-xs transition ${
+                                                onClick={() => handleToggleProduct(pid)}
+                                                className={`flex flex-col p-2.5 rounded-xl border text-xs transition cursor-pointer select-none ${
                                                     isSelected
-                                                        ? 'bg-emerald-50/70 border-emerald-500 shadow-xs'
-                                                        : 'bg-white border-gray-200 opacity-80'
+                                                        ? 'bg-emerald-50/70 border-emerald-500 shadow-xs ring-1 ring-emerald-500/30'
+                                                        : 'bg-white border-gray-200 opacity-80 hover:border-gray-300'
                                                 }`}
                                             >
                                                 <div className="flex items-center justify-between">
@@ -112,7 +139,7 @@ export function CodCheckoutBlock({
                                                         </span>
                                                         <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
                                                             {imgUrl ? (
-                                                                <img src={imgUrl} alt={realProd?.title || `Product #${pid}`} className="w-full h-full object-cover" />
+                                                                 <img src={imgUrl} alt={realProd?.title || `Product #${pid}`} className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <span className="text-[10px] font-bold text-gray-400">IMG</span>
                                                             )}
@@ -146,15 +173,18 @@ export function CodCheckoutBlock({
                                                     </div>
                                                 </div>
 
-                                                {/* Variants Selector */}
-                                                {realProd?.variants && realProd.variants.length > 1 && (
-                                                    <div className="mt-2 pt-1.5 border-t border-gray-100 flex flex-wrap items-center gap-1">
+                                                {/* Variants Selector - Only show when product is selected */}
+                                                {isSelected && realProd?.variants && realProd.variants.length > 1 && (
+                                                    <div className="mt-2 pt-1.5 border-t border-gray-100 flex flex-wrap items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                                         <span className="text-[9px] font-bold text-gray-500 uppercase">Variant:</span>
                                                         {realProd.variants.map((v) => (
                                                             <button
                                                                 key={v.id}
                                                                 type="button"
-                                                                onClick={() => setSelectedVariantMap((prev) => ({ ...prev, [pid]: v.id }))}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedVariantMap((prev) => ({ ...prev, [pid]: v.id }));
+                                                                }}
                                                                 className={`px-2 py-0.5 text-[10px] rounded-md border font-medium transition ${
                                                                     activeVariantId === v.id
                                                                         ? 'bg-emerald-600 border-emerald-600 text-white font-bold'

@@ -46,7 +46,17 @@ class ShippingCalculatorService
         if ($shippingMethodId !== null) {
             $selectedMethod = $availableMethods->firstWhere('id', (int) $shippingMethodId);
             if (! $selectedMethod) {
-                throw new InvalidArgumentException('The selected shipping method is invalid or unavailable for this location.');
+                // If not in the preliminary zone, check if this is a valid active method in the store
+                $directMethod = ShippingMethod::active()->find((int) $shippingMethodId);
+                if ($directMethod) {
+                    $selectedMethod = $directMethod;
+                    $methodZone = $directMethod->shippingZone ?? ShippingZone::where('code', $directMethod->zone_code)->first();
+                    if ($methodZone) {
+                        $zone = $methodZone;
+                    }
+                } else {
+                    throw new InvalidArgumentException('The selected shipping method is invalid or unavailable for this location.');
+                }
             }
         } elseif ($availableMethods->isNotEmpty()) {
             $selectedMethod = $availableMethods->firstWhere('is_default', true) ?? $availableMethods->first();
@@ -177,10 +187,29 @@ class ShippingCalculatorService
         }
 
         // Match exact or case-insensitive name or Bengali name
-        return District::where('name', $term)
+        $dist = District::where('name', $term)
             ->orWhere('bn_name', $term)
             ->orWhereRaw('LOWER(name) = ?', [strtolower($term)])
             ->first();
+
+        if ($dist) {
+            return $dist;
+        }
+
+        // Zone keyword fallbacks to representative districts:
+        $lower = strtolower($term);
+        if (str_contains($lower, 'inside') || $lower === 'dhaka') {
+            return District::whereRaw('LOWER(name) = ?', ['dhaka'])->first();
+        }
+        if (str_contains($lower, 'sub') || str_contains($lower, 'suburb') || $lower === 'gazipur') {
+            return District::whereRaw('LOWER(name) = ?', ['gazipur'])->first();
+        }
+        if (str_contains($lower, 'outside') || $lower === 'outside dhaka' || $lower === 'chattogram' || $lower === 'chittagong') {
+            return District::whereRaw('LOWER(name) = ?', ['chattogram'])->first()
+                ?? District::whereRaw('LOWER(name) = ?', ['chittagong'])->first();
+        }
+
+        return null;
     }
 
     /**

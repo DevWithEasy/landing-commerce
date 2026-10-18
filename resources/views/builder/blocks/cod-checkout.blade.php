@@ -185,10 +185,10 @@
                                         </div>
                                     </label>
 
-                                    {{-- WooCommerce style variants selector inside card --}}
+                                    {{-- WooCommerce style variants selector inside card (only shown when product is selected) --}}
                                     @if ($pItem->variants->count() > 1)
                                         <div
-                                            class="cod-variant-container mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
+                                            class="cod-variant-container mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5 {{ $isItemChecked ? '' : 'hidden' }}">
                                             <span
                                                 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mr-1">ভ্যারিয়েন্ট:</span>
                                             @foreach ($pItem->variants as $vIdx => $vObj)
@@ -293,12 +293,17 @@
                                 @php
                                     $sRate = (float) ($sMethod->rate ?? 70.0);
                                     $sTime = $sMethod->delivery_time ? "({$sMethod->delivery_time})" : '';
-                                    $zoneStr = str_contains(strtolower($sMethod->name), 'inside')
-                                        ? 'Dhaka'
-                                        : 'Outside Dhaka';
+                                    $zCode = $sMethod->zone_code ?? ($sMethod->zone?->code ?? '');
+                                    if ($zCode === 'inside_dhaka' || str_contains(strtolower($sMethod->name), 'inside')) {
+                                        $zoneDistrict = 'Dhaka';
+                                    } elseif ($zCode === 'sub_dhaka' || str_contains(strtolower($sMethod->name), 'sub')) {
+                                        $zoneDistrict = 'Gazipur';
+                                    } else {
+                                        $zoneDistrict = 'Chattogram';
+                                    }
                                 @endphp
                                 <option value="{{ $sMethod->id }}" data-rate="{{ $sRate }}"
-                                    data-zone="{{ $zoneStr }}" {{ $loop->first ? 'selected' : '' }}>
+                                    data-zone="{{ $zoneDistrict }}" {{ $loop->first ? 'selected' : '' }}>
                                     {{ $sMethod->name }} — ৳{{ number_format($sRate, 0) }} {{ $sTime }}
                                 </option>
                             @endforeach
@@ -466,11 +471,15 @@
                 var selected = [];
                 toggles.forEach(function(t) {
                     var card = t.closest('.cod-product-card');
+                    var variantContainer = card ? card.querySelector('.cod-variant-container') : null;
                     if (t.checked) {
                         if (card) {
                             card.classList.add('border-primary-500', 'ring-2', 'ring-primary-500/20',
                                 'bg-primary-50/20');
                             card.classList.remove('border-slate-200');
+                        }
+                        if (variantContainer) {
+                            variantContainer.classList.remove('hidden');
                         }
                         selected.push({
                             productId: parseInt(t.getAttribute('data-product-id'), 10),
@@ -484,6 +493,9 @@
                             card.classList.remove('border-primary-500', 'ring-2', 'ring-primary-500/20',
                                 'bg-primary-50/20');
                             card.classList.add('border-slate-200');
+                        }
+                        if (variantContainer) {
+                            variantContainer.classList.add('hidden');
                         }
                     }
                 });
@@ -521,6 +533,7 @@
                         var pid = parseInt(t.getAttribute('data-product-id'), 10);
                         t.checked = selectedPids.indexOf(pid) !== -1;
                         var card = t.closest('.cod-product-card');
+                        var variantContainer = card ? card.querySelector('.cod-variant-container') : null;
                         if (card) {
                             if (t.checked) {
                                 card.classList.add('border-primary-500', 'ring-2',
@@ -530,6 +543,13 @@
                                 card.classList.remove('border-primary-500', 'ring-2',
                                     'ring-primary-500/20', 'bg-primary-50/20');
                                 card.classList.add('border-slate-200');
+                            }
+                        }
+                        if (variantContainer) {
+                            if (t.checked) {
+                                variantContainer.classList.remove('hidden');
+                            } else {
+                                variantContainer.classList.add('hidden');
                             }
                         }
                     });
