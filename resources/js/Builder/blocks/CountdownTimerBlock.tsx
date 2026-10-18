@@ -51,7 +51,9 @@ export function CountdownTimerBlock({ props, styles = {} }: CountdownTimerBlockC
     }, [calculateTimeRemaining]);
 
     const inlineStyles: CSSProperties = {
-        backgroundColor: styles.backgroundColor || '#fee2e2',
+        backgroundColor: styles.backgroundColor || (styles.background ? 'transparent' : '#fee2e2'),
+        background: styles.background,
+        color: styles.color,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,
@@ -59,6 +61,14 @@ export function CountdownTimerBlock({ props, styles = {} }: CountdownTimerBlockC
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
         borderRadius: styles.borderRadius,
+        maxWidth: styles.maxWidth,
+        boxShadow: styles.boxShadow,
+        borderWidth: styles.borderWidth,
+        borderStyle: styles.borderStyle,
+        borderColor: styles.borderColor,
+        textAlign: styles.textAlign,
+        fontSize: styles.fontSize,
+        fontWeight: styles.fontWeight,
     };
 
     if (timeLeft.isExpired && props.expiryAction === 'hide') {

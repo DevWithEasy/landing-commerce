@@ -53,6 +53,8 @@ export function CodCheckoutBlock({
 
     const inlineStyles: CSSProperties = {
         backgroundColor: styles.backgroundColor,
+        background: styles.background,
+        color: styles.color,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,
@@ -60,10 +62,21 @@ export function CodCheckoutBlock({
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
         borderRadius: styles.borderRadius,
-        borderColor: styles.borderColor,
+        maxWidth: styles.maxWidth,
+        boxShadow: styles.boxShadow,
         borderWidth: styles.borderWidth,
         borderStyle: styles.borderStyle,
+        borderColor: styles.borderColor,
+        textAlign: styles.textAlign,
+        fontSize: styles.fontSize,
+        fontWeight: styles.fontWeight,
     };
+
+    const buttonCustomStyle: CSSProperties = {
+        backgroundColor: styles.buttonBgColor || undefined,
+        color: styles.buttonTextColor || undefined,
+    };
+    const buttonPulseClass = styles.buttonPulseAnimation ? 'animate-pulse' : '';
 
     const nameLabel = props.nameLabel || 'আপনার নাম (Your Name)';
     const namePlaceholder = props.namePlaceholder || 'আপনার পুরো নাম লিখুন...';
@@ -270,7 +283,8 @@ export function CodCheckoutBlock({
                             <button
                                 type="button"
                                 disabled={isEditor}
-                                className="w-full py-4 px-6 text-base sm:text-lg font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                                style={buttonCustomStyle}
+                                className={`w-full py-4 px-6 text-base sm:text-lg font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center space-x-2 cursor-pointer ${buttonPulseClass}`}
                             >
                                 <ShoppingCart className="w-5 h-5" />
                                 <span>{buttonText}</span>

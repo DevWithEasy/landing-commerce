@@ -21,6 +21,7 @@ export type BlockType =
 export interface BlockStyles {
     color?: string;
     backgroundColor?: string;
+    background?: string;
     padding?: string;
     paddingTop?: string;
     paddingBottom?: string;
@@ -33,13 +34,21 @@ export interface BlockStyles {
     marginRight?: string;
     borderRadius?: string;
     fontSize?: string;
+    fontWeight?: string;
+    lineHeight?: string;
+    letterSpacing?: string;
     textAlign?: 'left' | 'center' | 'right' | 'justify';
     maxWidth?: string;
     borderColor?: string;
     borderWidth?: string;
     borderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
+    boxShadow?: string;
     zIndex?: number;
     position?: 'relative' | 'static' | 'fixed' | 'sticky';
+    buttonBgColor?: string;
+    buttonTextColor?: string;
+    buttonBorderRadius?: string;
+    buttonPulseAnimation?: boolean;
 }
 
 export interface HeroBlockProps {

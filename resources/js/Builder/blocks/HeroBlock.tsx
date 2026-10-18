@@ -11,6 +11,7 @@ export interface HeroBlockComponentProps {
 export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockComponentProps) {
     const inlineStyles: CSSProperties = {
         backgroundColor: styles.backgroundColor,
+        background: styles.background,
         color: styles.color,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
@@ -19,8 +20,21 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
         borderRadius: styles.borderRadius,
+        maxWidth: styles.maxWidth,
+        boxShadow: styles.boxShadow,
+        borderWidth: styles.borderWidth,
+        borderStyle: styles.borderStyle,
+        borderColor: styles.borderColor,
         textAlign: styles.textAlign,
+        fontSize: styles.fontSize,
+        fontWeight: styles.fontWeight,
     };
+
+    const buttonCustomStyle: CSSProperties = {
+        backgroundColor: styles.buttonBgColor || undefined,
+        color: styles.buttonTextColor || undefined,
+    };
+    const buttonPulseClass = styles.buttonPulseAnimation ? 'animate-pulse' : '';
 
     const hasImage = Boolean(props.imageUrl);
 
@@ -58,7 +72,8 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                             {isEditor ? (
                                 <button
                                     type="button"
-                                    className="inline-flex items-center justify-center px-8 py-3.5 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                                    style={buttonCustomStyle}
+                                    className={`inline-flex items-center justify-center px-8 py-3.5 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 cursor-pointer ${buttonPulseClass}`}
                                 >
                                     <span>{props.ctaText || 'Order Now'}</span>
                                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -66,7 +81,8 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                             ) : (
                                 <a
                                     href={props.ctaTarget || '#cod-checkout'}
-                                    className="inline-flex items-center justify-center px-8 py-3.5 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5"
+                                    style={buttonCustomStyle}
+                                    className={`inline-flex items-center justify-center px-8 py-3.5 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 ${buttonPulseClass}`}
                                 >
                                     <span>{props.ctaText || 'Order Now'}</span>
                                     <ArrowRight className="w-4 h-4 ml-2" />

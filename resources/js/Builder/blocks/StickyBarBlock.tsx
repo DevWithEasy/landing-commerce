@@ -16,10 +16,18 @@ export function StickyBarBlock({
     const isTop = props.placement === 'top';
 
     const inlineStyles: CSSProperties = {
-        backgroundColor: styles.backgroundColor || '#0f172a',
+        backgroundColor: styles.backgroundColor || (styles.background ? 'transparent' : '#0f172a'),
+        background: styles.background,
         color: styles.color || '#ffffff',
         zIndex: styles.zIndex ? Math.min(Number(styles.zIndex), 50) : 40,
+        boxShadow: styles.boxShadow,
     };
+
+    const buttonCustomStyle: CSSProperties = {
+        backgroundColor: styles.buttonBgColor || undefined,
+        color: styles.buttonTextColor || undefined,
+    };
+    const buttonPulseClass = styles.buttonPulseAnimation ? 'animate-pulse' : '';
 
     return (
         <aside
@@ -39,7 +47,8 @@ export function StickyBarBlock({
                     {isEditor ? (
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md cursor-pointer"
+                            style={buttonCustomStyle}
+                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md cursor-pointer ${buttonPulseClass}`}
                         >
                             <ShoppingCart className="w-4 h-4 mr-1.5" />
                             <span>{props.buttonText || 'Order Now'}</span>
@@ -47,7 +56,8 @@ export function StickyBarBlock({
                     ) : (
                         <a
                             href={props.buttonTarget || '#cod-checkout'}
-                            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md transform hover:-translate-y-0.5 transition-transform"
+                            style={buttonCustomStyle}
+                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md transform hover:-translate-y-0.5 transition-transform ${buttonPulseClass}`}
                         >
                             <ShoppingCart className="w-4 h-4 mr-1.5" />
                             <span>{props.buttonText || 'Order Now'}</span>

@@ -17,6 +17,12 @@
     $firstProduct = $products->first() ?? $product;
     $firstVariant = $firstProduct?->variants?->first();
     $firstVariantId = $firstVariant?->id ?? 0;
+    $buttonBg = $styles['buttonBgColor'] ?? null;
+    $buttonTextColor = $styles['buttonTextColor'] ?? null;
+    $buttonPulse = !empty($styles['buttonPulseAnimation']);
+    $btnCustomStyle = '';
+    if ($buttonBg) $btnCustomStyle .= 'background-color: ' . e($buttonBg) . ';';
+    if ($buttonTextColor) $btnCustomStyle .= 'color: ' . e($buttonTextColor) . ';';
 
     // Resolve active shipping methods or fallbacks
     $activeMethods = $shippingMethods ?? collect();
@@ -331,7 +337,8 @@
 
                 <div class="pt-2">
                     <button type="submit" id="cod-submit-btn"
-                        class="w-full py-4 px-6 rounded-xl text-white font-bold text-base bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed">
+                        style="{{ $btnCustomStyle }}"
+                        class="w-full py-4 px-6 rounded-xl text-white font-bold text-base bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed {{ $buttonPulse ? 'animate-pulse' : '' }}">
                         <span id="cod-btn-spinner" class="hidden">
                             <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none"
                                 viewBox="0 0 24 24">

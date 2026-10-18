@@ -14,6 +14,8 @@ export function FaqBlock({ props, styles = {} }: FaqBlockComponentProps) {
 
     const inlineStyles: CSSProperties = {
         backgroundColor: styles.backgroundColor,
+        background: styles.background,
+        color: styles.color,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,
@@ -21,6 +23,14 @@ export function FaqBlock({ props, styles = {} }: FaqBlockComponentProps) {
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
         borderRadius: styles.borderRadius,
+        maxWidth: styles.maxWidth,
+        boxShadow: styles.boxShadow,
+        borderWidth: styles.borderWidth,
+        borderStyle: styles.borderStyle,
+        borderColor: styles.borderColor,
+        textAlign: styles.textAlign,
+        fontSize: styles.fontSize,
+        fontWeight: styles.fontWeight,
     };
 
     const toggleItem = (id: string) => {

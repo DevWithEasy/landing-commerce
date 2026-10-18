@@ -9,6 +9,12 @@
     $defaultSelection = $props['defaultSelection'] ?? 'first';
     $defaultSelectedId = (int) ($props['defaultSelectedId'] ?? 0);
     $hasMultiple = isset($products) && $products->count() > 1;
+    $buttonBg = $styles['buttonBgColor'] ?? null;
+    $buttonText = $styles['buttonTextColor'] ?? null;
+    $buttonPulse = !empty($styles['buttonPulseAnimation']);
+    $btnCustomStyle = '';
+    if ($buttonBg) $btnCustomStyle .= 'background-color: ' . e($buttonBg) . ';';
+    if ($buttonText) $btnCustomStyle .= 'color: ' . e($buttonText) . ';';
 @endphp
 
 <section {!! $styleAttribute !!} class="w-full py-12 bg-white border-b border-gray-100" id="product-selection-section" data-selection-mode="{{ $mode }}">
@@ -180,7 +186,8 @@
                         {{-- Order Now Button on Each Card (Anchored to bottom) --}}
                         <div class="mt-auto pt-3 border-t border-gray-100">
                             <button type="button"
-                                class="card-order-btn w-full py-2.5 px-4 text-xs font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                                style="{{ $btnCustomStyle }}"
+                                class="card-order-btn w-full py-2.5 px-4 text-xs font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer {{ $buttonPulse ? 'animate-pulse' : '' }}"
                                 data-product-id="{{ $item->id }}"
                                 data-has-variants="{{ $hasVariants ? '1' : '0' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
@@ -337,7 +344,8 @@
 
                         <button type="button"
                             id="single-product-order-btn"
-                            class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-md shadow-primary-600/20 transition cursor-pointer">
+                            style="{{ $btnCustomStyle }}"
+                            class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-md shadow-primary-600/20 transition cursor-pointer {{ $buttonPulse ? 'animate-pulse' : '' }}">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                             <span>{{ $orderButtonText }}</span>
                         </button>
@@ -392,7 +400,7 @@
                 </div>
 
                 <div class="pt-2">
-                    <button type="button" id="ps-vmodal-confirm-btn" class="w-full py-3 px-4 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
+                    <button type="button" id="ps-vmodal-confirm-btn" style="{{ $btnCustomStyle }}" class="w-full py-3 px-4 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer {{ $buttonPulse ? 'animate-pulse' : '' }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         <span>{{ $orderButtonText }}</span>
                     </button>
@@ -451,7 +459,7 @@
                     </div>
 
                     <div class="pt-3">
-                        <button type="button" id="ps-qvmodal-order-btn" class="w-full py-3 px-4 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
+                        <button type="button" id="ps-qvmodal-order-btn" style="{{ $btnCustomStyle }}" class="w-full py-3 px-4 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer {{ $buttonPulse ? 'animate-pulse' : '' }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                             <span>{{ $orderButtonText }}</span>
                         </button>

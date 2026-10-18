@@ -52,6 +52,18 @@ class PageAstValidator
         'z-index',
         'zindex',
         'position',
+        'background',
+        'box-shadow',
+        'boxshadow',
+        'font-family',
+        'fontfamily',
+        'font-weight',
+        'fontweight',
+        'line-height',
+        'lineheight',
+        'letter-spacing',
+        'letterspacing',
+        'overflow',
     ];
 
     /**

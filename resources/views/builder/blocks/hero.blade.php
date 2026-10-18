@@ -7,6 +7,12 @@
     if (!str_starts_with($ctaTarget, '#') && !str_starts_with($ctaTarget, 'https://') && !str_starts_with($ctaTarget, 'http://') && !str_starts_with($ctaTarget, 'tel:')) {
         $ctaTarget = '#cod-checkout';
     }
+    $buttonBg = $styles['buttonBgColor'] ?? null;
+    $buttonTextColor = $styles['buttonTextColor'] ?? null;
+    $buttonPulse = !empty($styles['buttonPulseAnimation']);
+    $btnCustomStyle = '';
+    if ($buttonBg) $btnCustomStyle .= 'background-color: ' . e($buttonBg) . ';';
+    if ($buttonTextColor) $btnCustomStyle .= 'color: ' . e($buttonTextColor) . ';';
 @endphp
 
 <section {!! $styleAttribute !!} class="relative w-full py-12 md:py-20 overflow-hidden {{ $isBackground ? 'bg-slate-900 text-white' : 'bg-gradient-to-b from-slate-50 to-white text-slate-900' }}">
@@ -37,7 +43,7 @@
                 @endif
 
                 <div>
-                    <a href="{{ e($ctaTarget) }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                    <a href="{{ e($ctaTarget) }}" style="{{ $btnCustomStyle }}" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 {{ $buttonPulse ? 'animate-pulse' : '' }}">
                         <span>{{ $props['ctaText'] ?? 'Order Now - Cash on Delivery' }}</span>
                         <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />

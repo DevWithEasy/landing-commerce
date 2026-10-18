@@ -1,4 +1,22 @@
-import { AlignLeft, Palette, Plus, Sliders, Trash2, X } from 'lucide-react';
+import {
+    AlignCenter,
+    AlignJustify,
+    AlignLeft,
+    AlignRight,
+    Box,
+    ChevronDown,
+    ChevronUp,
+    Maximize2,
+    Palette,
+    Plus,
+    Sliders,
+    Sparkles,
+    Square,
+    Trash2,
+    Type,
+    X,
+    Zap,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useBuilderStore } from '../stores/useBuilderStore';
 import type {
@@ -61,8 +79,12 @@ export function Inspector({ blockDefinitions, products }: InspectorProps) {
         updateBlockProps(selectedBlock.id, { [key]: value });
     };
 
-    const handleStyleChange = (key: keyof BlockStyles, value: string) => {
+    const handleStyleChange = (key: keyof BlockStyles, value: any) => {
         updateBlockStyles(selectedBlock.id, { [key]: value });
+    };
+
+    const handleBatchStyleChange = (updates: Partial<BlockStyles>) => {
+        updateBlockStyles(selectedBlock.id, updates);
     };
 
     return (
@@ -130,7 +152,11 @@ export function Inspector({ blockDefinitions, products }: InspectorProps) {
                         onChange={handlePropChange}
                     />
                 ) : (
-                    <BlockStylesForm styles={styles} onChange={handleStyleChange} />
+                    <BlockStylesForm
+                        styles={styles}
+                        onChange={handleStyleChange}
+                        onBatchChange={handleBatchStyleChange}
+                    />
                 )}
             </div>
         </aside>
@@ -878,105 +904,630 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
 
 interface BlockStylesFormProps {
     styles: BlockStyles;
-    onChange: (key: keyof BlockStyles, value: string) => void;
+    onChange: (key: keyof BlockStyles, value: any) => void;
+    onBatchChange?: (updates: Partial<BlockStyles>) => void;
 }
 
-function BlockStylesForm({ styles, onChange }: BlockStylesFormProps) {
+function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormProps) {
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+        background: true,
+        typography: true,
+        spacing: true,
+        borders: false,
+        shadows: false,
+        button: true,
+    });
+
+    const toggleSection = (sec: string) => {
+        setOpenSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
+    };
+
+    const BG_SWATCHES = [
+        { name: 'White', color: '#ffffff' },
+        { name: 'Slate Light', color: '#f8fafc' },
+        { name: 'Gray', color: '#f3f4f6' },
+        { name: 'Cream', color: '#fffbeb' },
+        { name: 'Emerald Soft', color: '#ecfdf5' },
+        { name: 'Rose Soft', color: '#fff1f2' },
+        { name: 'Slate Dark', color: '#0f172a' },
+    ];
+
+    const GRADIENT_PRESETS = [
+        { name: 'None', gradient: '' },
+        { name: 'Slate Dark', gradient: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' },
+        { name: 'Emerald Luxury', gradient: 'linear-gradient(135deg, #065f46 0%, #022c22 100%)' },
+        { name: 'Sunset Warm', gradient: 'linear-gradient(135deg, #fff1f2 0%, #fef3c7 100%)' },
+        { name: 'Cool Ice', gradient: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)' },
+        { name: 'Midnight', gradient: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)' },
+    ];
+
+    const TEXT_SWATCHES = [
+        { name: 'Dark Slate', color: '#0f172a' },
+        { name: 'Muted', color: '#475569' },
+        { name: 'Pure White', color: '#ffffff' },
+        { name: 'Emerald Brand', color: '#059669' },
+        { name: 'Crimson', color: '#e11d48' },
+        { name: 'Amber', color: '#d97706' },
+    ];
+
+    const SHADOW_PRESETS = [
+        { id: 'none', label: 'None', val: 'none' },
+        { id: 'sm', label: 'Soft', val: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' },
+        { id: 'md', label: 'Card', val: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' },
+        { id: 'lg', label: 'Float', val: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' },
+        { id: 'xl', label: 'Deep Glow', val: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
+        { id: 'emerald', label: 'Brand Glow', val: '0 10px 25px -5px rgba(16, 185, 129, 0.3)' },
+    ];
+
     return (
-        <div className="space-y-4 text-xs">
-            <div>
-                <label className="block font-bold text-gray-700 mb-1">Background Color</label>
-                <div className="flex items-center space-x-2">
-                    <input
-                        type="color"
-                        value={styles.backgroundColor || '#ffffff'}
-                        onChange={(e) => onChange('backgroundColor', e.target.value)}
-                        className="w-8 h-8 rounded border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                    />
-                    <input
-                        type="text"
-                        value={styles.backgroundColor || ''}
-                        onChange={(e) => onChange('backgroundColor', e.target.value)}
-                        placeholder="#ffffff"
-                        className="w-full text-xs rounded border-gray-300 p-1.5 font-mono"
-                    />
-                </div>
+        <div className="space-y-3 text-xs">
+            {/* 1. Background & Colors */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                    type="button"
+                    onClick={() => toggleSection('background')}
+                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
+                >
+                    <div className="flex items-center space-x-2">
+                        <Palette className="w-3.5 h-3.5 text-primary-600" />
+                        <span>Background & Colors</span>
+                    </div>
+                    {openSections.background ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+
+                {openSections.background && (
+                    <div className="p-3.5 space-y-3.5">
+                        {/* Background Color with Swatches */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="font-semibold text-gray-700">Solid Background</label>
+                                <span className="font-mono text-[10px] text-gray-400">{styles.backgroundColor || '#ffffff'}</span>
+                            </div>
+                            <div className="flex items-center space-x-2 mb-2">
+                                <input
+                                    type="color"
+                                    value={styles.backgroundColor || '#ffffff'}
+                                    onChange={(e) => {
+                                        if (onBatchChange) {
+                                            onBatchChange({ backgroundColor: e.target.value, background: '' });
+                                        } else {
+                                            onChange('backgroundColor', e.target.value);
+                                        }
+                                    }}
+                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={styles.backgroundColor || ''}
+                                    onChange={(e) => onChange('backgroundColor', e.target.value)}
+                                    placeholder="#ffffff"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                                />
+                            </div>
+
+                            {/* Quick Swatches */}
+                            <div className="flex items-center gap-1.5 pt-1">
+                                {BG_SWATCHES.map((sw, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        title={sw.name}
+                                        onClick={() => {
+                                            if (onBatchChange) {
+                                                onBatchChange({ backgroundColor: sw.color, background: '' });
+                                            } else {
+                                                onChange('backgroundColor', sw.color);
+                                            }
+                                        }}
+                                        style={{ backgroundColor: sw.color }}
+                                        className={`w-6 h-6 rounded-full border border-gray-300 shadow-2xs transition hover:scale-110 cursor-pointer ${
+                                            styles.backgroundColor === sw.color ? 'ring-2 ring-primary-500 ring-offset-1' : ''
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Gradient Presets */}
+                        <div className="pt-2 border-t border-gray-100">
+                            <label className="block font-semibold text-gray-700 mb-1.5">Gradient Presets</label>
+                            <div className="grid grid-cols-3 gap-1.5">
+                                {GRADIENT_PRESETS.map((gp, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => {
+                                            if (onBatchChange) {
+                                                onBatchChange({
+                                                    background: gp.gradient,
+                                                    backgroundColor: gp.gradient ? 'transparent' : '#ffffff',
+                                                });
+                                            } else {
+                                                onChange('background', gp.gradient);
+                                            }
+                                        }}
+                                        className={`p-1.5 rounded-lg border text-[10px] font-medium text-center truncate transition cursor-pointer ${
+                                            (styles.background || '') === gp.gradient
+                                                ? 'border-primary-600 bg-primary-50 text-primary-900 font-bold ring-1 ring-primary-500'
+                                                : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-white'
+                                        }`}
+                                    >
+                                        {gp.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div>
-                <label className="block font-bold text-gray-700 mb-1">Text Color</label>
-                <div className="flex items-center space-x-2">
-                    <input
-                        type="color"
-                        value={styles.color || '#000000'}
-                        onChange={(e) => onChange('color', e.target.value)}
-                        className="w-8 h-8 rounded border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                    />
-                    <input
-                        type="text"
-                        value={styles.color || ''}
-                        onChange={(e) => onChange('color', e.target.value)}
-                        placeholder="#000000"
-                        className="w-full text-xs rounded border-gray-300 p-1.5 font-mono"
-                    />
-                </div>
+            {/* 2. Typography & Alignment */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                    type="button"
+                    onClick={() => toggleSection('typography')}
+                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
+                >
+                    <div className="flex items-center space-x-2">
+                        <Type className="w-3.5 h-3.5 text-primary-600" />
+                        <span>Typography & Alignment</span>
+                    </div>
+                    {openSections.typography ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+
+                {openSections.typography && (
+                    <div className="p-3.5 space-y-3.5">
+                        {/* Text Alignment */}
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-1.5">Content Alignment</label>
+                            <div className="grid grid-cols-4 gap-1 p-1 bg-gray-100 rounded-lg">
+                                {[
+                                    { mode: 'left', icon: AlignLeft, label: 'Left' },
+                                    { mode: 'center', icon: AlignCenter, label: 'Center' },
+                                    { mode: 'right', icon: AlignRight, label: 'Right' },
+                                    { mode: 'justify', icon: AlignJustify, label: 'Justify' },
+                                ].map((item) => {
+                                    const IconComponent = item.icon;
+                                    const isSel = (styles.textAlign || 'left') === item.mode;
+                                    return (
+                                        <button
+                                            key={item.mode}
+                                            type="button"
+                                            onClick={() => onChange('textAlign', item.mode)}
+                                            className={`py-1.5 flex flex-col items-center justify-center rounded-md transition cursor-pointer ${
+                                                isSel ? 'bg-white shadow-xs text-primary-700 font-bold' : 'text-gray-500 hover:text-gray-900'
+                                            }`}
+                                        >
+                                            <IconComponent className="w-4 h-4" />
+                                            <span className="text-[9px] mt-0.5">{item.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Text Color */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="font-semibold text-gray-700">Text Color</label>
+                                <span className="font-mono text-[10px] text-gray-400">{styles.color || '#000000'}</span>
+                            </div>
+                            <div className="flex items-center space-x-2 mb-2">
+                                <input
+                                    type="color"
+                                    value={styles.color || '#000000'}
+                                    onChange={(e) => onChange('color', e.target.value)}
+                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={styles.color || ''}
+                                    onChange={(e) => onChange('color', e.target.value)}
+                                    placeholder="#000000"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                {TEXT_SWATCHES.map((sw, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        title={sw.name}
+                                        onClick={() => onChange('color', sw.color)}
+                                        style={{ backgroundColor: sw.color }}
+                                        className={`w-5 h-5 rounded-full border border-gray-300 shadow-2xs transition hover:scale-110 cursor-pointer ${
+                                            styles.color === sw.color ? 'ring-2 ring-primary-500 ring-offset-1' : ''
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Font Size & Weight */}
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                            <div>
+                                <label className="block font-semibold text-gray-700 mb-1">Font Size</label>
+                                <select
+                                    value={styles.fontSize || ''}
+                                    onChange={(e) => onChange('fontSize', e.target.value)}
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
+                                >
+                                    <option value="">Default</option>
+                                    <option value="14px">Small (14px)</option>
+                                    <option value="16px">Medium (16px)</option>
+                                    <option value="18px">Large (18px)</option>
+                                    <option value="20px">XL (20px)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-gray-700 mb-1">Font Weight</label>
+                                <select
+                                    value={styles.fontWeight || ''}
+                                    onChange={(e) => onChange('fontWeight', e.target.value)}
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
+                                >
+                                    <option value="">Default</option>
+                                    <option value="400">Regular (400)</option>
+                                    <option value="500">Medium (500)</option>
+                                    <option value="600">SemiBold (600)</option>
+                                    <option value="700">Bold (700)</option>
+                                    <option value="800">Extra Bold (800)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200">
-                <div>
-                    <label className="block font-bold text-gray-700 mb-1">Padding Top</label>
-                    <input
-                        type="text"
-                        value={styles.paddingTop || ''}
-                        onChange={(e) => onChange('paddingTop', e.target.value)}
-                        placeholder="40px"
-                        className="w-full text-xs rounded border-gray-300 p-1.5"
-                    />
-                </div>
-                <div>
-                    <label className="block font-bold text-gray-700 mb-1">Padding Bottom</label>
-                    <input
-                        type="text"
-                        value={styles.paddingBottom || ''}
-                        onChange={(e) => onChange('paddingBottom', e.target.value)}
-                        placeholder="40px"
-                        className="w-full text-xs rounded border-gray-300 p-1.5"
-                    />
-                </div>
+            {/* 3. Spacing & Dimensions */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                    type="button"
+                    onClick={() => toggleSection('spacing')}
+                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
+                >
+                    <div className="flex items-center space-x-2">
+                        <Maximize2 className="w-3.5 h-3.5 text-primary-600" />
+                        <span>Spacing & Dimensions</span>
+                    </div>
+                    {openSections.spacing ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+
+                {openSections.spacing && (
+                    <div className="p-3.5 space-y-3.5">
+                        {/* Container Max Width */}
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-1.5">Section Width</label>
+                            <div className="grid grid-cols-4 gap-1">
+                                {[
+                                    { label: 'Full', val: '100%' },
+                                    { label: '1280px', val: '1280px' },
+                                    { label: '1024px', val: '1024px' },
+                                    { label: '768px', val: '768px' },
+                                ].map((item) => (
+                                    <button
+                                        key={item.val}
+                                        type="button"
+                                        onClick={() => onChange('maxWidth', item.val)}
+                                        className={`py-1 rounded-md border text-[11px] font-medium transition cursor-pointer ${
+                                            (styles.maxWidth || '100%') === item.val
+                                                ? 'bg-primary-50 border-primary-600 text-primary-950 font-bold'
+                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Vertical Padding Presets */}
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-1.5">Vertical Padding Presets</label>
+                            <div className="grid grid-cols-4 gap-1 mb-2">
+                                {[
+                                    { label: 'None', val: '0px' },
+                                    { label: 'Compact', val: '24px' },
+                                    { label: 'Standard', val: '48px' },
+                                    { label: 'Spacious', val: '80px' },
+                                ].map((pad) => (
+                                    <button
+                                        key={pad.val}
+                                        type="button"
+                                        onClick={() => {
+                                            if (onBatchChange) {
+                                                onBatchChange({ paddingTop: pad.val, paddingBottom: pad.val });
+                                            } else {
+                                                onChange('paddingTop', pad.val);
+                                                onChange('paddingBottom', pad.val);
+                                            }
+                                        }}
+                                        className={`py-1 rounded-md border text-[11px] font-medium transition cursor-pointer ${
+                                            styles.paddingTop === pad.val && styles.paddingBottom === pad.val
+                                                ? 'bg-primary-50 border-primary-600 text-primary-950 font-bold'
+                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                        }`}
+                                    >
+                                        {pad.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Fine tuning */}
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block text-[11px] text-gray-500 mb-0.5">Top Padding</label>
+                                    <input
+                                        type="text"
+                                        value={styles.paddingTop || ''}
+                                        onChange={(e) => onChange('paddingTop', e.target.value)}
+                                        placeholder="e.g. 48px"
+                                        className="w-full text-xs rounded-lg border-gray-300 p-1.5"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] text-gray-500 mb-0.5">Bottom Padding</label>
+                                    <input
+                                        type="text"
+                                        value={styles.paddingBottom || ''}
+                                        onChange={(e) => onChange('paddingBottom', e.target.value)}
+                                        placeholder="e.g. 48px"
+                                        className="w-full text-xs rounded-lg border-gray-300 p-1.5"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Margins */}
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                            <div>
+                                <label className="block text-[11px] text-gray-500 mb-0.5">Top Margin</label>
+                                <input
+                                    type="text"
+                                    value={styles.marginTop || ''}
+                                    onChange={(e) => onChange('marginTop', e.target.value)}
+                                    placeholder="0px"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] text-gray-500 mb-0.5">Bottom Margin</label>
+                                <input
+                                    type="text"
+                                    value={styles.marginBottom || ''}
+                                    onChange={(e) => onChange('marginBottom', e.target.value)}
+                                    placeholder="0px"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-                <div>
-                    <label className="block font-bold text-gray-700 mb-1">Margin Top</label>
-                    <input
-                        type="text"
-                        value={styles.marginTop || ''}
-                        onChange={(e) => onChange('marginTop', e.target.value)}
-                        placeholder="0px"
-                        className="w-full text-xs rounded border-gray-300 p-1.5"
-                    />
-                </div>
-                <div>
-                    <label className="block font-bold text-gray-700 mb-1">Margin Bottom</label>
-                    <input
-                        type="text"
-                        value={styles.marginBottom || ''}
-                        onChange={(e) => onChange('marginBottom', e.target.value)}
-                        placeholder="0px"
-                        className="w-full text-xs rounded border-gray-300 p-1.5"
-                    />
-                </div>
+            {/* 4. Borders & Corners */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                    type="button"
+                    onClick={() => toggleSection('borders')}
+                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
+                >
+                    <div className="flex items-center space-x-2">
+                        <Square className="w-3.5 h-3.5 text-primary-600" />
+                        <span>Borders & Corners</span>
+                    </div>
+                    {openSections.borders ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+
+                {openSections.borders && (
+                    <div className="p-3.5 space-y-3">
+                        {/* Border Radius Presets */}
+                        <div>
+                            <label className="block font-semibold text-gray-700 mb-1.5">Corner Radius</label>
+                            <div className="grid grid-cols-5 gap-1 mb-2">
+                                {[
+                                    { label: '0px', val: '0px' },
+                                    { label: '8px', val: '8px' },
+                                    { label: '16px', val: '16px' },
+                                    { label: '24px', val: '24px' },
+                                    { label: 'Pill', val: '9999px' },
+                                ].map((item) => (
+                                    <button
+                                        key={item.val}
+                                        type="button"
+                                        onClick={() => onChange('borderRadius', item.val)}
+                                        className={`py-1 rounded-md border text-[10px] font-medium transition cursor-pointer ${
+                                            styles.borderRadius === item.val
+                                                ? 'bg-primary-50 border-primary-600 text-primary-950 font-bold'
+                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <input
+                                type="text"
+                                value={styles.borderRadius || ''}
+                                onChange={(e) => onChange('borderRadius', e.target.value)}
+                                placeholder="Custom radius e.g. 16px"
+                                className="w-full text-xs rounded-lg border-gray-300 p-1.5"
+                            />
+                        </div>
+
+                        {/* Border Width & Style */}
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                            <div>
+                                <label className="block text-[11px] text-gray-600 mb-1">Border Width</label>
+                                <select
+                                    value={styles.borderWidth || ''}
+                                    onChange={(e) => onChange('borderWidth', e.target.value)}
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
+                                >
+                                    <option value="">None (0px)</option>
+                                    <option value="1px">1px</option>
+                                    <option value="2px">2px</option>
+                                    <option value="4px">4px</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] text-gray-600 mb-1">Border Style</label>
+                                <select
+                                    value={styles.borderStyle || 'solid'}
+                                    onChange={(e) => onChange('borderStyle', e.target.value)}
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
+                                >
+                                    <option value="solid">Solid</option>
+                                    <option value="dashed">Dashed</option>
+                                    <option value="dotted">Dotted</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Border Color */}
+                        {Boolean(styles.borderWidth && styles.borderWidth !== '0px') && (
+                            <div>
+                                <label className="block text-[11px] text-gray-600 mb-1">Border Color</label>
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="color"
+                                        value={styles.borderColor || '#e2e8f0'}
+                                        onChange={(e) => onChange('borderColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={styles.borderColor || ''}
+                                        onChange={(e) => onChange('borderColor', e.target.value)}
+                                        placeholder="#e2e8f0"
+                                        className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
-            <div>
-                <label className="block font-bold text-gray-700 mb-1">Border Radius</label>
-                <input
-                    type="text"
-                    value={styles.borderRadius || ''}
-                    onChange={(e) => onChange('borderRadius', e.target.value)}
-                    placeholder="12px"
-                    className="w-full text-xs rounded border-gray-300 p-1.5"
-                />
+            {/* 5. Box Shadow & Depth */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                    type="button"
+                    onClick={() => toggleSection('shadows')}
+                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
+                >
+                    <div className="flex items-center space-x-2">
+                        <Box className="w-3.5 h-3.5 text-primary-600" />
+                        <span>Box Shadow & Depth</span>
+                    </div>
+                    {openSections.shadows ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+
+                {openSections.shadows && (
+                    <div className="p-3.5 space-y-2">
+                        <div className="grid grid-cols-3 gap-1.5">
+                            {SHADOW_PRESETS.map((sh) => (
+                                <button
+                                    key={sh.id}
+                                    type="button"
+                                    onClick={() => onChange('boxShadow', sh.val)}
+                                    className={`p-2 rounded-lg border text-center transition cursor-pointer ${
+                                        (styles.boxShadow || 'none') === sh.val
+                                            ? 'border-primary-600 bg-primary-50 text-primary-950 font-bold ring-1 ring-primary-500'
+                                            : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-white'
+                                    }`}
+                                >
+                                    <span className="text-[11px] block">{sh.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* 6. Button & CTA Styling */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                    type="button"
+                    onClick={() => toggleSection('button')}
+                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
+                >
+                    <div className="flex items-center space-x-2">
+                        <Zap className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Action Button & CTA</span>
+                    </div>
+                    {openSections.button ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+                </button>
+
+                {openSections.button && (
+                    <div className="p-3.5 space-y-3.5">
+                        {/* Button Color */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="font-semibold text-gray-700">Button Background</label>
+                                <span className="font-mono text-[10px] text-gray-400">{styles.buttonBgColor || '#059669'}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="color"
+                                    value={styles.buttonBgColor || '#059669'}
+                                    onChange={(e) => onChange('buttonBgColor', e.target.value)}
+                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={styles.buttonBgColor || ''}
+                                    onChange={(e) => onChange('buttonBgColor', e.target.value)}
+                                    placeholder="#059669 (Emerald)"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Button Text Color */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="font-semibold text-gray-700">Button Text Color</label>
+                                <span className="font-mono text-[10px] text-gray-400">{styles.buttonTextColor || '#ffffff'}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="color"
+                                    value={styles.buttonTextColor || '#ffffff'}
+                                    onChange={(e) => onChange('buttonTextColor', e.target.value)}
+                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={styles.buttonTextColor || ''}
+                                    onChange={(e) => onChange('buttonTextColor', e.target.value)}
+                                    placeholder="#ffffff"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Elementor Pulse Animation Switch */}
+                        <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                            <div>
+                                <label htmlFor="btn-pulse-toggle" className="font-bold text-gray-800 text-xs flex items-center space-x-1 cursor-pointer">
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                    <span>Elementor Pulse Effect</span>
+                                </label>
+                                <p className="text-[10px] text-gray-400"> বাউন্স/পালস অ্যানিমেশন দিয়ে কাস্টমারের দৃষ্টি আকর্ষণ করুন</p>
+                            </div>
+                            <input
+                                type="checkbox"
+                                id="btn-pulse-toggle"
+                                checked={Boolean(styles.buttonPulseAnimation)}
+                                onChange={(e) => onChange('buttonPulseAnimation', e.target.checked)}
+                                className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

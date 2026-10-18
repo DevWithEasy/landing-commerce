@@ -57,6 +57,8 @@ export function ProductSelectorBlock({
 
     const inlineStyles: CSSProperties = {
         backgroundColor: styles.backgroundColor,
+        background: styles.background,
+        color: styles.color,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,
@@ -65,7 +67,20 @@ export function ProductSelectorBlock({
         marginBottom: styles.marginBottom,
         borderRadius: styles.borderRadius,
         maxWidth: styles.maxWidth,
+        boxShadow: styles.boxShadow,
+        borderWidth: styles.borderWidth,
+        borderStyle: styles.borderStyle,
+        borderColor: styles.borderColor,
+        textAlign: styles.textAlign,
+        fontSize: styles.fontSize,
+        fontWeight: styles.fontWeight,
     };
+
+    const buttonCustomStyle: CSSProperties = {
+        backgroundColor: styles.buttonBgColor || undefined,
+        color: styles.buttonTextColor || undefined,
+    };
+    const buttonPulseClass = styles.buttonPulseAnimation ? 'animate-pulse' : '';
 
     const productIds = props.productIds && props.productIds.length > 0
         ? props.productIds
@@ -255,7 +270,8 @@ export function ProductSelectorBlock({
                                                 e.stopPropagation();
                                                 handleOrderClick(realProd, pid);
                                             }}
-                                            className="w-full py-2.5 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer"
+                                            style={buttonCustomStyle}
+                                            className={`w-full py-2.5 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer ${buttonPulseClass}`}
                                         >
                                             <ShoppingBag className="w-4 h-4" />
                                             <span>{orderButtonText}</span>
@@ -373,7 +389,8 @@ export function ProductSelectorBlock({
                                                 <button
                                                     type="button"
                                                     onClick={() => confirmVariantOrder(variantModalProduct)}
-                                                    className="w-full py-3 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-md transition flex items-center justify-center space-x-2"
+                                                    style={buttonCustomStyle}
+                                                    className={`w-full py-3 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-md transition flex items-center justify-center space-x-2 ${buttonPulseClass}`}
                                                 >
                                                     <ShoppingBag className="w-4 h-4" />
                                                     <span>{orderButtonText}</span>
@@ -536,7 +553,8 @@ export function ProductSelectorBlock({
                                                         setQuickViewProduct(null);
                                                         confirmVariantOrder(quickViewProduct);
                                                     }}
-                                                    className="w-full py-3 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition flex items-center justify-center space-x-2"
+                                                    style={buttonCustomStyle}
+                                                    className={`w-full py-3 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition flex items-center justify-center space-x-2 ${buttonPulseClass}`}
                                                 >
                                                     <ShoppingBag className="w-4 h-4" />
                                                     <span>{orderButtonText}</span>
@@ -644,7 +662,8 @@ export function ProductSelectorBlock({
                                 <button
                                     type="button"
                                     onClick={() => handleOrderClick(singleProd, singleProd?.id || 0)}
-                                    className="w-full inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all text-center cursor-pointer"
+                                    style={buttonCustomStyle}
+                                    className={`w-full inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all text-center cursor-pointer ${buttonPulseClass}`}
                                 >
                                     <ShoppingBag className="w-4 h-4 mr-2" />
                                     <span>{orderButtonText}</span>
