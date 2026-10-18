@@ -26,6 +26,7 @@ class BlockRendererService
         'FaqBlock' => 'builder.blocks.faq',
         'CountdownTimerBlock' => 'builder.blocks.countdown-timer',
         'StickyBarBlock' => 'builder.blocks.sticky-bar',
+        'HtmlBlock' => 'builder.blocks.html',
     ];
 
     /**

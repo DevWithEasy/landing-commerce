@@ -30,11 +30,41 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
         fontWeight: styles.fontWeight,
     };
 
-    const buttonCustomStyle: CSSProperties = {
-        backgroundColor: styles.buttonBgColor || undefined,
-        color: styles.buttonTextColor || undefined,
+    const headlineStyle: CSSProperties = {
+        color: props.headlineColor || undefined,
+        fontSize: props.headlineFontSize || undefined,
+        fontWeight: props.headlineFontWeight || undefined,
+        lineHeight: props.headlineLineHeight || undefined,
+        textAlign: props.headlineAlign || undefined,
     };
-    const buttonPulseClass = styles.buttonPulseAnimation ? 'animate-pulse' : '';
+
+    const subheadlineStyle: CSSProperties = {
+        color: props.subheadlineColor || undefined,
+        fontSize: props.subheadlineFontSize || undefined,
+        fontWeight: props.subheadlineFontWeight || undefined,
+    };
+
+    const badgeStyle: CSSProperties = {
+        color: props.badgeTextColor || undefined,
+        backgroundColor: props.badgeBgColor || undefined,
+        borderRadius: props.badgeBorderRadius || undefined,
+    };
+
+    const buttonSizeClasses = {
+        sm: 'px-5 py-2.5 text-sm',
+        md: 'px-6 py-3 text-base',
+        lg: 'px-8 py-3.5 text-base font-bold',
+        xl: 'px-10 py-5 text-xl font-black',
+    }[props.buttonSize || 'lg'] || 'px-8 py-3.5 text-base font-bold';
+
+    const buttonWidthClass = props.buttonWidth === 'full' ? 'w-full justify-center' : 'w-auto';
+
+    const buttonCustomStyle: CSSProperties = {
+        backgroundColor: props.buttonBgColor || styles.buttonBgColor || undefined,
+        color: props.buttonTextColor || styles.buttonTextColor || undefined,
+        borderRadius: props.buttonBorderRadius || styles.buttonBorderRadius || undefined,
+    };
+    const buttonPulseClass = (props.buttonPulseAnimation || styles.buttonPulseAnimation) ? 'animate-pulse' : '';
 
     const hasImage = Boolean(props.imageUrl);
 
@@ -52,28 +82,39 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                     {/* Content Column */}
                     <div className={`flex-1 ${hasImage ? 'text-left' : 'max-w-3xl'}`}>
                         {props.badgeText && (
-                            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-primary-100 text-primary-800 text-xs font-semibold uppercase tracking-wider mb-4 shadow-xs">
-                                <Sparkles className="w-3.5 h-3.5 text-primary-600" />
+                            <div
+                                style={badgeStyle}
+                                className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 shadow-xs ${
+                                    !props.badgeBgColor ? 'bg-primary-100 text-primary-800' : ''
+                                }`}
+                            >
+                                <Sparkles className="w-3.5 h-3.5 opacity-80" />
                                 <span>{props.badgeText}</span>
                             </div>
                         )}
 
-                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
+                        <h1
+                            style={headlineStyle}
+                            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight"
+                        >
                             {props.headline || 'Your Compelling Headline Here'}
                         </h1>
 
                         {props.subheadline && (
-                            <p className="mt-4 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl">
+                            <p
+                                style={subheadlineStyle}
+                                className="mt-4 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl"
+                            >
                                 {props.subheadline}
                             </p>
                         )}
 
-                        <div className="mt-8 flex flex-wrap gap-4 items-center">
+                        <div className={`mt-8 flex flex-wrap gap-4 items-center ${props.buttonWidth === 'full' ? 'w-full' : ''}`}>
                             {isEditor ? (
                                 <button
                                     type="button"
                                     style={buttonCustomStyle}
-                                    className={`inline-flex items-center justify-center px-8 py-3.5 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 cursor-pointer ${buttonPulseClass}`}
+                                    className={`inline-flex items-center justify-center rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 cursor-pointer ${buttonSizeClasses} ${buttonWidthClass} ${buttonPulseClass}`}
                                 >
                                     <span>{props.ctaText || 'Order Now'}</span>
                                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -82,7 +123,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                                 <a
                                     href={props.ctaTarget || '#cod-checkout'}
                                     style={buttonCustomStyle}
-                                    className={`inline-flex items-center justify-center px-8 py-3.5 text-base font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 ${buttonPulseClass}`}
+                                    className={`inline-flex items-center justify-center rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 ${buttonSizeClasses} ${buttonWidthClass} ${buttonPulseClass}`}
                                 >
                                     <span>{props.ctaText || 'Order Now'}</span>
                                     <ArrowRight className="w-4 h-4 ml-2" />

@@ -416,3 +416,76 @@ test('valid AST with all 9 approved block types passes validation and creates re
     $savedAst = $this->landingPage->revisions->first()->ast_content;
     expect(count($savedAst['blocks']))->toBe(9);
 });
+
+test('html block containing script tags returns HTTP 422', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_html_xss',
+                'type' => 'HtmlBlock',
+                'props' => [
+                    'html' => '<div><h3>Promo</h3><script>alert("hacked")</script></div>',
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.props.html']);
+});
+
+test('html block containing inline onerror returns HTTP 422', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_html_onerror',
+                'type' => 'HtmlBlock',
+                'props' => [
+                    'html' => '<img src="bad.jpg" onerror="alert(1)">',
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.props.html']);
+});
+
+test('html block with safe html and scoped css passes validation', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_html_safe',
+                'type' => 'HtmlBlock',
+                'props' => [
+                    'html' => '<div class="custom-card"><h2 class="title">Safe Content</h2><p>Great product details</p></div>',
+                    'css' => '.custom-card { padding: 20px; } .title { color: #16a34a; font-weight: bold; }',
+                ],
+                'styles' => [
+                    'paddingTop' => '24px',
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(201)
+        ->assertJsonPath('success', true);
+});

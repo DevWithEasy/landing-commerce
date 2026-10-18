@@ -182,6 +182,17 @@ class PageAstValidator
      */
     protected function validateProps(array $props, string $prefix, string $blockType, array &$errors): void
     {
+        if ($blockType === 'HtmlBlock') {
+            if (isset($props['html']) && is_string($props['html'])) {
+                $this->assertSafeHtml($props['html'], "{$prefix}.props.html", $errors);
+            }
+            if (isset($props['css']) && is_string($props['css'])) {
+                $this->assertSafeCustomCss($props['css'], "{$prefix}.props.css", $errors);
+            }
+
+            return;
+        }
+
         foreach ($props as $key => $value) {
             $propPath = "{$prefix}.props.{$key}";
 
@@ -195,6 +206,56 @@ class PageAstValidator
                 // Recursively validate nested props (e.g. FAQ items, features grid)
                 $this->validateNestedProps($value, $propPath, $errors);
             }
+        }
+    }
+
+    /**
+     * Validate merchant-provided HTML content for HtmlBlock, enforcing strict XSS prevention.
+     *
+     * @param  array<string, list<string>>  $errors
+     */
+    protected function assertSafeHtml(string $value, string $path, array &$errors): void
+    {
+        // 1. Reject <script> tags
+        if (preg_match('/<\s*\/?\s*script/i', $value)) {
+            $errors[$path] = ['Unsanitized <script> tags are strictly forbidden in HTML block.'];
+
+            return;
+        }
+
+        // 2. Reject dangerous embedding tags
+        if (preg_match('/<\s*(iframe|object|embed|applet|meta|link)/i', $value)) {
+            $errors[$path] = ['Dangerous HTML embedding tags (iframe, object, embed, applet, meta, link) are strictly forbidden in HTML block.'];
+
+            return;
+        }
+
+        // 3. Reject inline event handlers: onerror=, onload=, onclick=, etc.
+        if (preg_match('/\bon[a-zA-Z]+\s*=/i', $value)) {
+            $errors[$path] = ['Inline JavaScript event handlers (e.g. onerror, onclick) are strictly forbidden in HTML block.'];
+
+            return;
+        }
+
+        // 4. Reject javascript:, vbscript:, and data: URI execution vectors
+        if (preg_match('/(javascript|vbscript|data\s*:\s*text\/html)\s*:/i', $value)) {
+            $errors[$path] = ['JavaScript and executable URI schemes are strictly forbidden in HTML block.'];
+        }
+    }
+
+    /**
+     * Validate merchant-provided scoped CSS for HtmlBlock.
+     *
+     * @param  array<string, list<string>>  $errors
+     */
+    protected function assertSafeCustomCss(string $value, string $path, array &$errors): void
+    {
+        if (preg_match('/(expression\s*\(|@import|javascript\s*:|behavior\s*:|-moz-binding|<\s*script)/i', $value)) {
+            $errors[$path] = ['Unsafe CSS expression, external @import, or script vector detected in custom CSS.'];
+        }
+
+        if (preg_match('/position\s*:\s*(fixed|sticky)/i', $value)) {
+            $errors[$path] = ['Fixed or sticky position overlays are strictly forbidden in custom CSS.'];
         }
     }
 

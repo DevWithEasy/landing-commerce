@@ -6,6 +6,7 @@ import {
     Box,
     ChevronDown,
     ChevronUp,
+    Code,
     Maximize2,
     Palette,
     Plus,
@@ -31,6 +32,7 @@ import type {
     FaqBlockProps,
     FaqItem,
     HeroBlockProps,
+    HtmlBlockProps,
     ProductSelectorBlockProps,
     ReviewItem,
     ReviewsBlockProps,
@@ -177,88 +179,398 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
             const p = props as unknown as HeroBlockProps;
             return (
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Headline
-                        </label>
-                        <textarea
-                            rows={2}
-                            value={p.headline || ''}
-                            onChange={(e) => onChange('headline', e.target.value)}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Subheadline
-                        </label>
-                        <textarea
-                            rows={2}
-                            value={p.subheadline || ''}
-                            onChange={(e) => onChange('subheadline', e.target.value)}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Badge Text
-                        </label>
-                        <input
-                            type="text"
-                            value={p.badgeText || ''}
-                            onChange={(e) => onChange('badgeText', e.target.value)}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    {/* 1. Headline Element Settings */}
+                    <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200 space-y-3">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
+                            <span className="text-xs font-bold text-gray-900 flex items-center">
+                                <Type className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
+                                Headline (হেডলাইন ডিজাইন)
+                            </span>
+                        </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                                CTA Button
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Text Content
+                            </label>
+                            <textarea
+                                rows={2}
+                                value={p.headline || ''}
+                                onChange={(e) => onChange('headline', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Text Color
+                                </label>
+                                <div className="flex items-center space-x-1.5">
+                                    <input
+                                        type="color"
+                                        value={p.headlineColor || '#0f172a'}
+                                        onChange={(e) => onChange('headlineColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={p.headlineColor || ''}
+                                        onChange={(e) => onChange('headlineColor', e.target.value)}
+                                        placeholder="#0f172a"
+                                        className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Font Size
+                                </label>
+                                <select
+                                    value={p.headlineFontSize || ''}
+                                    onChange={(e) => onChange('headlineFontSize', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="">Default (Responsive)</option>
+                                    <option value="24px">Small (24px)</option>
+                                    <option value="32px">Medium (32px)</option>
+                                    <option value="40px">Large (40px)</option>
+                                    <option value="48px">Extra Large (48px)</option>
+                                    <option value="56px">Huge (56px)</option>
+                                    <option value="64px">Display (64px)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Font Weight
+                                </label>
+                                <select
+                                    value={p.headlineFontWeight || ''}
+                                    onChange={(e) => onChange('headlineFontWeight', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="">Default (Extrabold 800)</option>
+                                    <option value="600">Semibold (600)</option>
+                                    <option value="700">Bold (700)</option>
+                                    <option value="800">Extra Bold (800)</option>
+                                    <option value="900">Black (900)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Alignment
+                                </label>
+                                <select
+                                    value={p.headlineAlign || 'left'}
+                                    onChange={(e) => onChange('headlineAlign', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Subheadline Element Settings */}
+                    <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200 space-y-3">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
+                            <span className="text-xs font-bold text-gray-900 flex items-center">
+                                <AlignLeft className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
+                                Subheadline (সাব-হেডলাইন ডিজাইন)
+                            </span>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Text Content
+                            </label>
+                            <textarea
+                                rows={2}
+                                value={p.subheadline || ''}
+                                onChange={(e) => onChange('subheadline', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Text Color
+                                </label>
+                                <div className="flex items-center space-x-1.5">
+                                    <input
+                                        type="color"
+                                        value={p.subheadlineColor || '#475569'}
+                                        onChange={(e) => onChange('subheadlineColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={p.subheadlineColor || ''}
+                                        onChange={(e) => onChange('subheadlineColor', e.target.value)}
+                                        placeholder="#475569"
+                                        className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Font Size
+                                </label>
+                                <select
+                                    value={p.subheadlineFontSize || ''}
+                                    onChange={(e) => onChange('subheadlineFontSize', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="">Default (16-18px)</option>
+                                    <option value="14px">14px</option>
+                                    <option value="16px">16px</option>
+                                    <option value="18px">18px</option>
+                                    <option value="20px">20px</option>
+                                    <option value="22px">22px</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Badge Element Settings */}
+                    <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200 space-y-3">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
+                            <span className="text-xs font-bold text-gray-900 flex items-center">
+                                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
+                                Badge Tag (টপ ব্যাজ ডিজাইন)
+                            </span>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Badge Text
                             </label>
                             <input
                                 type="text"
-                                value={p.ctaText || ''}
-                                onChange={(e) => onChange('ctaText', e.target.value)}
-                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
+                                value={p.badgeText || ''}
+                                onChange={(e) => onChange('badgeText', e.target.value)}
+                                placeholder="e.g. Limited Stock Offer"
+                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Text Color
+                                </label>
+                                <div className="flex items-center space-x-1.5">
+                                    <input
+                                        type="color"
+                                        value={p.badgeTextColor || '#1e40af'}
+                                        onChange={(e) => onChange('badgeTextColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={p.badgeTextColor || ''}
+                                        onChange={(e) => onChange('badgeTextColor', e.target.value)}
+                                        placeholder="#1e40af"
+                                        className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Background
+                                </label>
+                                <div className="flex items-center space-x-1.5">
+                                    <input
+                                        type="color"
+                                        value={p.badgeBgColor || '#dbeafe'}
+                                        onChange={(e) => onChange('badgeBgColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={p.badgeBgColor || ''}
+                                        onChange={(e) => onChange('badgeBgColor', e.target.value)}
+                                        placeholder="#dbeafe"
+                                        className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 4. CTA Button Element Settings */}
+                    <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200 space-y-3">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
+                            <span className="text-xs font-bold text-gray-900 flex items-center">
+                                <Zap className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
+                                CTA Button (বাটন ডিজাইন)
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Button Text
+                                </label>
+                                <input
+                                    type="text"
+                                    value={p.ctaText || ''}
+                                    onChange={(e) => onChange('ctaText', e.target.value)}
+                                    placeholder="Order Now"
+                                    className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Action Target
+                                </label>
+                                <input
+                                    type="text"
+                                    value={p.ctaTarget || ''}
+                                    onChange={(e) => onChange('ctaTarget', e.target.value)}
+                                    placeholder="#cod-checkout"
+                                    className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Button Size
+                                </label>
+                                <select
+                                    value={p.buttonSize || 'lg'}
+                                    onChange={(e) => onChange('buttonSize', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="sm">Small (ছোট)</option>
+                                    <option value="md">Medium (মাঝারি)</option>
+                                    <option value="lg">Large (বড়)</option>
+                                    <option value="xl">Extra Large (বিশাল)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Button Width
+                                </label>
+                                <select
+                                    value={p.buttonWidth || 'auto'}
+                                    onChange={(e) => onChange('buttonWidth', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="auto">Auto (ফিট কনটেন্ট)</option>
+                                    <option value="full">Full Width (সম্পূর্ণ চওড়া)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Background
+                                </label>
+                                <div className="flex items-center space-x-1.5">
+                                    <input
+                                        type="color"
+                                        value={p.buttonBgColor || '#16a34a'}
+                                        onChange={(e) => onChange('buttonBgColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={p.buttonBgColor || ''}
+                                        onChange={(e) => onChange('buttonBgColor', e.target.value)}
+                                        placeholder="#16a34a"
+                                        className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Text Color
+                                </label>
+                                <div className="flex items-center space-x-1.5">
+                                    <input
+                                        type="color"
+                                        value={p.buttonTextColor || '#ffffff'}
+                                        onChange={(e) => onChange('buttonTextColor', e.target.value)}
+                                        className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={p.buttonTextColor || ''}
+                                        onChange={(e) => onChange('buttonTextColor', e.target.value)}
+                                        placeholder="#ffffff"
+                                        className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 items-center pt-1">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                    Corner Radius
+                                </label>
+                                <select
+                                    value={p.buttonBorderRadius || '12px'}
+                                    onChange={(e) => onChange('buttonBorderRadius', e.target.value)}
+                                    className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
+                                >
+                                    <option value="0px">Square (0px)</option>
+                                    <option value="6px">Small (6px)</option>
+                                    <option value="12px">Rounded (12px)</option>
+                                    <option value="16px">Large (16px)</option>
+                                    <option value="9999px">Pill (সম্পূর্ণ গোল)</option>
+                                </select>
+                            </div>
+                            <div className="flex items-center space-x-2 pt-4">
+                                <input
+                                    type="checkbox"
+                                    id="hero_btn_pulse"
+                                    checked={Boolean(p.buttonPulseAnimation)}
+                                    onChange={(e) => onChange('buttonPulseAnimation', e.target.checked)}
+                                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                />
+                                <label htmlFor="hero_btn_pulse" className="text-xs text-gray-700 font-semibold cursor-pointer">
+                                    Pulse Animation
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 5. Media Image Settings */}
+                    <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200 space-y-3">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
+                            <span className="text-xs font-bold text-gray-900 flex items-center">
+                                <Box className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
+                                Showcase Image (ইমেজ সেটিংস)
+                            </span>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Image URL
+                            </label>
+                            <input
+                                type="url"
+                                value={p.imageUrl || ''}
+                                onChange={(e) => onChange('imageUrl', e.target.value)}
+                                placeholder="https://..."
+                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                                CTA Target
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Image Position
                             </label>
-                            <input
-                                type="text"
-                                value={p.ctaTarget || ''}
-                                onChange={(e) => onChange('ctaTarget', e.target.value)}
-                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                            />
+                            <select
+                                value={p.imagePosition || 'right'}
+                                onChange={(e) => onChange('imagePosition', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
+                            >
+                                <option value="right">Right Side (ডানে)</option>
+                                <option value="left">Left Side (বামে)</option>
+                                <option value="background">Background Overlay (ব্যাকগ্রাউন্ডে)</option>
+                            </select>
                         </div>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Image URL
-                        </label>
-                        <input
-                            type="url"
-                            value={p.imageUrl || ''}
-                            onChange={(e) => onChange('imageUrl', e.target.value)}
-                            placeholder="https://..."
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Image Position
-                        </label>
-                        <select
-                            value={p.imagePosition || 'right'}
-                            onChange={(e) => onChange('imagePosition', e.target.value)}
-                            className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2"
-                        >
-                            <option value="right">Right</option>
-                            <option value="left">Left</option>
-                            <option value="background">Background Overlay</option>
-                        </select>
                     </div>
                 </div>
             );
@@ -892,6 +1204,66 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             <option value="bottom">Bottom of Screen</option>
                             <option value="top">Top of Screen</option>
                         </select>
+                    </div>
+                </div>
+            );
+        }
+
+        case 'HtmlBlock': {
+            const p = props as unknown as HtmlBlockProps;
+            return (
+                <div className="space-y-4">
+                    <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl">
+                        <div className="flex items-center space-x-1.5 text-emerald-900 font-bold text-xs mb-1">
+                            <Code className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>কাস্টম HTML ও CSS এডিটর</span>
+                        </div>
+                        <p className="text-[11px] text-emerald-800 leading-relaxed">
+                            এখানে আপনার ইচ্ছামতো যেকোনো HTML কোড ও কাস্টম CSS ক্লাস লিখুন। কোড লেখার সাথে সাথে বামপাশের ক্যানভাসে তা লাইভ প্রিভিউ হবে।
+                        </p>
+                    </div>
+
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="text-xs font-bold text-gray-800 flex items-center">
+                                <span>Custom HTML Code</span>
+                            </label>
+                            <span className="text-[10px] text-gray-400 font-mono px-1.5 py-0.5 bg-gray-100 rounded">
+                                &lt;html&gt;
+                            </span>
+                        </div>
+                        <textarea
+                            rows={9}
+                            value={p.html || ''}
+                            onChange={(e) => onChange('html', e.target.value)}
+                            placeholder="<div class='my-card'>&#10;  <h2>Special Title</h2>&#10;  <p>Your description...</p>&#10;</div>"
+                            className="w-full text-xs font-mono rounded-lg border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 p-2.5 bg-slate-900 text-slate-100 placeholder-slate-500 leading-relaxed tracking-wide"
+                            spellCheck={false}
+                        />
+                    </div>
+
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="text-xs font-bold text-gray-800 flex items-center">
+                                <span>Custom Scoped CSS</span>
+                            </label>
+                            <span className="text-[10px] text-emerald-600 font-mono px-1.5 py-0.5 bg-emerald-50 rounded">
+                                &#123;css&#125;
+                            </span>
+                        </div>
+                        <textarea
+                            rows={7}
+                            value={p.css || ''}
+                            onChange={(e) => onChange('css', e.target.value)}
+                            placeholder=".my-card {&#10;  background: #ffffff;&#10;  border-radius: 12px;&#10;  padding: 20px;&#10;}"
+                            className="w-full text-xs font-mono rounded-lg border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 p-2.5 bg-slate-900 text-emerald-400 placeholder-slate-500 leading-relaxed tracking-wide"
+                            spellCheck={false}
+                        />
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 leading-normal">
+                        <strong className="block font-semibold mb-0.5">নিরাপত্তা নীতিমালা:</strong>
+                        নিরাপত্তাজনিত কারণে &lt;script&gt; ট্যাগ বা ইনলাইন ইভেন্ট হ্যান্ডলার (যেমন onclick, onerror) ব্লক করা থাকবে। আপনি সকল বৈধ HTML এলিমেন্ট এবং TailwindCSS ক্লাস ব্যবহার করতে পারবেন।
                     </div>
                 </div>
             );

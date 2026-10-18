@@ -22,6 +22,7 @@ class BlockRegistry
         'FaqBlock',
         'CountdownTimerBlock',
         'StickyBarBlock',
+        'HtmlBlock',
     ];
 
     /**
@@ -58,6 +59,23 @@ class BlockRegistry
                 'ctaTarget' => '#cod-checkout',
                 'imageUrl' => '',
                 'imagePosition' => 'right',
+                'headlineColor' => '#0f172a',
+                'headlineFontSize' => '',
+                'headlineFontWeight' => '',
+                'headlineLineHeight' => '',
+                'headlineAlign' => 'left',
+                'subheadlineColor' => '#475569',
+                'subheadlineFontSize' => '',
+                'subheadlineFontWeight' => '',
+                'badgeTextColor' => '#1e40af',
+                'badgeBgColor' => '#dbeafe',
+                'badgeBorderRadius' => '9999px',
+                'buttonSize' => 'lg',
+                'buttonWidth' => 'auto',
+                'buttonBgColor' => '#16a34a',
+                'buttonTextColor' => '#ffffff',
+                'buttonBorderRadius' => '12px',
+                'buttonPulseAnimation' => false,
             ],
             'ProductSelectorBlock' => [
                 'productId' => 0,
@@ -179,6 +197,15 @@ class BlockRegistry
                 'buttonTarget' => '#cod-checkout',
                 'placement' => 'bottom',
             ],
+            'HtmlBlock' => [
+                'html' => '<div class="custom-promo p-6 text-center bg-white rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto my-4">' . "\n" .
+                          '    <h3 class="text-2xl font-bold text-gray-900 mb-2">কাস্টম সেকশন বা ব্যানার</h3>' . "\n" .
+                          '    <p class="text-gray-600 mb-4">এখানে কাস্টম HTML ও CSS কোড লিখে সরাসরি ক্যানভাসে প্রিভিউ দেখুন।</p>' . "\n" .
+                          '    <a href="#cod-checkout" class="inline-block px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition">অর্ডার করুন</a>' . "\n" .
+                          '</div>',
+                'css' => '.custom-promo { transition: transform 0.2s ease, box-shadow 0.2s ease; }' . "\n" .
+                         '.custom-promo:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }',
+            ],
             default => [],
         };
     }
@@ -212,6 +239,10 @@ class BlockRegistry
                 'backgroundColor' => '#0f172a',
                 'color' => '#ffffff',
                 'zIndex' => '40',
+            ],
+            'HtmlBlock' => [
+                'paddingTop' => '24px',
+                'paddingBottom' => '24px',
             ],
             default => [
                 'paddingTop' => '32px',
@@ -281,6 +312,12 @@ class BlockRegistry
                 'description' => 'Floating mobile-first bar keeping the "Order Now" button always within reach.',
                 'category' => 'Marketing',
                 'icon' => 'Layers',
+            ],
+            'HtmlBlock' => [
+                'name' => 'Custom HTML / CSS',
+                'description' => 'Add custom HTML elements with scoped styling for advanced flexibility.',
+                'category' => 'Advanced',
+                'icon' => 'Code',
             ],
         ];
 

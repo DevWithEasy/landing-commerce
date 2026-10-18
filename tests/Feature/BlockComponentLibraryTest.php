@@ -23,12 +23,12 @@ beforeEach(function () {
     ]);
 });
 
-test('block registry returns all 9 approved blocks with complete schema definitions', function () {
+test('block registry returns all 10 approved blocks with complete schema definitions', function () {
     $blocks = BlockRegistry::APPROVED_BLOCKS;
-    expect($blocks)->toHaveCount(9);
+    expect($blocks)->toHaveCount(10);
 
     $definitions = BlockRegistry::getAllBlockDefinitions();
-    expect($definitions)->toHaveCount(9);
+    expect($definitions)->toHaveCount(10);
 
     foreach ($blocks as $blockType) {
         expect(BlockRegistry::isApproved($blockType))->toBeTrue();
@@ -298,4 +298,58 @@ test('renderAst renders complete page sequence', function () {
         ->toContain('AST Hero Headline')
         ->toContain('AST Benefits Title')
         ->toContain('Quality First');
+});
+
+test('html block renders safe custom html and scoped css', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'html-1',
+        'type' => 'HtmlBlock',
+        'props' => [
+            'html' => '<div class="custom-card"><h3 class="custom-title">Special Custom Feature</h3></div>',
+            'css' => '.custom-card { border-radius: 16px; } .custom-title { color: #16a34a; }',
+        ],
+        'styles' => [
+            'paddingTop' => '20px',
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('Special Custom Feature')
+        ->toContain('.custom-title { color: #16a34a; }')
+        ->toContain('style="padding-top: 20px"');
+});
+
+test('hero block applies individual element styling to headline, subheadline, badge and button', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'hero-elem-1',
+        'type' => 'HeroBlock',
+        'props' => [
+            'headline' => 'Custom Headline Title',
+            'headlineColor' => '#dc2626',
+            'headlineFontSize' => '48px',
+            'subheadline' => 'Custom Subheadline Description',
+            'subheadlineColor' => '#4b5563',
+            'badgeText' => 'Super Deal',
+            'badgeTextColor' => '#1e40af',
+            'badgeBgColor' => '#dbeafe',
+            'ctaText' => 'Instant Buy',
+            'buttonSize' => 'xl',
+            'buttonWidth' => 'full',
+            'buttonBgColor' => '#059669',
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('Custom Headline Title')
+        ->toContain('color: #dc2626;')
+        ->toContain('font-size: 48px;')
+        ->toContain('Custom Subheadline Description')
+        ->toContain('color: #4b5563;')
+        ->toContain('Super Deal')
+        ->toContain('color: #1e40af;')
+        ->toContain('background-color: #dbeafe;')
+        ->toContain('Instant Buy')
+        ->toContain('background-color: #059669;')
+        ->toContain('w-full justify-center')
+        ->toContain('px-10 py-5 text-xl font-black');
 });

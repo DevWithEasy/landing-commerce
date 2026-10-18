@@ -2,6 +2,7 @@ import {
     ChevronDown,
     ChevronUp,
     Clock,
+    Code,
     FileText,
     HelpCircle,
     Layers,
@@ -30,6 +31,7 @@ const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
     HelpCircle,
     Clock,
     Layers,
+    Code,
 };
 
 export interface LeftSidebarProps {

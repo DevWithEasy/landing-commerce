@@ -16,7 +16,8 @@ export type BlockType =
     | 'VideoBlock'
     | 'FaqBlock'
     | 'CountdownTimerBlock'
-    | 'StickyBarBlock';
+    | 'StickyBarBlock'
+    | 'HtmlBlock';
 
 export interface BlockStyles {
     color?: string;
@@ -59,6 +60,29 @@ export interface HeroBlockProps {
     ctaTarget: string; // URL, tel:, or #anchor
     imageUrl?: string;
     imagePosition?: 'right' | 'left' | 'background';
+    // Element-level design properties
+    headlineColor?: string;
+    headlineFontSize?: string;
+    headlineFontWeight?: string;
+    headlineLineHeight?: string;
+    headlineAlign?: 'left' | 'center' | 'right';
+    subheadlineColor?: string;
+    subheadlineFontSize?: string;
+    subheadlineFontWeight?: string;
+    badgeTextColor?: string;
+    badgeBgColor?: string;
+    badgeBorderRadius?: string;
+    buttonSize?: 'sm' | 'md' | 'lg' | 'xl';
+    buttonWidth?: 'auto' | 'full';
+    buttonBgColor?: string;
+    buttonTextColor?: string;
+    buttonBorderRadius?: string;
+    buttonPulseAnimation?: boolean;
+}
+
+export interface HtmlBlockProps {
+    html: string;
+    css?: string;
 }
 
 export interface ProductSelectorBlockProps {
@@ -170,6 +194,7 @@ export type BlockProps =
     | FaqBlockProps
     | CountdownTimerBlockProps
     | StickyBarBlockProps
+    | HtmlBlockProps
     | Record<string, unknown>;
 
 export interface Block<TProps = BlockProps> {

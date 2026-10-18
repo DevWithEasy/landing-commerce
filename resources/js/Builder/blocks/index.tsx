@@ -7,6 +7,7 @@ import type {
     CountdownTimerBlockProps,
     FaqBlockProps,
     HeroBlockProps,
+    HtmlBlockProps,
     ProductSelectorBlockProps,
     ReviewsBlockProps,
     StickyBarBlockProps,
@@ -18,6 +19,7 @@ import { CodCheckoutBlock } from './CodCheckoutBlock';
 import { CountdownTimerBlock } from './CountdownTimerBlock';
 import { FaqBlock } from './FaqBlock';
 import { HeroBlock } from './HeroBlock';
+import { HtmlBlock } from './HtmlBlock';
 import { ProductSelectorBlock } from './ProductSelectorBlock';
 import { ReviewsBlock } from './ReviewsBlock';
 import { StickyBarBlock } from './StickyBarBlock';
@@ -42,6 +44,7 @@ export const BLOCK_COMPONENTS = {
     FaqBlock,
     CountdownTimerBlock,
     StickyBarBlock,
+    HtmlBlock,
 } as const;
 
 /**
@@ -130,6 +133,15 @@ export function renderAstBlock(block: Block, isEditor = false) {
                     isEditor={isEditor}
                 />
             );
+        case 'HtmlBlock':
+            return (
+                <HtmlBlock
+                    key={block.id}
+                    props={block.props as unknown as HtmlBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
         default:
             return null;
     }
@@ -145,4 +157,5 @@ export {
     FaqBlock,
     CountdownTimerBlock,
     StickyBarBlock,
+    HtmlBlock,
 };
