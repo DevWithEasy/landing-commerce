@@ -189,3 +189,22 @@ If a critical error is detected post-deployment:
 5. `php artisan config:cache && php artisan route:cache && php artisan view:cache`
 6. `php artisan up`
 7. In case of database restore, use `php artisan commerce:restore <backup-filename>`.
+
+---
+
+## 7. Environment-Specific Deployment Matrix
+
+| Feature / Concern | Local Windows (Laragon) | Linux VPS / Dedicated (Ubuntu/Debian) | Shared cPanel (Without SSH) |
+|---|---|---|---|
+| **PHP Runtime** | Laragon PHP 8.3.33 CLI (`php.exe`) | PHP 8.3+ FPM (`php8.3-fpm`) | cPanel MultiPHP / EA-PHP 8.3+ |
+| **Required Extensions** | `pdo_mysql`, `gd`, `fileinfo`, `zip`, `mbstring`, `curl` | Same (via `apt install php8.3-gd php8.3-zip ...`) | Enabled in cPanel > Select PHP Extensions |
+| **Web Server** | Nginx or Apache (Laragon default) | Nginx with root `/path/to/public` | Apache / LiteSpeed (`.htaccess` / Option B) |
+| **Node.js / Vite Assets** | `npm run dev` (HMR) or `npm run build` | Pre-compiled via CI/CD before deployment | Pre-compiled locally before archive upload |
+| **Database** | MySQL 8.4.3 or SQLite | MySQL 8.0+ / MariaDB 10.6+ | cPanel MySQL database & user |
+| **Queue Execution** | `QUEUE_CONNECTION=sync` (or `artisan queue:work`) | `QUEUE_CONNECTION=database`/`redis` via Supervisor | `QUEUE_CONNECTION=sync` or cPanel Cron artisan queue:work |
+| **Scheduled Tasks** | Manual or Windows Task Scheduler | System crontab (`* * * * * php artisan schedule:run`) | cPanel > Cron Jobs (`php /path/to/artisan schedule:run`) |
+| **Backups & Restores** | `php artisan commerce:backup` CLI | `php artisan commerce:backup` / `commerce:restore` | Pure-PHP Backup Command or cPanel phpMyAdmin |
+| **Installer Interface** | CLI `commerce:install` or browser | CLI `commerce:install` | One-Time Browser Web Installer (`/install`) |
+
+> [!NOTE]
+> **Shared Hosting Limitations:** Shared hosting environments frequently impose CloudLinux LVE memory ceilings (e.g. 1GB RAM) and disable shell execution functions (`exec`, `shell_exec`, `proc_open`). The Landing Commerce codebase is specifically engineered with zero-dependency pure-PHP solutions (such as `DatabaseDumpService`, `BarcodeGeneratorService`, and the Blade AST renderer) so that no native shell binaries (like `mysqldump`) or persistent Node.js servers are required. Always verify with your specific host that PHP >= 8.3 and all required extensions are supported before provisioning.
