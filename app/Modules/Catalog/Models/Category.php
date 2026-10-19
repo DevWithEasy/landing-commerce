@@ -11,12 +11,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 
 class Category extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget('storefront_category_tree_active');
+            Cache::forget('storefront_category_tree_all');
+            Cache::forget('storefront_sitemap_xml');
+        });
+
+        static::deleted(function () {
+            Cache::forget('storefront_category_tree_active');
+            Cache::forget('storefront_category_tree_all');
+            Cache::forget('storefront_sitemap_xml');
+        });
+    }
 
     protected $fillable = [
         'name',
@@ -149,18 +165,22 @@ class Category extends Model
      */
     public static function toTree(bool $onlyActive = true): Collection
     {
-        $query = self::query()->root()->orderBy('sort_order')->orderBy('name');
+        $cacheKey = $onlyActive ? 'storefront_category_tree_active' : 'storefront_category_tree_all';
 
-        if ($onlyActive) {
-            $query->active()->with(['children' => function ($q) {
-                $q->active()->orderBy('sort_order')->orderBy('name');
-            }]);
-        } else {
-            $query->with(['children' => function ($q) {
-                $q->orderBy('sort_order')->orderBy('name');
-            }]);
-        }
+        return Cache::remember($cacheKey, 3600, function () use ($onlyActive) {
+            $query = self::query()->root()->orderBy('sort_order')->orderBy('name');
 
-        return $query->get();
+            if ($onlyActive) {
+                $query->active()->with(['children' => function ($q) {
+                    $q->active()->orderBy('sort_order')->orderBy('name');
+                }]);
+            } else {
+                $query->with(['children' => function ($q) {
+                    $q->orderBy('sort_order')->orderBy('name');
+                }]);
+            }
+
+            return $query->get();
+        });
     }
 }

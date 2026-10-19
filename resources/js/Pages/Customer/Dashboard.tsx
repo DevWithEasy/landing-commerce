@@ -65,7 +65,10 @@ export default function CustomerDashboard({
 
     return (
         <CustomerLayout theme={theme} categories={categories} title="কাস্টমার ড্যাশবোর্ড | Account Dashboard">
-            <Head title="কাস্টমার ড্যাশবোর্ড | Account Dashboard" />
+            <Head>
+                <title>কাস্টমার ড্যাশবোর্ড | Account Dashboard</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="space-y-6">
                 {/* Welcome Card */}

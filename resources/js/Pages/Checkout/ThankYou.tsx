@@ -60,7 +60,10 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-            <Head title={`অর্ডার সফল হয়েছে - #${order.order_number}`} />
+            <Head>
+                <title>{`অর্ডার সফল হয়েছে - #${order.order_number}`}</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="max-w-2xl mx-auto">
                 {/* Celebratory Hero Card */}

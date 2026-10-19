@@ -16,8 +16,31 @@
     {{-- SEO Meta Tags --}}
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ e($metaDescription) }}">
+    <link rel="canonical" href="{{ url()->current() }}">
     @if(!empty($metaSeo['keywords']))
         <meta name="keywords" content="{{ e($metaSeo['keywords']) }}">
+    @endif
+
+    @if($landingPage->product)
+        @php
+            $productSchema = [
+                '@context' => 'https://schema.org',
+                '@type' => 'Product',
+                'name' => $landingPage->product->title,
+                'description' => $landingPage->product->short_description ?? ($landingPage->product->description ?? $pageTitle),
+                'image' => array_values(array_filter([$ogImage, $landingPage->product->primaryImage?->url])),
+                'offers' => [
+                    '@type' => 'Offer',
+                    'priceCurrency' => 'BDT',
+                    'price' => (float) ($landingPage->product->sale_price ?? $landingPage->product->regular_price),
+                    'availability' => 'https://schema.org/InStock',
+                    'url' => url()->current(),
+                ],
+            ];
+        @endphp
+        <script type="application/ld+json">
+        {!! json_encode($productSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+        </script>
     @endif
 
     {{-- Open Graph / Facebook --}}

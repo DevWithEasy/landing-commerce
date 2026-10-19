@@ -142,7 +142,7 @@ test('public landing page renders with security headers without breaking markup 
 
     $landingPage->update(['published_revision_id' => $revision->id]);
 
-    $response = $this->get('/hardened-deal');
+    $response = $this->get('/p/hardened-deal');
 
     $response->assertStatus(200);
     $response->assertHeader('Content-Security-Policy');

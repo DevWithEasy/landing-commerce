@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     ArrowRight,
     Clock,
@@ -8,9 +8,11 @@ import {
     Star,
     Truck,
 } from 'lucide-react';
+import { useMemo } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import { HeroSlider } from '@/Shared/HeroSlider';
 import { ProductCard } from '@/Shared/ProductCard';
+import { SeoHead } from '@/Shared/SeoHead';
 import type { Product } from '@/types';
 import type { StorefrontHomeProps } from '@/types/storefront';
 
@@ -24,9 +26,47 @@ export default function Home({
     theme,
     sectionsConfig,
 }: StorefrontHomeProps) {
+    const homeJsonLd = useMemo(() => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        return [
+            {
+                '@context': 'https://schema.org',
+                '@type': 'WebSite',
+                name: theme.store_name,
+                url: origin,
+                potentialAction: {
+                    '@type': 'SearchAction',
+                    target: `${origin}/shop?search={search_term_string}`,
+                    'query-input': 'required name=search_term_string',
+                },
+            },
+            {
+                '@context': 'https://schema.org',
+                '@type': 'Organization',
+                name: theme.store_name,
+                url: origin,
+                logo: theme.logo_url || undefined,
+                contactPoint: theme.store_phone
+                    ? {
+                          '@type': 'ContactPoint',
+                          telephone: theme.store_phone,
+                          contactType: 'customer service',
+                          areaServed: 'BD',
+                      }
+                    : undefined,
+            },
+        ];
+    }, [theme]);
+
     return (
         <StorefrontLayout theme={theme} categories={categories}>
-            <Head title={`${theme.store_name} - অনলাইন শপ`} />
+            <SeoHead
+                title={`${theme.store_name} - সেরা অনলাইন শপ`}
+                description={`${theme.store_name} - আসল পণ্য, আকর্ষণীয় ডিসকাউন্ট ও সারা বাংলাদেশে দ্রুত ক্যাশ অন ডেলিভারি সুবিধা।`}
+                canonicalUrl="/"
+                theme={theme}
+                jsonLd={homeJsonLd}
+            />
 
             {/* 1. Hero Slider Section */}
             {sectionsConfig.hero_slider_enabled && (

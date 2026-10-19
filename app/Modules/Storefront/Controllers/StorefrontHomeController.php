@@ -85,16 +85,21 @@ class StorefrontHomeController extends Controller
                 ->take(8)
                 ->get();
 
-            // Category Collections (up to 3 root categories with 4 active products each)
+            // Category Collections (up to 3 root categories with up to 4 active products each)
             $categorySections = Category::query()
                 ->root()
                 ->active()
                 ->with(['products' => function ($q) {
-                    $q->active()->with(['primaryImage', 'variants' => fn ($v) => $v->orderBy('id')])->take(4);
+                    $q->active()->with(['primaryImage', 'variants' => fn ($v) => $v->orderBy('id')]);
                 }])
                 ->whereHas('products', fn ($q) => $q->active())
                 ->take(3)
-                ->get();
+                ->get()
+                ->map(function ($cat) {
+                    $cat->setRelation('products', $cat->products->take(4));
+
+                    return $cat;
+                });
 
             $theme = [
                 'store_name' => (string) $this->settingsService->get('store.name', config('app.name', 'Landing Commerce')),

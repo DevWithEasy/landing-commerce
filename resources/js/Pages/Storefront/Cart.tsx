@@ -139,7 +139,10 @@ export default function CartPage({
 
     return (
         <StorefrontLayout theme={theme} categories={categories}>
-            <Head title={`শপিং কার্ট - ${theme.store_name}`} />
+            <Head>
+                <title>{`শপিং কার্ট - ${theme.store_name}`}</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             {/* Breadcrumb */}
             <div className="bg-white border-b border-gray-200 py-3.5 px-4">

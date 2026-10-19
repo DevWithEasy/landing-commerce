@@ -121,7 +121,10 @@ export default function TrackOrder({
 
     return (
         <StorefrontLayout theme={theme} categories={categories}>
-            <Head title="অর্ডার ট্র্যাকিং | Track Order" />
+            <Head>
+                <title>অর্ডার ট্র্যাকিং | Track Order</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="bg-gradient-to-b from-indigo-50/50 via-white to-gray-50 py-10 md:py-16 min-h-[calc(100vh-280px)]">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">

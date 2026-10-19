@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     AlertCircle,
     Check,
@@ -15,6 +15,7 @@ import {
 import { useMemo, useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import { ProductCard, formatBdt } from '@/Shared/ProductCard';
+import { SeoHead } from '@/Shared/SeoHead';
 import type { ProductImage, ProductVariant } from '@/types';
 import type { StorefrontProductProps } from '@/types/storefront';
 
@@ -156,9 +157,83 @@ export default function ProductDetail({
 
     const primaryCategory = product.categories?.[0];
 
+    const productSchema = useMemo(() => {
+        return {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            description: product.description || product.title,
+            image: allImages.map((img) => img.url),
+            sku: selectedVariant?.sku || undefined,
+            offers: {
+                '@type': 'Offer',
+                priceCurrency: 'BDT',
+                price: currentPrice,
+                availability: isCurrentInStock
+                    ? 'https://schema.org/InStock'
+                    : 'https://schema.org/OutOfStock',
+                itemCondition: 'https://schema.org/NewCondition',
+            },
+        };
+    }, [product, allImages, selectedVariant, currentPrice, isCurrentInStock]);
+
+    const breadcrumbSchema = useMemo(() => {
+        const items = [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'হোম',
+                item: '/',
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'শপ',
+                item: '/shop',
+            },
+        ];
+
+        if (primaryCategory) {
+            items.push({
+                '@type': 'ListItem',
+                position: 3,
+                name: primaryCategory.name,
+                item: `/category/${primaryCategory.slug}`,
+            });
+            items.push({
+                '@type': 'ListItem',
+                position: 4,
+                name: product.title,
+                item: `/product/${product.slug}`,
+            });
+        } else {
+            items.push({
+                '@type': 'ListItem',
+                position: 3,
+                name: product.title,
+                item: `/product/${product.slug}`,
+            });
+        }
+
+        return {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: items,
+        };
+    }, [primaryCategory, product]);
+
     return (
         <StorefrontLayout theme={theme}>
-            <Head title={`${product.title} - ${theme.store_name}`} />
+            <SeoHead
+                title={product.title}
+                description={product.description?.slice(0, 160) || `${product.title} কিনুন আকর্ষণীয় মূল্যে ${theme.store_name} থেকে।`}
+                canonicalUrl={`/product/${product.slug}`}
+                ogType="product"
+                ogImage={activeImageUrl || allImages[0]?.url || product.primaryImage?.url}
+                productPrice={currentPrice}
+                theme={theme}
+                jsonLd={[productSchema, breadcrumbSchema]}
+            />
 
             {/* Breadcrumb Navigation */}
             <div className="bg-white border-b border-gray-200 py-4 px-4">

@@ -34,7 +34,10 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
 
     return (
         <CustomerLayout theme={theme} categories={categories} title={`অর্ডার #${order.order_number} বিবরণ`}>
-            <Head title={`অর্ডার #${order.order_number} বিবরণ`} />
+            <Head>
+                <title>{`অর্ডার #${order.order_number} বিবরণ`}</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="space-y-6">
                 {/* Header Card */}

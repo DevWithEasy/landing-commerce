@@ -93,6 +93,8 @@ export function ProductCard({ product }: ProductCardProps) {
                     <img
                         src={imageUrl}
                         alt={product.title}
+                        width={400}
+                        height={400}
                         loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                     />
@@ -120,7 +122,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         disabled={isAdding}
                         className="absolute bottom-2.5 right-2.5 w-9 h-9 bg-white/95 hover:bg-indigo-600 text-gray-700 hover:text-white rounded-full shadow-md flex items-center justify-center transition duration-200 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
                         title="কার্টে যোগ করুন"
-                        aria-label="Add to cart"
+                        aria-label={`${product.title} কার্টে যোগ করুন`}
                     >
                         <ShoppingBag className="w-4 h-4" />
                     </button>
@@ -161,6 +163,7 @@ export function ProductCard({ product }: ProductCardProps) {
                                 : 'bg-gray-200 text-gray-500 pointer-events-none'
                         }`}
                         title="সরাসরি অর্ডার করুন"
+                        aria-label={`${product.title} সরাসরি অর্ডার করুন`}
                     >
                         <ShoppingCart className="w-3.5 h-3.5" />
                         <span>অর্ডার</span>
@@ -170,6 +173,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         href={`/product/${product.slug}`}
                         className="flex items-center justify-center gap-1 py-2 px-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border border-gray-200 transition"
                         title="বিস্তারিত দেখুন"
+                        aria-label={`${product.title} এর বিস্তারিত বিবরণ দেখুন`}
                     >
                         <Eye className="w-3.5 h-3.5 text-gray-500" />
                         <span>বিস্তারিত</span>

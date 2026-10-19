@@ -13,6 +13,7 @@ use App\Modules\Installer\Middleware\EnsureNotInstalledMiddleware;
 use App\Modules\PageBuilder\Controllers\PublicLandingPageController;
 use App\Modules\PageBuilder\Controllers\PublicPolicyPageController;
 use App\Modules\PageBuilder\Models\LandingPage;
+use App\Modules\Storefront\Controllers\SitemapController;
 use App\Modules\Storefront\Controllers\StorefrontHomeController;
 use App\Modules\Storefront\Controllers\StorefrontProductController;
 use App\Modules\Storefront\Controllers\StorefrontShopController;
@@ -24,6 +25,7 @@ Route::get('/', [StorefrontHomeController::class, 'index'])->name('home');
 Route::get('/shop', [StorefrontShopController::class, 'index'])->name('shop.index');
 Route::get('/category/{slug}', [StorefrontShopController::class, 'category'])->name('category.show');
 Route::get('/product/{slug}', [StorefrontProductController::class, 'show'])->name('product.show');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Server-Authoritative Shopping Cart Routes
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -101,4 +103,4 @@ Route::get('/{slug}', function (string $slug) {
     }
 
     abort(404);
-})->where('slug', '^(?!admin|checkout|login|install|pages|cart|shop|product|category|customer|track-order|wishlist|api|storage|build|_debugbar).*$');
+})->where('slug', '^(?!admin|checkout|login|install|pages|cart|shop|product|category|customer|track-order|wishlist|sitemap|robots|api|storage|build|_debugbar).*$');

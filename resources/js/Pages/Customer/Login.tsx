@@ -24,7 +24,10 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
 
     return (
         <StorefrontLayout theme={theme} categories={categories} title="গ্রাহক লগইন | Customer Login">
-            <Head title="গ্রাহক লগইন | Customer Login" />
+            <Head>
+                <title>গ্রাহক লগইন | Customer Login</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="min-h-[70vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full bg-white rounded-3xl shadow-sm border border-gray-200 p-8 sm:p-10">
@@ -43,13 +46,15 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Email Input */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                            <label htmlFor="customer_login_email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
                                 ইমেইল এড্রেস (Email Address)
                             </label>
                             <div className="relative">
-                                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_login_email"
                                     type="email"
+                                    aria-required="true"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
                                     required
@@ -66,13 +71,15 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
 
                         {/* Password Input */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                            <label htmlFor="customer_login_password" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
                                 পাসওয়ার্ড (Password)
                             </label>
                             <div className="relative">
-                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_login_password"
                                     type="password"
+                                    aria-required="true"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
                                     required

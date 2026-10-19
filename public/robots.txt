@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /shop
+Allow: /category/
+Allow: /product/
+Allow: /pages/
+Allow: /p/
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /cart
+Disallow: /customer/
+Disallow: /install/
+Disallow: /track-order
+Disallow: /api/
+Disallow: /_debugbar/
+Disallow: /storage/backups/
+
+Sitemap: /sitemap.xml

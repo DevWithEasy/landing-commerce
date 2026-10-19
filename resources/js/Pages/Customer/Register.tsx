@@ -26,7 +26,10 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
     return (
         <StorefrontLayout theme={theme} categories={categories} title="নতুন গ্রাহক নিবন্ধন | Register">
-            <Head title="নতুন গ্রাহক নিবন্ধন | Register" />
+            <Head>
+                <title>নতুন গ্রাহক নিবন্ধন | Register</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full bg-white rounded-3xl shadow-sm border border-gray-200 p-8 sm:p-10">
@@ -45,13 +48,15 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Name Input */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="customer_reg_name" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                                 আপনার নাম (Full Name) *
                             </label>
                             <div className="relative">
-                                <UserIcon className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <UserIcon className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_reg_name"
                                     type="text"
+                                    aria-required="true"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
                                     required
@@ -68,13 +73,15 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
                         {/* Email Input */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="customer_reg_email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                                 ইমেইল এড্রেস (Email Address) *
                             </label>
                             <div className="relative">
-                                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_reg_email"
                                     type="email"
+                                    aria-required="true"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
                                     required
@@ -91,12 +98,13 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
                         {/* Phone Input (Optional) */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="customer_reg_phone" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                                 মোবাইল নম্বর (Phone Number)
                             </label>
                             <div className="relative">
-                                <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_reg_phone"
                                     type="tel"
                                     value={data.phone}
                                     onChange={(e) => setData('phone', e.target.value)}
@@ -113,13 +121,15 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
                         {/* Password Input */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="customer_reg_password" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                                 পাসওয়ার্ড (Password) *
                             </label>
                             <div className="relative">
-                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_reg_password"
                                     type="password"
+                                    aria-required="true"
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
                                     required
@@ -136,13 +146,15 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
                         {/* Password Confirmation */}
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            <label htmlFor="customer_reg_password_confirmation" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                                 পাসওয়ার্ড নিশ্চিত করুন (Confirm Password) *
                             </label>
                             <div className="relative">
-                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
                                 <input
+                                    id="customer_reg_password_confirmation"
                                     type="password"
+                                    aria-required="true"
                                     value={data.password_confirmation}
                                     onChange={(e) => setData('password_confirmation', e.target.value)}
                                     required

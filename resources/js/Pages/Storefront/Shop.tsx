@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     ChevronRight,
     Filter,
@@ -7,10 +7,11 @@ import {
     X,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import { Pagination } from '@/Shared/Pagination';
 import { ProductCard } from '@/Shared/ProductCard';
+import { SeoHead } from '@/Shared/SeoHead';
 import type { StorefrontShopProps } from '@/types/storefront';
 
 export default function Shop({
@@ -68,9 +69,56 @@ export default function Shop({
         ? `${selectedCategory.name} - ${theme.store_name}`
         : `শপ ও পণ্য তালিকা - ${theme.store_name}`;
 
+    const canonicalUrl = selectedCategory
+        ? `/category/${selectedCategory.slug}`
+        : '/shop';
+
+    const pageDescription = selectedCategory?.description
+        ? selectedCategory.description
+        : `${theme.store_name} এর আকর্ষণীয় পণ্য সম্ভার ও এক্সক্লুসিভ অফারসমূহ ব্রাউজ করুন।`;
+
+    const breadcrumbJsonLd = useMemo(() => {
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const items: Array<Record<string, unknown>> = [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'হোম',
+                item: `${origin}/`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'শপ',
+                item: `${origin}/shop`,
+            },
+        ];
+
+        if (selectedCategory) {
+            items.push({
+                '@type': 'ListItem',
+                position: 3,
+                name: selectedCategory.name,
+                item: `${origin}/category/${selectedCategory.slug}`,
+            });
+        }
+
+        return {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: items,
+        };
+    }, [selectedCategory]);
+
     return (
         <StorefrontLayout theme={theme} categories={categories} currentSearch={search}>
-            <Head title={pageTitle} />
+            <SeoHead
+                title={pageTitle}
+                description={pageDescription}
+                canonicalUrl={canonicalUrl}
+                theme={theme}
+                jsonLd={breadcrumbJsonLd}
+            />
 
             {/* Breadcrumb & Header Banner */}
             <div className="bg-white border-b border-gray-200 py-6 px-4">

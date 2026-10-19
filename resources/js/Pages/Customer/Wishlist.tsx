@@ -42,7 +42,10 @@ export default function CustomerWishlist({ theme, categories, wishlist }: Wishli
 
     return (
         <CustomerLayout theme={theme} categories={categories} title="আমার উইশলিস্ট | My Wishlist">
-            <Head title="আমার উইশলিস্ট | My Wishlist" />
+            <Head>
+                <title>আমার উইশলিস্ট | My Wishlist</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

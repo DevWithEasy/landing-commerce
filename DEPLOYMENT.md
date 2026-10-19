@@ -102,3 +102,90 @@ Once deployed, open your website URL in any browser. The system will automatical
 2. **Self-Healing Protection:** If an attacker attempts to delete `storage/installed` via a file exploit, the system checks whether a Super Admin exists in the database. If so, it automatically restores the marker and keeps setup routes locked out.
 3. **Reserved Slugs:** Public landing page dynamic routes (`/{slug}`) strictly prohibit `install` to avoid capturing installer paths.
 4. **No Public Commands Required:** No terminal, SSH, Composer, or Artisan execution is necessary on the live cPanel server.
+
+---
+
+## 6. Production Deployment & Readiness Checklist (VPS / Terminal Environments)
+
+For automated deployments or dedicated/VPS servers with terminal access, follow this strict checklist:
+
+### 6.1 Environment Configuration (.env)
+- [ ] `APP_ENV=production`
+- [ ] `APP_DEBUG=false` (Critical: Never run `APP_DEBUG=true` in production to prevent stack trace information disclosure)
+- [ ] `APP_URL=https://yourdomain.com` (Must match canonical HTTPS production domain)
+- [ ] `SESSION_SECURE_COOKIE=true` (Enforce HTTPS-only transmission of session cookies)
+- [ ] `DB_CONNECTION=mysql` with dedicated unprivileged MySQL user
+- [ ] `CACHE_STORE=file` or `redis` (file cache works with zero external services)
+- [ ] `QUEUE_CONNECTION=database` or `redis`
+
+### 6.2 Pre-Deployment Build Pipeline
+Run these on CI/CD or staging machine before deploying:
+```bash
+# 1. Install production dependencies (zero dev packages)
+composer install --no-dev --prefer-dist --optimize-autoloader
+
+# 2. Compile frontend assets
+npm ci
+npm run build
+
+# 3. Verify static types & code quality
+npm run type-check
+./vendor/bin/pint --test
+```
+
+### 6.3 Server Deployment Routine
+On the production server:
+```bash
+# 1. Enter maintenance mode with secret bypass
+php artisan down --secret="your-deploy-secret"
+
+# 2. Execute non-destructive database migrations
+php artisan migrate --force
+
+# 3. Create public storage symlink if missing
+php artisan storage:link
+
+# 4. Cache configuration, routes, and views for maximum performance
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 5. Clear application runtime cache
+php artisan cache:clear
+
+# 6. Restart queue workers to pick up new code
+php artisan queue:restart
+
+# 7. Exit maintenance mode
+php artisan up
+```
+
+### 6.4 Systemd / Supervisor Queue Worker Setup
+For background processing (courier webhooks, SMS notifications, order restock listeners):
+```ini
+[program:landing-commerce-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/landing-commerce/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/landing-commerce/storage/logs/worker.log
+```
+
+### 6.5 Production Cron Scheduling
+Add a single cron entry to the web server user's crontab:
+```bash
+* * * * * cd /var/www/landing-commerce && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### 6.6 Rollback Procedure
+If a critical error is detected post-deployment:
+1. `php artisan down`
+2. Checkout previous known-stable Git commit tag: `git checkout <previous-tag>`
+3. Roll back any newly added migrations: `php artisan migrate:rollback --step=1`
+4. Re-compile or restore previous `public/build` assets.
+5. `php artisan config:cache && php artisan route:cache && php artisan view:cache`
+6. `php artisan up`
+7. In case of database restore, use `php artisan commerce:restore <backup-filename>`.

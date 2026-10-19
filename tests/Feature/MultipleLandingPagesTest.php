@@ -240,16 +240,16 @@ test('public visitors can only view published landing pages at their unique slug
     ]);
 
     // Public visit to published page -> 200 OK
-    $this->get('/smartwatch-deal')
+    $this->get('/p/smartwatch-deal')
         ->assertOk()
         ->assertSee('Exclusive Smartwatch');
 
     // Public visit to draft page -> 404 Not Found
-    $this->get('/winter-sale')
+    $this->get('/p/winter-sale')
         ->assertNotFound();
 
     // Public visit to non-existent page -> 404 Not Found
-    $this->get('/non-existent-deal')
+    $this->get('/p/non-existent-deal')
         ->assertNotFound();
 });
 
@@ -270,7 +270,7 @@ test('admin can publish and unpublish landing pages with revision verification',
         ->and($page->published_revision_id)->not->toBeNull();
 
     // Now publicly visible
-    $this->get('/test-promo')->assertOk();
+    $this->get('/p/test-promo')->assertOk();
 
     // Unpublish action
     $unpublishResponse = $this->actingAs($this->superAdmin)
@@ -281,7 +281,7 @@ test('admin can publish and unpublish landing pages with revision verification',
     expect($page->status)->toBe('draft');
 
     // Now returns 404
-    $this->get('/test-promo')->assertNotFound();
+    $this->get('/p/test-promo')->assertNotFound();
 });
 
 test('revisions on one landing page remain completely independent from other pages', function (): void {
@@ -420,7 +420,7 @@ test('saving builder revision immediately updates published_revision_id and sync
     $page->update(['published_revision_id' => $rev1->id]);
 
     // Verify initial live view has Initial Version Headline
-    $this->get('/live-sync-test')
+    $this->get('/p/live-sync-test')
         ->assertOk()
         ->assertSee('Initial Version Headline');
 
@@ -460,7 +460,7 @@ test('saving builder revision immediately updates published_revision_id and sync
         ->and($page->product_id)->toBe($this->productB->id);
 
     // Live page must immediately reflect the updated revision headline and product
-    $this->get('/live-sync-test')
+    $this->get('/p/live-sync-test')
         ->assertOk()
         ->assertSee('Updated Live Headline After Edit')
         ->assertSee($this->productB->title);
@@ -500,7 +500,7 @@ test('public landing page renders multi-product in single (radio) and multiple (
         ->postJson("/admin/landing-pages/{$page->id}/revisions", ['ast' => $radioAst])
         ->assertCreated();
 
-    $radioResponse = $this->get('/multi-prod-deal');
+    $radioResponse = $this->get('/p/multi-prod-deal');
     $radioResponse->assertOk()
         ->assertSee('type="radio"', false)
         ->assertSee($this->productA->title)
@@ -534,7 +534,7 @@ test('public landing page renders multi-product in single (radio) and multiple (
         ->postJson("/admin/landing-pages/{$page->id}/revisions", ['ast' => $checkboxAst])
         ->assertCreated();
 
-    $checkboxResponse = $this->get('/multi-prod-deal');
+    $checkboxResponse = $this->get('/p/multi-prod-deal');
     $checkboxResponse->assertOk()
         ->assertSee('type="checkbox"', false)
         ->assertSee('Checkbox Selection')
@@ -584,7 +584,7 @@ test('admin can restore a historical revision and make it active live', function
     ]);
     $page->update(['published_revision_id' => $rev2->id]);
 
-    $this->get('/restore-test-page')->assertSee('Second Modified Headline');
+    $this->get('/p/restore-test-page')->assertSee('Second Modified Headline');
 
     // Admin restores Revision 1
     $restoreResponse = $this->actingAs($this->superAdmin)
@@ -601,7 +601,7 @@ test('admin can restore a historical revision and make it active live', function
         ->and($page->published_revision_id)->not->toBe($rev2->id);
 
     // Live page must now render the restored original content
-    $this->get('/restore-test-page')
+    $this->get('/p/restore-test-page')
         ->assertOk()
         ->assertSee('Original First Headline')
         ->assertDontSee('Second Modified Headline');

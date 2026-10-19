@@ -43,7 +43,10 @@ export default function CustomerOrders({ theme, categories, orders }: OrdersProp
 
     return (
         <CustomerLayout theme={theme} categories={categories} title="আমার অর্ডারসমূহ | Order History">
-            <Head title="আমার অর্ডারসমূহ | Order History" />
+            <Head>
+                <title>আমার অর্ডারসমূহ | Order History</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

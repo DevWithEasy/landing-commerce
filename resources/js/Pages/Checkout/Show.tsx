@@ -366,7 +366,10 @@ export default function CheckoutShow({
 
     return (
         <div className="min-h-screen bg-slate-50 py-6 px-4 sm:px-6 lg:px-8">
-            <Head title={`অর্ডার কনফার্ম করুন - ${product.title}`} />
+            <Head>
+                <title>{`অর্ডার কনফার্ম করুন - ${isCartMode ? 'কার্ট আইটেমস' : product?.title || 'চেকআউট'}`}</title>
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="max-w-4xl mx-auto">
                 {/* Header Brand & Trust Badges */}
@@ -431,12 +434,15 @@ export default function CheckoutShow({
 
                             {/* Customer Name */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label htmlFor="checkout_customer_name" className="block text-sm font-medium text-slate-700 mb-1">
                                     আপনার নাম <span className="text-red-500">*</span>
                                 </label>
                                 <input
+                                    id="checkout_customer_name"
                                     type="text"
                                     required
+                                    aria-required="true"
+                                    aria-invalid={!!(errors.customer_name || errors.name)}
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
                                     placeholder="আপনার সম্পূর্ণ নাম লিখুন"
@@ -455,16 +461,19 @@ export default function CheckoutShow({
 
                             {/* Customer Phone */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label htmlFor="checkout_customer_phone" className="block text-sm font-medium text-slate-700 mb-1">
                                     মোবাইল নম্বর <span className="text-red-500">*</span>
                                 </label>
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm font-medium">
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm font-medium" aria-hidden="true">
                                         +88
                                     </div>
                                     <input
+                                        id="checkout_customer_phone"
                                         type="tel"
                                         required
+                                        aria-required="true"
+                                        aria-invalid={!!(errors.customer_phone || errors.phone)}
                                         value={customerPhone}
                                         onChange={(e) => setCustomerPhone(e.target.value)}
                                         placeholder="017XXXXXXXX"
@@ -487,11 +496,14 @@ export default function CheckoutShow({
 
                             {/* Delivery Address */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label htmlFor="checkout_delivery_address" className="block text-sm font-medium text-slate-700 mb-1">
                                     সম্পূর্ণ ঠিকানা <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
+                                    id="checkout_delivery_address"
                                     required
+                                    aria-required="true"
+                                    aria-invalid={!!(errors.delivery_address || errors.address)}
                                     rows={2}
                                     value={deliveryAddress}
                                     onChange={(e) => setDeliveryAddress(e.target.value)}
@@ -512,10 +524,12 @@ export default function CheckoutShow({
                             {/* District & Upazila Selection Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    <label htmlFor="checkout_district" className="block text-sm font-medium text-slate-700 mb-1">
                                         জেলা <span className="text-red-500">*</span>
                                     </label>
                                     <select
+                                        id="checkout_district"
+                                        aria-required="true"
                                         value={district}
                                         onChange={(e) => {
                                             setDistrict(e.target.value);
@@ -537,13 +551,14 @@ export default function CheckoutShow({
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                                    <label htmlFor="checkout_upazila" className="block text-sm font-medium text-slate-700 mb-1">
                                         থানা / উপজেলা{' '}
                                         <span className="text-xs text-slate-400 font-normal">
                                             (ঐচ্ছিক)
                                         </span>
                                     </label>
                                     <select
+                                        id="checkout_upazila"
                                         value={upazila}
                                         onChange={(e) => setUpazila(e.target.value)}
                                         disabled={upazilaOptions.length === 0}
@@ -615,13 +630,14 @@ export default function CheckoutShow({
 
                             {/* Order Notes (Optional) */}
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label htmlFor="checkout_notes" className="block text-sm font-medium text-slate-700 mb-1">
                                     বিশেষ নির্দেশনা{' '}
                                     <span className="text-xs text-slate-400 font-normal">
                                         (ঐচ্ছিক)
                                     </span>
                                 </label>
                                 <input
+                                    id="checkout_notes"
                                     type="text"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
@@ -696,11 +712,13 @@ export default function CheckoutShow({
                                                             </div>
                                                         )}
                                                         <div>
-                                                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                                                            <label htmlFor="checkout_transaction_id" className="block text-xs font-medium text-slate-700 mb-1">
                                                                 ট্রানজেকশন আইডি (TrxID) <span className="text-red-500">*</span>
                                                             </label>
                                                             <input
+                                                                id="checkout_transaction_id"
                                                                 type="text"
+                                                                aria-required="true"
                                                                 value={transactionId}
                                                                 onChange={(e) => setTransactionId(e.target.value)}
                                                                 placeholder="যেমন: 8N7A6D..."
@@ -891,11 +909,12 @@ export default function CheckoutShow({
                                             type="button"
                                             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                                             disabled={quantity <= 1}
+                                            aria-label="পরিমাণ কমান"
                                             className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                                         >
-                                            <Minus className="w-3.5 h-3.5" />
+                                            <Minus className="w-3.5 h-3.5" aria-hidden="true" />
                                         </button>
-                                        <span className="w-10 text-center font-bold text-sm text-slate-800">
+                                        <span className="w-10 text-center font-bold text-sm text-slate-800" aria-live="polite">
                                             {quantity}
                                         </span>
                                         <button
@@ -906,9 +925,10 @@ export default function CheckoutShow({
                                                     ? quantity >= selectedVariant.stock_quantity
                                                     : false
                                             }
+                                            aria-label="পরিমাণ বাড়ান"
                                             className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                                         >
-                                            <Plus className="w-3.5 h-3.5" />
+                                            <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                                         </button>
                                     </div>
                                 </div>

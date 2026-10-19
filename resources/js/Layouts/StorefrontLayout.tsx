@@ -207,6 +207,7 @@ export function StorefrontLayout({
                         <form onSubmit={handleSearchSubmit} className="relative w-full">
                             <input
                                 type="text"
+                                aria-label="পণ্য বা মডেলের নাম দিয়ে খুঁজুন"
                                 placeholder="পণ্য বা মডেলের নাম দিয়ে খুঁজুন..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -396,7 +397,12 @@ export function StorefrontLayout({
 
             {/* Mobile Navigation Drawer */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 flex md:hidden">
+                <div
+                    className="fixed inset-0 z-50 flex md:hidden"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="মোবাইল নেভিগেশন মেনু"
+                >
                     {/* Backdrop */}
                     <div
                         className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
@@ -422,6 +428,7 @@ export function StorefrontLayout({
                             <form onSubmit={handleSearchSubmit} className="relative">
                                 <input
                                     type="text"
+                                    aria-label="পণ্য খুঁজুন"
                                     placeholder="পণ্য খুঁজুন..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -453,6 +460,7 @@ export function StorefrontLayout({
                                                     type="button"
                                                     onClick={() => toggleMobileCategory(cat.id)}
                                                     className="p-1 text-gray-400 hover:text-gray-700"
+                                                    aria-label={`${cat.name} সাব-ক্যাটাগরি টগল করুন`}
                                                 >
                                                     <ChevronDown
                                                         className={`w-4 h-4 transition-transform duration-200 ${

@@ -9,10 +9,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class LandingPage extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saved(function () {
+            Cache::forget('storefront_sitemap_xml');
+        });
+
+        static::deleted(function () {
+            Cache::forget('storefront_sitemap_xml');
+        });
+    }
 
     /**
      * @var list<string>

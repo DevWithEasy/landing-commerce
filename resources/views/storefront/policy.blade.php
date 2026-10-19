@@ -7,6 +7,15 @@
 
     <title>{{ $page->title }} - {{ $storeName }}</title>
     <meta name="description" content="{{ Str::limit(strip_tags($content), 160) }}">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $page->title }} - {{ $storeName }}">
+    <meta property="og:description" content="{{ Str::limit(strip_tags($content), 160) }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ $page->title }} - {{ $storeName }}">
+    <meta name="twitter:description" content="{{ Str::limit(strip_tags($content), 160) }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
