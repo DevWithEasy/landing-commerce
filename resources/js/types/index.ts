@@ -8,9 +8,21 @@ export interface User {
     role: 'super_admin' | 'store_manager' | 'fulfillment_agent' | string;
 }
 
+export interface Customer {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string | null;
+    address?: string | null;
+    district?: string | null;
+    upazila?: string | null;
+    created_at?: string;
+}
+
 export interface SharedProps extends Record<string, unknown> {
     auth: {
         user: User | null;
+        customer?: Customer | null;
     };
     flash: {
         success?: string | null;
@@ -18,6 +30,52 @@ export interface SharedProps extends Record<string, unknown> {
     };
     cart?: CartSummary | null;
     errors: Record<string, string>;
+}
+
+export interface WishlistItem {
+    id: number;
+    customer_id: number;
+    product_id: number;
+    variant_id: number | null;
+    product: Product;
+    variant?: ProductVariant | null;
+    created_at: string;
+}
+
+export interface OrderTrackingData {
+    order_number: string;
+    created_at: string;
+    created_at_human: string;
+    status: string;
+    status_label: {
+        en: string;
+        bn: string;
+    };
+    masked_phone: string;
+    district: string;
+    subtotal: number;
+    shipping_fee: number;
+    discount: number;
+    total: number;
+    payment_method: string;
+    payment_status: string;
+    courier_name: string | null;
+    courier_tracking_id: string | null;
+    courier_tracking_url: string | null;
+    items: Array<{
+        id: number;
+        product_title: string;
+        variant_name: string | null;
+        quantity: number;
+        unit_price: number;
+        total_price: number;
+    }>;
+    timeline: Array<{
+        from_status: string | null;
+        to_status: string;
+        created_at: string;
+        created_at_human: string;
+    }>;
 }
 
 export interface ProductVariant {
@@ -172,6 +230,8 @@ export interface OrderItem {
     quantity: number;
     total_price: string | number;
     is_restocked: boolean;
+    product?: Product | null;
+    variant?: ProductVariant | null;
 }
 
 export interface Order {

@@ -194,6 +194,7 @@ class StoreCodOrderRequest extends FormRequest
         $validated = $this->validated();
 
         return [
+            'customer_id' => auth('customer')->id() ?? null,
             'customer_name' => (string) ($validated['customer_name'] ?? $validated['name'] ?? ''),
             'customer_phone' => (string) ($validated['customer_phone'] ?? $validated['phone'] ?? ''),
             'delivery_address' => (string) ($validated['delivery_address'] ?? $validated['address'] ?? ''),

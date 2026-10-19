@@ -3,6 +3,11 @@
 use App\Modules\Cart\Controllers\CartController;
 use App\Modules\Checkout\Controllers\CheckoutPageController;
 use App\Modules\Checkout\Controllers\CodCheckoutController;
+use App\Modules\Customer\Controllers\CustomerAuthController;
+use App\Modules\Customer\Controllers\CustomerDashboardController;
+use App\Modules\Customer\Controllers\CustomerOrderController;
+use App\Modules\Customer\Controllers\OrderTrackingController;
+use App\Modules\Customer\Controllers\WishlistController;
 use App\Modules\Installer\Controllers\WebInstallerController;
 use App\Modules\Installer\Middleware\EnsureNotInstalledMiddleware;
 use App\Modules\PageBuilder\Controllers\PublicLandingPageController;
@@ -27,6 +32,35 @@ Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.s
 Route::patch('/cart/items/{id}', [CartController::class, 'update'])->name('cart.items.update');
 Route::delete('/cart/items/{id}', [CartController::class, 'destroy'])->name('cart.items.destroy');
 Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+
+// Customer Authentication (Guest only)
+Route::middleware('guest:customer')->group(function () {
+    Route::get('/customer/register', [CustomerAuthController::class, 'showRegister'])->name('customer.register');
+    Route::post('/customer/register', [CustomerAuthController::class, 'register'])->name('customer.register.post');
+    Route::get('/customer/login', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
+    Route::post('/customer/login', [CustomerAuthController::class, 'login'])->name('customer.login.post');
+});
+
+// Customer Logout
+Route::post('/customer/logout', [CustomerAuthController::class, 'logout'])->name('customer.logout');
+
+// Customer Account Portal (Protected by auth:customer)
+Route::middleware('auth:customer')->group(function () {
+    Route::get('/customer/dashboard', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
+    Route::get('/customer/orders', [CustomerOrderController::class, 'index'])->name('customer.orders');
+    Route::get('/customer/orders/{order:order_number}', [CustomerOrderController::class, 'show'])->name('customer.orders.show');
+
+    // Customer Wishlist
+    Route::get('/customer/wishlist', [WishlistController::class, 'index'])->name('customer.wishlist');
+    Route::post('/customer/wishlist', [WishlistController::class, 'store'])->name('customer.wishlist.store');
+    Route::delete('/customer/wishlist/{id}', [WishlistController::class, 'destroy'])->name('customer.wishlist.destroy');
+});
+
+// Public Order Tracking (Accessible to both guests and customers)
+Route::get('/track-order', [OrderTrackingController::class, 'show'])->name('order.track.show');
+Route::post('/track-order', [OrderTrackingController::class, 'track'])
+    ->middleware('throttle:10,1')
+    ->name('order.track.post');
 
 // One-time Web Installer routes (locked out permanently once installed)
 Route::middleware([EnsureNotInstalledMiddleware::class])
@@ -67,4 +101,4 @@ Route::get('/{slug}', function (string $slug) {
     }
 
     abort(404);
-})->where('slug', '^(?!admin|checkout|login|install|pages|cart|shop|product|category|api|storage|build|_debugbar).*$');
+})->where('slug', '^(?!admin|checkout|login|install|pages|cart|shop|product|category|customer|track-order|wishlist|api|storage|build|_debugbar).*$');

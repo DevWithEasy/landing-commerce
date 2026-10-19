@@ -236,10 +236,13 @@ class ProcessCodOrderAction
 
                 $total = max(0.00, $subtotal + $shippingFee - $discount);
                 $orderNumber = $this->generateUniqueOrderNumber();
+                $rawTrackingToken = bin2hex(random_bytes(32));
+                $trackingTokenHash = hash('sha256', $rawTrackingToken);
 
                 $order = Order::create([
                     'order_number' => $orderNumber,
                     'idempotency_key' => $idempotencyKey,
+                    'tracking_token_hash' => $trackingTokenHash,
                     'landing_page_id' => $data['landing_page_id'] ?? null,
                     'customer_id' => $data['customer_id'] ?? null,
                     'customer_name' => trim($data['customer_name']),
@@ -261,6 +264,8 @@ class ProcessCodOrderAction
                     'notes' => $data['notes'] ?? null,
                     'ip_address' => $ipAddress,
                 ]);
+
+                $order->setAttribute('tracking_token', $rawTrackingToken);
 
                 foreach ($orderItemsData as $itemData) {
                     $itemData['order_id'] = $order->id;

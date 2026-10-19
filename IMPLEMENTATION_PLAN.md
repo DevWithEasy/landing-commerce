@@ -413,50 +413,50 @@ This plan lays out a step-by-step, milestone-driven roadmap. Each phase has conc
 ---
 
 ## Phase 10: Customer Authentication, Account Portal, Order Tracking & Wishlist
-**Status:** Pending
-**Goal:** Empower customers with optional accounts, self-service order tracking, saved address books, and wishlists while strictly maintaining zero-friction guest checkout.
+**Status:** **100% COMPLETE**
+**Goal:** Empower customers with secure accounts, self-service order tracking, order history, and persistent wishlists while strictly maintaining zero-friction guest checkout.
 
-### Scope & Dependencies
-- Depends on: Phase 7 (Core), Phase 9 (Checkout, Orders).
-- Primary Deliverable: `Customer` model, `customer` auth guard, Customer Portal, Public Order Tracking, and Wishlist.
+### Scope & Deliverables
+- Completed Deliverables: `Customer` model & migration, `customer` guard & session provider, `CustomerAuthController`, `CustomerDashboardController`, `CustomerOrderController`, `OrderTrackingController`, `WishlistController`, `Wishlist` model & migration, `tracking_token_hash` on `orders`, React customer portal (`Login`, `Register`, `Dashboard`, `Orders`, `OrderDetail`, `Wishlist`, `TrackOrder`), and responsive `CustomerLayout`.
 
-### Tasks & Technical Specifications
-1. **Customer Multi-Auth Guard Architecture:**
-   - Table `customers`: `id`, `name`, `phone` (unique), `email` (nullable unique), `password` (hashed), `address`, `district`, `upazila`, `is_active` (boolean default true), `email_verified_at` (nullable), `timestamps`.
-   - Model `Customer` in `app/Modules/Customer/Models/Customer.php`.
-   - Separate auth guard `'customer'` in `config/auth.php` using `eloquent` provider pointing to `Customer`.
-   - Complete isolation between admin `'web'` guard and customer `'customer'` guard to prevent privilege leakage.
-2. **Customer Authentication & Guest Checkout Coexistence:**
-   - Guest checkout remains the primary, zero-friction default for all storefront and landing page orders.
-   - On checkout, guest shoppers can optionally check: "Save my information for faster checkout next time" with an optional password field to automatically create a customer account upon order completion.
-   - Customer Auth Routes:
-     - `GET /customer/login`, `POST /customer/login` (rate-limited via `throttle:5,1`).
-     - `GET /customer/register`, `POST /customer/register`.
-     - `POST /customer/logout`.
-3. **Customer Account Portal (`/customer/*`):**
-   - Protected by `auth:customer` middleware.
-   - Pages in `resources/js/Pages/Customer/`:
-     - **Dashboard (`/customer/dashboard`):** Welcome banner, recent orders summary, default shipping address card.
-     - **Order History (`/customer/orders`):** Paginated list of customer orders with status badges, item summaries, total amount, and link to order details.
-     - **Order Detail (`/customer/orders/{order_number}`):** Detailed view showing delivery address, courier tracking consignment number, live courier tracking status, itemized products, and downloadable invoice.
-     - **Address Book (`/customer/addresses`):** Manage saved delivery addresses (District, Upazila, Street Address) with default selection for 1-click checkout autofill.
-     - **Profile Settings (`/customer/profile`):** Update name, email, phone, and change password.
-4. **Public Self-Service Order Tracking (`/track-order`):**
-   - Public page accessible to all shoppers without requiring account login.
-   - Input: Order Number (e.g. `ORD-20261018-XXXXXX`) + Customer Phone Number (normalized 11-digit BD mobile).
-   - Form validation & anti-enumeration rate limiting (`throttle:10,1`).
-   - Displays live order status timeline:
-     - Pending -> Confirmed -> Processing -> Handed to Courier -> In Transit -> Delivered.
-     - If dispatched, displays courier name (Steadfast, Pathao, RedX), tracking ID, and direct external tracking URL.
-5. **Customer Wishlist Engine (`/wishlist`):**
-   - Storage: LocalStorage for guest users, database table `wishlists` (`customer_id`, `product_id`) for authenticated customers.
-   - Instant toggle on product cards and product detail pages with heart icon animation.
-   - Dedicated Wishlist Page (`/wishlist`): Displays saved products with "Move to Cart" and "Remove" actions.
+### Implemented Architecture & Technical Highlights
+1. **Multi-Auth Guard Isolation & Session Security:**
+   - Database table `customers` (`id`, `name`, `email` unique, `phone`, `password`, `address`, `district`, `upazila`, `is_active`, `timestamps`).
+   - Authenticatable Eloquent model `Customer` with separate `'customer'` guard in `config/auth.php` and dedicated provider.
+   - Complete isolation between admin `'web'` guard and customer `'customer'` guard (`Route::middleware(['web', 'auth:web'])` on admin routes; `Route::middleware('auth:customer')` on customer routes). Customers attempting to access `/admin` are strictly redirected to admin login.
+   - Rate-limited login (5 attempts per minute with custom localized error messages) and secure session invalidation + token regeneration upon logout.
+2. **Customer Account Portal & IDOR Protection:**
+   - Dedicated portal views in `resources/js/Pages/Customer/` wrapped by `CustomerLayout.tsx`:
+     - **Dashboard (`/customer/dashboard`):** Account overview, profile stats, and recent 5 orders.
+     - **Order History (`/customer/orders`):** Paginated orders with status badges, item quantities, totals, and direct tracking buttons.
+     - **Order Detail (`/customer/orders/{order:order_number}`):** Itemized breakdown, unit prices, delivery address, payment status, and courier consignment details.
+   - Strict backend IDOR protection: all order and order-detail queries are explicitly scoped via `where('customer_id', $customer->id)`. Accessing another customer's order number returns HTTP 404.
+3. **Secure Self-Service Order Tracking (`/track-order`):**
+   - Direct tracking via unpredictable 64-character cryptographic token (`tracking_token` generated on checkout with SHA-256 hash stored in `tracking_token_hash`).
+   - Guest tracking via Order Number + matching Customer Phone Number (normalized using `BdPhoneRule`).
+   - Authenticated customer tracking by order number alone.
+   - Anti-enumeration protection: mismatched phone numbers or non-existent order numbers return the exact same generic error (`No matching order found for the provided information.`) with HTTP 404.
+   - Rate limiting via `throttle:10,1` rejecting automated scraping with HTTP 429.
+   - Displays live order status timeline, delivery district, item summaries, totals, and live courier tracking URLs without exposing internal merchant audit notes or token hashes.
+4. **Persistent Wishlist Engine (`/customer/wishlist`):**
+   - Database table `wishlists` with unique constraint `UNIQUE(customer_id, product_id, variant_id)` preventing duplicate entries.
+   - Server-side validation rejecting draft, archived, or non-existent products.
+   - Responsive grid view (`Wishlist.tsx`) with product thumbnails, live prices, variant pills, "Add to Cart" directly into the cart engine, and item removal.
+   - Strict ownership scoping on deletion (`Wishlist::where('id', $id)->where('customer_id', $customer->id)->firstOrFail()`).
+5. **Preservation of Phase 9 Unified Cart & Checkout:**
+   - Guest checkout remains 100% operational with zero account creation required.
+   - Quick Order and Cart Checkout pipelines remain intact and identical.
+   - Customer ID is automatically attached to orders placed by authenticated customers (`StoreCodOrderRequest` injecting `customer_id => auth('customer')->id()`).
 
-### Acceptance Criteria
-- Customer login sessions are completely isolated from admin dashboard sessions; customers cannot access `/admin/*`.
-- Order tracking strictly returns order details only when the phone number exactly matches the order record.
-- Guest shoppers can complete purchases without creating an account; registered customers enjoy pre-filled addresses.
+### Acceptance Criteria & Verification
+- 100% of automated tests pass:
+  - `tests/Feature/CustomerAuthTest.php`: 10 tests, 39 assertions (registration, unique email, validation, login, invalid credentials, throttling, logout, guest route protection, admin isolation).
+  - `tests/Feature/CustomerOrderAndWishlistTest.php`: 9 tests, 42 assertions (customer order scoping, IDOR protection on order detail, own order inspection, wishlist add, duplicate prevention, variant addition, invalid product rejection, wishlist item removal, IDOR deletion rejection, wishlist page view).
+  - `tests/Feature/OrderTrackingTest.php`: 8 tests, 48 assertions (cryptographic token tracking, no secret hash leakage, guest order number + phone tracking, international phone normalization, phone mismatch rejection, anti-enumeration identical response, customer order lookup, rate limiting to HTTP 429, GET token preloading).
+  - Full regression suite passing: `tests/Feature/CartEngineTest.php`, `tests/Feature/UnifiedCheckoutTest.php`, `tests/Feature/CodCheckoutTest.php`, `tests/Feature/CustomerCheckoutComponentTest.php` (33 tests, 244 assertions).
+- `npm run type-check`: 0 TypeScript errors.
+- `./vendor/bin/pint --test`: Clean code style across all PHP files.
+- `npm run build`: Production bundle built cleanly with all customer pages compiled.
 
 ### Focused Tests
 - `tests/Feature/CustomerAuthTest.php`: Customer registration, login, logout, guard isolation, and address management.

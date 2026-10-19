@@ -79,6 +79,7 @@ class CodCheckoutController extends Controller
             return response()->json([
                 'message' => 'Order placed successfully.',
                 'order' => $order,
+                'tracking_token' => $order->tracking_token ?? null,
             ], 201);
         } catch (InsufficientStockException $e) {
             return response()->json([

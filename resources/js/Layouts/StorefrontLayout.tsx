@@ -28,6 +28,7 @@ interface StorefrontLayoutProps {
     theme: StorefrontTheme;
     categories?: Category[];
     currentSearch?: string;
+    title?: string;
 }
 
 export function StorefrontLayout({
@@ -59,6 +60,9 @@ export function StorefrontLayout({
             setActiveCart(page.props.cart as CartSummary);
         }
     }, [page.props.cart]);
+
+    const customer = page.props.auth?.customer;
+    const accountUrl = customer ? '/customer/dashboard' : '/customer/login';
 
     // Listen for custom open-mini-cart events across the storefront
     useEffect(() => {
@@ -139,6 +143,13 @@ export function StorefrontLayout({
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <Link
+                            href="/track-order"
+                            className="hidden sm:inline-flex items-center gap-1 text-gray-300 hover:text-white transition"
+                        >
+                            <Truck className="w-3 h-3 text-indigo-400" />
+                            <span>অর্ডার ট্র্যাকিং</span>
+                        </Link>
                         {theme.store_phone && (
                             <a
                                 href={`tel:${theme.store_phone}`}
@@ -225,25 +236,22 @@ export function StorefrontLayout({
 
                         {/* Customer Account Entry */}
                         <Link
-                            href="/login"
+                            href={accountUrl}
                             className="p-2 text-gray-700 hover:text-indigo-600 rounded-full hover:bg-gray-100 transition"
-                            title="Customer Account"
+                            title={customer ? `আমার অ্যাকাউন্ট (${customer.name})` : 'লগইন / রেজিস্টার'}
                             aria-label="Account"
                         >
                             <UserIcon className="w-5 h-5" />
                         </Link>
 
-                        {/* Wishlist Entry (UI indicator) */}
+                        {/* Wishlist Entry */}
                         <Link
-                            href="/shop"
+                            href="/customer/wishlist"
                             className="p-2 text-gray-700 hover:text-rose-600 rounded-full hover:bg-gray-100 transition relative"
-                            title="Wishlist"
+                            title="উইশলিস্ট | My Wishlist"
                             aria-label="Wishlist"
                         >
                             <Heart className="w-5 h-5" />
-                            <span className="absolute top-1 right-1 w-4 h-4 bg-gray-200 text-gray-700 rounded-full text-[10px] font-bold flex items-center justify-center">
-                                0
-                            </span>
                         </Link>
 
                         {/* Cart Trigger Button (Opens Mini-Cart Drawer) */}
@@ -490,6 +498,27 @@ export function StorefrontLayout({
                                     শপ / সব পণ্য
                                 </Link>
                                 <Link
+                                    href="/track-order"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block text-sm font-semibold text-indigo-600 hover:text-indigo-700 py-1.5"
+                                >
+                                    অর্ডার ট্র্যাকিং
+                                </Link>
+                                <Link
+                                    href="/customer/wishlist"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block text-sm font-semibold text-rose-600 hover:text-rose-700 py-1.5"
+                                >
+                                    আমার উইশলিস্ট
+                                </Link>
+                                <Link
+                                    href={accountUrl}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block text-sm font-semibold text-gray-700 hover:text-indigo-600 py-1.5"
+                                >
+                                    {customer ? 'আমার একাউন্ট' : 'লগইন / রেজিস্টার'}
+                                </Link>
+                                <Link
                                     href="/pages/about"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="block text-sm text-gray-600 hover:text-indigo-600 py-1.5"
@@ -593,11 +622,11 @@ export function StorefrontLayout({
                     </button>
 
                     <Link
-                        href="/login"
+                        href={accountUrl}
                         className="flex flex-col items-center text-gray-600 hover:text-indigo-600 py-1 text-xs"
                     >
                         <UserIcon className="w-5 h-5 mb-0.5" />
-                        <span>একাউন্ট</span>
+                        <span>{customer ? 'একাউন্ট' : 'লগইন'}</span>
                     </Link>
                 </div>
             </div>
@@ -641,6 +670,15 @@ export function StorefrontLayout({
                                 </li>
                                 <li>
                                     <Link href="/shop" className="hover:text-white transition">সকল পণ্য</Link>
+                                </li>
+                                <li>
+                                    <Link href="/track-order" className="hover:text-white transition">অর্ডার ট্র্যাক করুন</Link>
+                                </li>
+                                <li>
+                                    <Link href={accountUrl} className="hover:text-white transition">{customer ? 'আমার একাউন্ট' : 'লগইন / রেজিস্টার'}</Link>
+                                </li>
+                                <li>
+                                    <Link href="/customer/wishlist" className="hover:text-white transition">আমার উইশলিস্ট</Link>
                                 </li>
                                 <li>
                                     <Link href="/pages/about" className="hover:text-white transition">আমাদের সম্পর্কে</Link>

@@ -26,7 +26,7 @@ Route::middleware(['web'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-Route::middleware(['web', 'auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', function () {
         $user = auth()->user();
         if ($user && $user->isFulfillmentAgent()) {

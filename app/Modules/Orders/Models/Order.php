@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Orders\Models;
 
 use App\Models\User;
+use App\Modules\Customer\Models\Customer;
 use App\Modules\Orders\Services\OrderStateMachine;
 use App\Modules\Shipping\Models\ShippingMethod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,8 +45,16 @@ class Order extends Model
         'courier_name',
         'courier_tracking_id',
         'courier_tracking_url',
+        'tracking_token_hash',
         'notes',
         'ip_address',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected $hidden = [
+        'tracking_token_hash',
     ];
 
     /**
@@ -60,6 +69,27 @@ class Order extends Model
             'total' => 'decimal:2',
             'payment_details' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Get masked phone number for safe public order tracking.
+     */
+    public function getMaskedPhone(): string
+    {
+        $phone = $this->customer_phone;
+        if (strlen($phone) >= 11) {
+            return substr($phone, 0, 3).'****'.substr($phone, -4);
+        }
+
+        return '****';
     }
 
     /**
