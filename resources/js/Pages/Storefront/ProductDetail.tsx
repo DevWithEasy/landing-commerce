@@ -15,6 +15,7 @@ import {
 import { useMemo, useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import { ProductCard, formatBdt } from '@/Shared/ProductCard';
+import { SafeImage } from '@/Shared/SafeImage';
 import { SeoHead } from '@/Shared/SeoHead';
 import type { ProductImage, ProductVariant } from '@/types';
 import type { StorefrontProductProps } from '@/types/storefront';
@@ -261,10 +262,12 @@ export default function ProductDetail({
                     <div className="space-y-4">
                         {/* Main Featured Image with Zoom */}
                         <div className="relative aspect-square bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm flex items-center justify-center group">
-                            <img
+                            <SafeImage
                                 src={activeImageUrl}
                                 alt={product.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                fallbackIconSize="w-16 h-16"
+                                fallbackText="No Image Available"
                             />
 
                             {/* Discount Badge */}
@@ -298,10 +301,12 @@ export default function ProductDetail({
                                                     : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                         >
-                                            <img
+                                            <SafeImage
                                                 src={img.thumb_url || img.url}
                                                 alt={img.alt_text || product.title}
                                                 className="w-full h-full object-cover"
+                                                fallbackIconSize="w-5 h-5"
+                                                fallbackText=""
                                             />
                                         </button>
                                     );
@@ -565,7 +570,14 @@ export default function ProductDetail({
                         {activeTab === 'desc' && (
                             <div className="space-y-4">
                                 {product.description ? (
-                                    <p className="whitespace-pre-line">{product.description}</p>
+                                    /<[a-z][\s\S]*>/i.test(product.description) ? (
+                                        <div
+                                            className="prose prose-indigo max-w-none text-gray-700 leading-relaxed prose-p:my-2 prose-headings:text-gray-900 prose-ul:my-2 prose-ol:my-2"
+                                            dangerouslySetInnerHTML={{ __html: product.description }}
+                                        />
+                                    ) : (
+                                        <p className="whitespace-pre-line">{product.description}</p>
+                                    )
                                 ) : (
                                     <p className="text-gray-400 italic">কোনো অতিরিক্ত বিবরণ যোগ করা হয়নি।</p>
                                 )}

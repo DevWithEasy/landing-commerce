@@ -43,6 +43,30 @@ test('Content-Security-Policy header is included and allows essential applicatio
         ->and($csp)->toContain("form-action 'self' https://wa.me https://api.whatsapp.com");
 });
 
+test('CSP only allowlists the Vite dev server when its hot file points at loopback', function () {
+    $hotFile = public_path('hot');
+    $original = is_file($hotFile) ? (string) file_get_contents($hotFile) : null;
+
+    try {
+        file_put_contents($hotFile, 'http://127.0.0.1:5173');
+        $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        expect($csp)->toContain('http://127.0.0.1:5173')
+            ->and($csp)->toContain('ws://127.0.0.1:5173');
+
+        file_put_contents($hotFile, 'https://evil.example.com');
+        $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        expect($csp)->not->toContain('evil.example.com');
+    } finally {
+        if ($original === null) {
+            @unlink($hotFile);
+        } else {
+            file_put_contents($hotFile, $original);
+        }
+    }
+});
+
 test('HSTS header is strictly excluded on non-HTTPS requests or in non-production environments', function () {
     // 1. Local environment over HTTP
     Config::set('app.env', 'local');

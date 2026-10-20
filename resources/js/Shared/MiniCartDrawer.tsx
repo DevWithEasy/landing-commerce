@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CartItemData, CartSummary } from '@/types/cart';
+import { SafeImage } from './SafeImage';
 
 interface MiniCartDrawerProps {
     isOpen: boolean;
@@ -233,10 +234,12 @@ export function MiniCartDrawer({
                                         >
                                             {/* Thumbnail */}
                                             <div className="w-18 h-18 sm:w-20 sm:h-20 bg-white rounded-xl overflow-hidden border border-gray-200/60 flex-shrink-0">
-                                                <img
+                                                <SafeImage
                                                     src={item.image_url}
                                                     alt={item.product_title}
                                                     className="w-full h-full object-cover"
+                                                    fallbackIconSize="w-6 h-6"
+                                                    fallbackText=""
                                                 />
                                             </div>
 

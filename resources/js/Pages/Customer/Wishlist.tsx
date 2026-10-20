@@ -1,8 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowRight, Heart, Package, ShoppingBag, Trash2 } from 'lucide-react';
+import { ArrowRight, Heart, ShoppingBag, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { CustomerLayout } from '@/Layouts/CustomerLayout';
 import { formatBdt } from '@/Shared/ProductCard';
+import { SafeImage } from '@/Shared/SafeImage';
 import type { Category, PaginatedData, WishlistItem } from '@/types';
 import type { StorefrontTheme } from '@/types/storefront';
 
@@ -124,17 +125,13 @@ export default function CustomerWishlist({ theme, categories, wishlist }: Wishli
 
                                         {/* Product Image Link */}
                                         <Link href={`/product/${product.slug}`} className="block relative aspect-square bg-gray-50 overflow-hidden">
-                                            {imgUrl ? (
-                                                <img
-                                                    src={imgUrl}
-                                                    alt={product.title}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                    <Package className="w-10 h-10" />
-                                                </div>
-                                            )}
+                                            <SafeImage
+                                                src={imgUrl}
+                                                alt={product.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                                fallbackIconSize="w-10 h-10"
+                                                fallbackText=""
+                                            />
 
                                             {isUnavailable && (
                                                 <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-2 text-center">

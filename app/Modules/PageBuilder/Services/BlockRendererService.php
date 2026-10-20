@@ -27,6 +27,11 @@ class BlockRendererService
         'CountdownTimerBlock' => 'builder.blocks.countdown-timer',
         'StickyBarBlock' => 'builder.blocks.sticky-bar',
         'HtmlBlock' => 'builder.blocks.html',
+        'ContainerBlock' => 'builder.blocks.container',
+        'HeadingBlock' => 'builder.blocks.heading',
+        'TextBlock' => 'builder.blocks.text',
+        'ImageBlock' => 'builder.blocks.image',
+        'ButtonBlock' => 'builder.blocks.button',
     ];
 
     /**
@@ -70,7 +75,49 @@ class BlockRendererService
         $defaultProps = BlockRegistry::getDefaultProps($type);
         $props = array_merge($defaultProps, $block['props'] ?? []);
         $styles = $block['styles'] ?? [];
+
+        // For ContainerBlock, merge safe flex layout props into styles
+        if ($type === 'ContainerBlock') {
+            $layoutStyles = [
+                'display' => 'flex',
+                'flex-direction' => ($props['direction'] ?? 'column') === 'row' ? 'row' : 'column',
+            ];
+
+            if (! empty($props['wrap']) && in_array($props['wrap'], ['nowrap', 'wrap', 'wrap-reverse'], true)) {
+                $layoutStyles['flex-wrap'] = $props['wrap'];
+            }
+
+            $allowedJustify = ['flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly'];
+            if (! empty($props['justifyContent']) && in_array($props['justifyContent'], $allowedJustify, true)) {
+                $layoutStyles['justify-content'] = $props['justifyContent'];
+            }
+
+            $allowedAlign = ['stretch', 'flex-start', 'center', 'flex-end', 'baseline'];
+            if (! empty($props['alignItems']) && in_array($props['alignItems'], $allowedAlign, true)) {
+                $layoutStyles['align-items'] = $props['alignItems'];
+            }
+
+            if (! empty($props['gap'])) {
+                $safeGap = trim((string) preg_replace('/[^0-9a-zA-Z\s\.\-%]/', '', (string) $props['gap']));
+                if ($safeGap !== '') {
+                    $layoutStyles['gap'] = $safeGap;
+                }
+            }
+
+            $styles = array_merge($layoutStyles, $styles);
+        }
+
         $styleAttribute = $this->convertStylesToCssAttribute($styles);
+
+        // Recursively render child blocks if present
+        $childrenHtml = '';
+        if (! empty($block['children']) && is_array($block['children'])) {
+            foreach ($block['children'] as $childBlock) {
+                if (is_array($childBlock)) {
+                    $childrenHtml .= $this->renderBlock($childBlock, $context);
+                }
+            }
+        }
 
         // Preload product(s) for product-dependent blocks if needed
         $product = null;
@@ -112,11 +159,14 @@ class BlockRendererService
             'props' => $props,
             'styles' => $styles,
             'styleAttribute' => $styleAttribute,
+            'children' => $block['children'] ?? [],
+            'childrenHtml' => $childrenHtml,
             'product' => $product,
             'products' => $products,
             'selectionMode' => $props['selectionMode'] ?? 'single',
             'shippingMethods' => $shippingMethods,
             'context' => $context,
+            'renderer' => $this,
         ])->render();
     }
 
@@ -181,5 +231,32 @@ class BlockRendererService
         }
 
         return $rawUrl;
+    }
+
+    /**
+     * Sanitize and escape URL to prevent JavaScript execution and dangerous URI schemes.
+     */
+    public static function sanitizeUrl(?string $rawUrl): string
+    {
+        if (empty($rawUrl)) {
+            return '';
+        }
+
+        $trimmed = trim($rawUrl);
+
+        // Internal anchor hashes (#cod-checkout) or relative paths (/checkout) are safe
+        if (str_starts_with($trimmed, '#') || str_starts_with($trimmed, '/')) {
+            return htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
+        }
+
+        // Scheme validation
+        if (preg_match('/^([a-zA-Z][a-zA-Z0-9+.-]*):(.*)$/s', $trimmed, $matches)) {
+            $scheme = strtolower($matches[1]);
+            if (! in_array($scheme, ['http', 'https', 'tel', 'mailto'], true)) {
+                return '#';
+            }
+        }
+
+        return htmlspecialchars($trimmed, ENT_QUOTES, 'UTF-8');
     }
 }

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
+import { SafeImage } from '@/Shared/SafeImage';
 import type { Category } from '@/types';
 import type { CartItemData, CartSummary } from '@/types/cart';
 import type { StorefrontTheme } from '@/types/storefront';
@@ -226,10 +227,12 @@ export default function CartPage({
                                             <div className="flex items-center gap-4">
                                                 {/* Image */}
                                                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-50 rounded-2xl overflow-hidden border border-gray-200/70 flex-shrink-0">
-                                                    <img
+                                                    <SafeImage
                                                         src={item.image_url}
                                                         alt={item.product_title}
                                                         className="w-full h-full object-cover"
+                                                        fallbackIconSize="w-8 h-8"
+                                                        fallbackText=""
                                                     />
                                                 </div>
 

@@ -1,5 +1,6 @@
 import { CheckCircle2, MapPin, Phone, ShieldCheck, ShoppingCart, User } from 'lucide-react';
 import { useEffect, useState, type CSSProperties } from 'react';
+import { SafeImage } from '@/Shared/SafeImage';
 import { useBuilderStore } from '../stores/useBuilderStore';
 import type { BlockStyles, CodCheckoutBlockProps } from '@/types/builder';
 
@@ -151,11 +152,13 @@ export function CodCheckoutBlock({
                                                             {isSelected ? '✓' : ''}
                                                         </span>
                                                         <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-                                                            {imgUrl ? (
-                                                                 <img src={imgUrl} alt={realProd?.title || `Product #${pid}`} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <span className="text-[10px] font-bold text-gray-400">IMG</span>
-                                                            )}
+                                                            <SafeImage
+                                                                src={imgUrl}
+                                                                alt={realProd?.title || `Product #${pid}`}
+                                                                className="w-full h-full object-cover"
+                                                                fallbackIconSize="w-5 h-5"
+                                                                fallbackText=""
+                                                            />
                                                         </div>
                                                         <div className="min-w-0">
                                                             <div className="flex items-center space-x-1.5">

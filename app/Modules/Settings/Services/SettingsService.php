@@ -117,7 +117,9 @@ class SettingsService
 
         $setting = Setting::query()->firstOrNew(['key' => $key]);
         $setting->group = $group;
-        $setting->description = $description ?? $setting->description;
+        if ($description !== null) {
+            $setting->description = $description;
+        }
         $setting->setEncryptedValue($value, $shouldEncrypt);
         $setting->save();
 
@@ -275,7 +277,11 @@ class SettingsService
      */
     public function applyRuntimeOverrides(): void
     {
-        if (! Schema::hasTable('settings')) {
+        try {
+            if (! Schema::hasTable('settings')) {
+                return;
+            }
+        } catch (\Throwable) {
             return;
         }
 

@@ -18,6 +18,7 @@ import { Badge } from '@/Shared/Badge';
 import { Button } from '@/Shared/Button';
 import { Card } from '@/Shared/Card';
 import { Pagination } from '@/Shared/Pagination';
+import { SafeImage } from '@/Shared/SafeImage';
 import type { Product, ProductIndexProps } from '@/types';
 
 export default function Index({ products, filters, stats }: ProductIndexProps) {
@@ -277,18 +278,13 @@ export default function Index({ products, filters, stats }: ProductIndexProps) {
                                             <td className="py-3.5 px-4">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-11 h-11 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                                                        {primaryImage ? (
-                                                            <img
-                                                                src={
-                                                                    primaryImage.thumb_url ||
-                                                                    primaryImage.url
-                                                                }
-                                                                alt={product.title}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <Package className="w-5 h-5 text-gray-400" />
-                                                        )}
+                                                        <SafeImage
+                                                            src={primaryImage ? (primaryImage.thumb_url || primaryImage.url) : null}
+                                                            alt={product.title}
+                                                            className="w-full h-full object-cover"
+                                                            fallbackIconSize="w-5 h-5"
+                                                            fallbackText=""
+                                                        />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <Link

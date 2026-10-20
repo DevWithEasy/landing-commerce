@@ -64,6 +64,23 @@ class PageAstValidator
         'letter-spacing',
         'letterspacing',
         'overflow',
+        'display',
+        'flex',
+        'flex-direction',
+        'flexdirection',
+        'flex-wrap',
+        'flexwrap',
+        'justify-content',
+        'justifycontent',
+        'align-items',
+        'alignitems',
+        'gap',
+        'width',
+        'height',
+        'min-width',
+        'minwidth',
+        'min-height',
+        'minheight',
     ];
 
     /**
@@ -82,6 +99,11 @@ class PageAstValidator
      * Maximum permitted z-index to prevent clickjacking overlay attacks.
      */
     public const MAX_Z_INDEX = 50;
+
+    /**
+     * Maximum permitted block nesting depth (root = level 1, deepest child = level 5).
+     */
+    public const MAX_NESTING_DEPTH = 5;
 
     /**
      * Validate the entire page AST.
@@ -110,46 +132,9 @@ class PageAstValidator
             $this->validateSettings($ast['settings'], $errors);
         }
 
-        // 2. Validate individual blocks
+        // 2. Validate individual blocks and nested child trees recursively
         foreach ($ast['blocks'] as $index => $block) {
-            $prefix = "blocks.{$index}";
-
-            if (! is_array($block)) {
-                $errors[$prefix] = ["Block at index {$index} must be an object."];
-
-                continue;
-            }
-
-            // Block ID
-            if (empty($block['id']) || ! is_string($block['id'])) {
-                $errors["{$prefix}.id"] = ["Block at index {$index} must have a valid string ID."];
-            }
-
-            // Block Type
-            $type = $block['type'] ?? null;
-            if (empty($type) || ! is_string($type) || ! BlockRegistry::isApproved($type)) {
-                $errors["{$prefix}.type"] = [
-                    "Block type '{$type}' is not recognized or permitted. Must be one of the approved registry types.",
-                ];
-
-                continue; // Cannot validate unknown block further
-            }
-
-            // Block Props
-            $props = $block['props'] ?? [];
-            if (! is_array($props)) {
-                $errors["{$prefix}.props"] = ['Block props must be an object/array.'];
-            } else {
-                $this->validateProps($props, $prefix, $type, $errors);
-            }
-
-            // Block Styles
-            $styles = $block['styles'] ?? [];
-            if (! is_array($styles)) {
-                $errors["{$prefix}.styles"] = ['Block styles must be an object/array.'];
-            } else {
-                $this->validateStyles($styles, $prefix, $type, $errors);
-            }
+            $this->validateBlock($block, "blocks.{$index}", $errors, 1);
         }
 
         if (! empty($errors)) {
@@ -157,6 +142,68 @@ class PageAstValidator
         }
 
         return $ast;
+    }
+
+    /**
+     * Validate an individual block and its nested children recursively.
+     *
+     * @param  array<string, list<string>>  $errors
+     */
+    protected function validateBlock(mixed $block, string $prefix, array &$errors, int $depth = 1): void
+    {
+        if ($depth > self::MAX_NESTING_DEPTH) {
+            $errors[$prefix] = ['Block nesting depth exceeds maximum permitted limit of '.self::MAX_NESTING_DEPTH.' levels.'];
+
+            return;
+        }
+
+        if (! is_array($block)) {
+            $errors[$prefix] = ["Block at {$prefix} must be an object."];
+
+            return;
+        }
+
+        // Block ID
+        if (empty($block['id']) || ! is_string($block['id'])) {
+            $errors["{$prefix}.id"] = ["Block at {$prefix} must have a valid string ID."];
+        }
+
+        // Block Type
+        $type = $block['type'] ?? null;
+        if (empty($type) || ! is_string($type) || ! BlockRegistry::isApproved($type)) {
+            $errors["{$prefix}.type"] = [
+                "Block type '{$type}' is not recognized or permitted. Must be one of the approved registry types.",
+            ];
+
+            return; // Cannot validate unknown block further
+        }
+
+        // Block Props
+        $props = $block['props'] ?? [];
+        if (! is_array($props)) {
+            $errors["{$prefix}.props"] = ['Block props must be an object/array.'];
+        } else {
+            $this->validateProps($props, $prefix, $type, $errors);
+        }
+
+        // Block Styles
+        $styles = $block['styles'] ?? [];
+        if (! is_array($styles)) {
+            $errors["{$prefix}.styles"] = ['Block styles must be an object/array.'];
+        } else {
+            $this->validateStyles($styles, $prefix, $type, $errors);
+        }
+
+        // Block Children (Optional, but if present must be an array of child blocks)
+        if (array_key_exists('children', $block)) {
+            if (! is_array($block['children'])) {
+                $errors["{$prefix}.children"] = ['Block children must be an array.'];
+            } else {
+                foreach ($block['children'] as $childIndex => $childBlock) {
+                    $this->validateBlock($childBlock, "{$prefix}.children.{$childIndex}", $errors, $depth + 1);
+                }
+            }
+        }
     }
 
     /**

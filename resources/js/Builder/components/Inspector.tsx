@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { PageSettingsInspector } from './PageSettingsInspector';
-import { useBuilderStore } from '../stores/useBuilderStore';
+import { findBlockInTree, useBuilderStore } from '../stores/useBuilderStore';
 import type {
     BenefitItem,
     BenefitsGridBlockProps,
@@ -27,16 +27,21 @@ import type {
     BlockDefinition,
     BlockStyles,
     BlockType,
+    ButtonBlockProps,
     CodCheckoutBlockProps,
+    ContainerBlockProps,
     CountdownTimerBlockProps,
     FaqBlockProps,
     FaqItem,
+    HeadingBlockProps,
     HeroBlockProps,
     HtmlBlockProps,
+    ImageBlockProps,
     ProductSelectorBlockProps,
     ReviewItem,
     ReviewsBlockProps,
     StickyBarBlockProps,
+    TextBlockProps,
     VideoBlockProps,
 } from '@/types';
 
@@ -59,7 +64,7 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
     const [activeTab, setActiveTab] = useState<'content' | 'styles'>('content');
     const [showPageSettings, setShowPageSettings] = useState(false);
 
-    const selectedBlock = ast.blocks.find((b) => b.id === selectedBlockId);
+    const selectedBlock = selectedBlockId ? findBlockInTree(ast.blocks, selectedBlockId) : null;
 
     if (!selectedBlock || showPageSettings) {
         return (
@@ -1275,6 +1280,665 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 leading-normal">
                         <strong className="block font-semibold mb-0.5">নিরাপত্তা নীতিমালা:</strong>
                         নিরাপত্তাজনিত কারণে &lt;script&gt; ট্যাগ বা ইনলাইন ইভেন্ট হ্যান্ডলার (যেমন onclick, onerror) ব্লক করা থাকবে। আপনি সকল বৈধ HTML এলিমেন্ট এবং TailwindCSS ক্লাস ব্যবহার করতে পারবেন।
+                    </div>
+                </div>
+            );
+        }
+
+        case 'ContainerBlock': {
+            const p = props as unknown as ContainerBlockProps;
+            const childCount = block.children?.length ?? 0;
+            return (
+                <div className="space-y-4">
+                    {/* Container Info Badge */}
+                    <div className="p-3 bg-primary-50/70 rounded-xl border border-primary-200 flex items-center justify-between text-xs">
+                        <div className="flex items-center space-x-2">
+                            <Box className="w-4 h-4 text-primary-600" />
+                            <span className="font-bold text-primary-900">Container Layout</span>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full bg-primary-200/60 text-primary-800 text-[11px] font-mono font-semibold">
+                            {childCount} {childCount === 1 ? 'child' : 'children'}
+                        </span>
+                    </div>
+
+                    {/* Flex Direction */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            Direction (দিক নির্দেশনা)
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { value: 'column', label: 'Vertical (Column)' },
+                                { value: 'row', label: 'Horizontal (Row)' },
+                            ].map((opt) => (
+                                <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => onChange('direction', opt.value)}
+                                    className={`py-2 px-3 text-xs rounded-lg border font-medium transition cursor-pointer text-center ${
+                                        (p.direction || 'column') === opt.value
+                                            ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold ring-1 ring-primary-500'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Flex Wrap */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            Flex Wrap (র‌্যাপ মোড)
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { value: 'nowrap', label: 'No Wrap' },
+                                { value: 'wrap', label: 'Wrap (নতুন লাইনে)' },
+                            ].map((opt) => (
+                                <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => onChange('wrap', opt.value)}
+                                    className={`py-2 px-3 text-xs rounded-lg border font-medium transition cursor-pointer text-center ${
+                                        (p.wrap || 'nowrap') === opt.value
+                                            ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold ring-1 ring-primary-500'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Justify Content */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Justify Content (প্রধান অক্ষ বরাবর সাজানো)
+                        </label>
+                        <select
+                            value={p.justifyContent || 'flex-start'}
+                            onChange={(e) => onChange('justifyContent', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                        >
+                            <option value="flex-start">Start (শুরুতে)</option>
+                            <option value="center">Center (মাঝখানে)</option>
+                            <option value="flex-end">End (শেষে)</option>
+                            <option value="space-between">Space Between (মাঝখানে সমান ফাঁকা)</option>
+                            <option value="space-around">Space Around (চারপাশে সমান ফাঁকা)</option>
+                            <option value="space-evenly">Space Evenly (সমান দূরত্ব)</option>
+                        </select>
+                    </div>
+
+                    {/* Align Items */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Align Items (লম্বালম্বি প্রান্তিককরণ)
+                        </label>
+                        <select
+                            value={p.alignItems || 'stretch'}
+                            onChange={(e) => onChange('alignItems', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                        >
+                            <option value="stretch">Stretch (পুরো দৈর্ঘ্য)</option>
+                            <option value="flex-start">Start (শুরুতে)</option>
+                            <option value="center">Center (মাঝখানে)</option>
+                            <option value="flex-end">End (শেষে)</option>
+                        </select>
+                    </div>
+
+                    {/* Gap */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Items Gap (উপাদানগুলোর ব্যবধান)
+                        </label>
+                        <div className="grid grid-cols-4 gap-1 mb-2">
+                            {['0px', '8px', '16px', '24px'].map((g) => (
+                                <button
+                                    key={g}
+                                    type="button"
+                                    onClick={() => onChange('gap', g)}
+                                    className={`py-1 text-xs rounded-md border font-medium transition cursor-pointer text-center ${
+                                        (p.gap || '16px') === g
+                                            ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {g}
+                                </button>
+                            ))}
+                        </div>
+                        <input
+                            type="text"
+                            value={p.gap || ''}
+                            onChange={(e) => onChange('gap', e.target.value)}
+                            placeholder="e.g. 16px"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        case 'HeadingBlock': {
+            const p = props as unknown as HeadingBlockProps;
+            return (
+                <div className="space-y-4">
+                    {/* Content */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Heading Text
+                        </label>
+                        <textarea
+                            rows={3}
+                            value={p.text || ''}
+                            onChange={(e) => onChange('text', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            placeholder="Enter headline..."
+                        />
+                    </div>
+
+                    {/* HTML Tag Level */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            HTML Tag (হেডিং লেভেল)
+                        </label>
+                        <div className="grid grid-cols-6 gap-1">
+                            {(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const).map((tag) => (
+                                <button
+                                    key={tag}
+                                    type="button"
+                                    onClick={() => onChange('tag', tag)}
+                                    className={`py-1.5 text-xs uppercase font-bold rounded-lg border transition cursor-pointer text-center ${
+                                        (p.tag || 'h2') === tag
+                                            ? 'bg-primary-50 border-primary-600 text-primary-900 ring-1 ring-primary-500'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Text Alignment */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            Alignment
+                        </label>
+                        <div className="grid grid-cols-3 gap-1">
+                            {[
+                                { mode: 'left', icon: AlignLeft, label: 'Left' },
+                                { mode: 'center', icon: AlignCenter, label: 'Center' },
+                                { mode: 'right', icon: AlignRight, label: 'Right' },
+                            ].map((item) => {
+                                const IconComp = item.icon;
+                                const isSel = (p.align || 'left') === item.mode;
+                                return (
+                                    <button
+                                        key={item.mode}
+                                        type="button"
+                                        onClick={() => onChange('align', item.mode)}
+                                        className={`py-1.5 flex flex-col items-center justify-center rounded-lg border text-xs transition cursor-pointer ${
+                                            isSel
+                                                ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold ring-1 ring-primary-500'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <IconComp className="w-4 h-4" />
+                                        <span className="text-[10px] mt-0.5">{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Text Color */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Heading Color
+                        </label>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="color"
+                                value={p.color || '#0f172a'}
+                                onChange={(e) => onChange('color', e.target.value)}
+                                className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                            />
+                            <input
+                                type="text"
+                                value={p.color || ''}
+                                onChange={(e) => onChange('color', e.target.value)}
+                                placeholder="#0f172a"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 font-mono"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Font Size & Weight */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Font Size
+                            </label>
+                            <input
+                                type="text"
+                                value={p.fontSize || ''}
+                                onChange={(e) => onChange('fontSize', e.target.value)}
+                                placeholder="e.g. 32px"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Font Weight
+                            </label>
+                            <select
+                                value={p.fontWeight || '700'}
+                                onChange={(e) => onChange('fontWeight', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                            >
+                                <option value="400">Regular (400)</option>
+                                <option value="500">Medium (500)</option>
+                                <option value="600">SemiBold (600)</option>
+                                <option value="700">Bold (700)</option>
+                                <option value="800">Extra Bold (800)</option>
+                                <option value="900">Black (900)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        case 'TextBlock': {
+            const p = props as unknown as TextBlockProps;
+            return (
+                <div className="space-y-4">
+                    {/* Content */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Paragraph Content
+                        </label>
+                        <textarea
+                            rows={5}
+                            value={p.content || ''}
+                            onChange={(e) => onChange('content', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            placeholder="Enter paragraph text..."
+                        />
+                    </div>
+
+                    {/* Text Alignment */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            Alignment
+                        </label>
+                        <div className="grid grid-cols-4 gap-1">
+                            {[
+                                { mode: 'left', icon: AlignLeft, label: 'Left' },
+                                { mode: 'center', icon: AlignCenter, label: 'Center' },
+                                { mode: 'right', icon: AlignRight, label: 'Right' },
+                                { mode: 'justify', icon: AlignJustify, label: 'Justify' },
+                            ].map((item) => {
+                                const IconComp = item.icon;
+                                const isSel = (p.align || 'left') === item.mode;
+                                return (
+                                    <button
+                                        key={item.mode}
+                                        type="button"
+                                        onClick={() => onChange('align', item.mode)}
+                                        className={`py-1.5 flex flex-col items-center justify-center rounded-lg border text-xs transition cursor-pointer ${
+                                            isSel
+                                                ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold ring-1 ring-primary-500'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <IconComp className="w-4 h-4" />
+                                        <span className="text-[10px] mt-0.5">{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Color */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Text Color
+                        </label>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="color"
+                                value={p.color || '#334155'}
+                                onChange={(e) => onChange('color', e.target.value)}
+                                className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                            />
+                            <input
+                                type="text"
+                                value={p.color || ''}
+                                onChange={(e) => onChange('color', e.target.value)}
+                                placeholder="#334155"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 font-mono"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Font Size & Line Height */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Font Size
+                            </label>
+                            <input
+                                type="text"
+                                value={p.fontSize || ''}
+                                onChange={(e) => onChange('fontSize', e.target.value)}
+                                placeholder="e.g. 16px"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Line Height
+                            </label>
+                            <input
+                                type="text"
+                                value={p.lineHeight || ''}
+                                onChange={(e) => onChange('lineHeight', e.target.value)}
+                                placeholder="e.g. 1.6"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2"
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        case 'ImageBlock': {
+            const p = props as unknown as ImageBlockProps;
+            return (
+                <div className="space-y-4">
+                    {/* Image URL */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Image URL (ছবির লিংক)
+                        </label>
+                        <input
+                            type="url"
+                            value={p.imageUrl || ''}
+                            onChange={(e) => onChange('imageUrl', e.target.value)}
+                            placeholder="https://images.unsplash.com/..."
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                    </div>
+
+                    {/* Alt Text */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Alt Text (ছবির বিবরণ / SEO)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.altText || ''}
+                            onChange={(e) => onChange('altText', e.target.value)}
+                            placeholder="Image description"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+
+                    {/* Caption */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Caption (ক্যাপশন)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.caption || ''}
+                            onChange={(e) => onChange('caption', e.target.value)}
+                            placeholder="Optional caption below image"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+
+                    {/* Link URL */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Click Link URL (ক্লিক করলে যে লিংকে যাবে)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.linkUrl || ''}
+                            onChange={(e) => onChange('linkUrl', e.target.value)}
+                            placeholder="https://... or #target"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+
+                    {/* Alignment */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            Image Alignment
+                        </label>
+                        <div className="grid grid-cols-3 gap-1">
+                            {[
+                                { mode: 'left', icon: AlignLeft, label: 'Left' },
+                                { mode: 'center', icon: AlignCenter, label: 'Center' },
+                                { mode: 'right', icon: AlignRight, label: 'Right' },
+                            ].map((item) => {
+                                const IconComp = item.icon;
+                                const isSel = (p.align || 'center') === item.mode;
+                                return (
+                                    <button
+                                        key={item.mode}
+                                        type="button"
+                                        onClick={() => onChange('align', item.mode)}
+                                        className={`py-1.5 flex flex-col items-center justify-center rounded-lg border text-xs transition cursor-pointer ${
+                                            isSel
+                                                ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold ring-1 ring-primary-500'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <IconComp className="w-4 h-4" />
+                                        <span className="text-[10px] mt-0.5">{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Aspect Ratio */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Aspect Ratio (অনুপাত)
+                        </label>
+                        <select
+                            value={p.aspectRatio || 'auto'}
+                            onChange={(e) => onChange('aspectRatio', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                        >
+                            <option value="auto">Auto (স্বাভাবিক মাপ)</option>
+                            <option value="1/1">Square (1:1)</option>
+                            <option value="4/3">Landscape (4:3)</option>
+                            <option value="16/9">Widescreen (16:9)</option>
+                        </select>
+                    </div>
+                </div>
+            );
+        }
+
+        case 'ButtonBlock': {
+            const p = props as unknown as ButtonBlockProps;
+            return (
+                <div className="space-y-4">
+                    {/* Button Text */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Button Text (বাটনের লেখা)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.text || ''}
+                            onChange={(e) => onChange('text', e.target.value)}
+                            placeholder="অর্ডার করতে ক্লিক করুন"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 font-bold focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                    </div>
+
+                    {/* Target Selector / URL */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                            Target / Link URL (টার্গেট বা লিংক)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.target || ''}
+                            onChange={(e) => onChange('target', e.target.value)}
+                            placeholder="#cod_order_form or https://..."
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 font-mono"
+                        />
+                        <span className="text-[10px] text-gray-400 mt-1 block">
+                            যেমন #cod_checkout_form দিলে স্ক্রোল করে ফর্ম দেখাবে, বা পূর্ণ URL দিলে সেই পেজে যাবে।
+                        </span>
+                    </div>
+
+                    {/* Size & Width */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Button Size
+                            </label>
+                            <select
+                                value={p.size || 'md'}
+                                onChange={(e) => onChange('size', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                            >
+                                <option value="sm">Small</option>
+                                <option value="md">Medium</option>
+                                <option value="lg">Large</option>
+                                <option value="xl">Extra Large</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Width Mode
+                            </label>
+                            <select
+                                value={p.width || 'auto'}
+                                onChange={(e) => onChange('width', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                            >
+                                <option value="auto">Auto (লেখার মাপ অনুযায়ী)</option>
+                                <option value="full">Full Width (পুরো প্রস্থ)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Button Alignment */}
+                    <div>
+                        <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
+                            Button Alignment
+                        </label>
+                        <div className="grid grid-cols-3 gap-1">
+                            {[
+                                { mode: 'left', icon: AlignLeft, label: 'Left' },
+                                { mode: 'center', icon: AlignCenter, label: 'Center' },
+                                { mode: 'right', icon: AlignRight, label: 'Right' },
+                            ].map((item) => {
+                                const IconComp = item.icon;
+                                const isSel = (p.align || 'center') === item.mode;
+                                return (
+                                    <button
+                                        key={item.mode}
+                                        type="button"
+                                        onClick={() => onChange('align', item.mode)}
+                                        className={`py-1.5 flex flex-col items-center justify-center rounded-lg border text-xs transition cursor-pointer ${
+                                            isSel
+                                                ? 'bg-primary-50 border-primary-600 text-primary-900 font-bold ring-1 ring-primary-500'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <IconComp className="w-4 h-4" />
+                                        <span className="text-[10px] mt-0.5">{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Background Color & Text Color */}
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Button Background
+                            </label>
+                            <div className="flex items-center space-x-1.5">
+                                <input
+                                    type="color"
+                                    value={p.backgroundColor || '#059669'}
+                                    onChange={(e) => onChange('backgroundColor', e.target.value)}
+                                    className="w-7 h-7 rounded border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={p.backgroundColor || ''}
+                                    onChange={(e) => onChange('backgroundColor', e.target.value)}
+                                    placeholder="#059669"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Text Color
+                            </label>
+                            <div className="flex items-center space-x-1.5">
+                                <input
+                                    type="color"
+                                    value={p.textColor || '#ffffff'}
+                                    onChange={(e) => onChange('textColor', e.target.value)}
+                                    className="w-7 h-7 rounded border border-gray-300 p-0.5 cursor-pointer shrink-0"
+                                />
+                                <input
+                                    type="text"
+                                    value={p.textColor || ''}
+                                    onChange={(e) => onChange('textColor', e.target.value)}
+                                    placeholder="#ffffff"
+                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Corner Radius & Pulse Animation */}
+                    <div className="space-y-3 pt-2 border-t border-gray-100">
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Border Radius
+                            </label>
+                            <input
+                                type="text"
+                                value={p.borderRadius || ''}
+                                onChange={(e) => onChange('borderRadius', e.target.value)}
+                                placeholder="8px or 9999px"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2"
+                            />
+                        </div>
+
+                        <label className="flex items-center space-x-2 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={p.pulseAnimation ?? true}
+                                onChange={(e) => onChange('pulseAnimation', e.target.checked)}
+                                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                            />
+                            <span className="text-xs font-semibold text-gray-800 flex items-center">
+                                <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-500" />
+                                Elementor Pulse Animation
+                            </span>
+                        </label>
                     </div>
                 </div>
             );

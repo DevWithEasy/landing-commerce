@@ -3,31 +3,42 @@ import type {
     Block,
     BlockProps,
     BlockStyles,
+    ButtonBlockProps,
     CodCheckoutBlockProps,
+    ContainerBlockProps,
     CountdownTimerBlockProps,
     FaqBlockProps,
+    HeadingBlockProps,
     HeroBlockProps,
     HtmlBlockProps,
+    ImageBlockProps,
     ProductSelectorBlockProps,
     ReviewsBlockProps,
     StickyBarBlockProps,
+    TextBlockProps,
     VideoBlockProps,
 } from '@/types/builder';
 
 import { BenefitsGridBlock } from './BenefitsGridBlock';
+import { ButtonBlock } from './ButtonBlock';
 import { CodCheckoutBlock } from './CodCheckoutBlock';
+import { ContainerBlock } from './ContainerBlock';
 import { CountdownTimerBlock } from './CountdownTimerBlock';
 import { FaqBlock } from './FaqBlock';
+import { HeadingBlock } from './HeadingBlock';
 import { HeroBlock } from './HeroBlock';
 import { HtmlBlock } from './HtmlBlock';
+import { ImageBlock } from './ImageBlock';
 import { ProductSelectorBlock } from './ProductSelectorBlock';
 import { ReviewsBlock } from './ReviewsBlock';
 import { StickyBarBlock } from './StickyBarBlock';
+import { TextBlock } from './TextBlock';
 import { VideoBlock } from './VideoBlock';
 
 export interface BlockComponentProps<T = BlockProps> {
     props: T;
     styles?: BlockStyles;
+    children?: Block[];
     isEditor?: boolean;
 }
 
@@ -45,13 +56,74 @@ export const BLOCK_COMPONENTS = {
     CountdownTimerBlock,
     StickyBarBlock,
     HtmlBlock,
+    ContainerBlock,
+    HeadingBlock,
+    TextBlock,
+    ImageBlock,
+    ButtonBlock,
 } as const;
 
 /**
  * Render a block from its AST node.
  */
-export function renderAstBlock(block: Block, isEditor = false) {
+export function renderAstBlock(
+    block: Block,
+    isEditor = false,
+    renderChildren?: (children: Block[]) => React.ReactNode,
+    onAddChild?: () => void
+) {
     switch (block.type) {
+        case 'ContainerBlock':
+            return (
+                <ContainerBlock
+                    key={block.id}
+                    props={block.props as unknown as ContainerBlockProps}
+                    styles={block.styles}
+                    children={block.children}
+                    renderChildren={
+                        renderChildren ||
+                        ((ch) => ch.map((c) => renderAstBlock(c, isEditor, renderChildren, onAddChild)))
+                    }
+                    isEditor={isEditor}
+                    onAddChild={onAddChild}
+                />
+            );
+        case 'HeadingBlock':
+            return (
+                <HeadingBlock
+                    key={block.id}
+                    props={block.props as unknown as HeadingBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
+        case 'TextBlock':
+            return (
+                <TextBlock
+                    key={block.id}
+                    props={block.props as unknown as TextBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
+        case 'ImageBlock':
+            return (
+                <ImageBlock
+                    key={block.id}
+                    props={block.props as unknown as ImageBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
+        case 'ButtonBlock':
+            return (
+                <ButtonBlock
+                    key={block.id}
+                    props={block.props as unknown as ButtonBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
         case 'HeroBlock':
             return (
                 <HeroBlock
@@ -148,14 +220,20 @@ export function renderAstBlock(block: Block, isEditor = false) {
 }
 
 export {
-    HeroBlock,
-    ProductSelectorBlock,
-    CodCheckoutBlock,
     BenefitsGridBlock,
-    ReviewsBlock,
-    VideoBlock,
-    FaqBlock,
+    ButtonBlock,
+    CodCheckoutBlock,
+    ContainerBlock,
     CountdownTimerBlock,
-    StickyBarBlock,
+    FaqBlock,
+    HeadingBlock,
+    HeroBlock,
     HtmlBlock,
+    ImageBlock,
+    ProductSelectorBlock,
+    ReviewsBlock,
+    StickyBarBlock,
+    TextBlock,
+    VideoBlock,
 };
+

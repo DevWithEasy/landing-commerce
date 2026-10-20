@@ -6,6 +6,7 @@ import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Card } from '@/Shared/Card';
 import { ImageUploader } from '@/Shared/ImageUploader';
+import { RichTextEditor } from '@/Shared/RichTextEditor';
 import { VariantGenerator, type VariantRowItem } from '@/Shared/VariantGenerator';
 import type { ProductEditProps, ProductImage } from '@/types';
 
@@ -241,20 +242,14 @@ export default function Edit({
                         </div>
 
                         <div className="sm:col-span-2">
-                            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                                Description
-                            </label>
-                            <textarea
-                                rows={4}
+                            <RichTextEditor
+                                label="Description"
+                                placeholder="Write key marketing highlights, materials, specifications, and warranty info..."
                                 value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
-                                className="w-full text-sm rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
+                                onChange={(content) => setData('description', content)}
+                                error={errors.description}
+                                minHeight="200px"
                             />
-                            {errors.description && (
-                                <p className="text-xs text-rose-600 mt-1 font-medium">
-                                    {errors.description}
-                                </p>
-                            )}
                         </div>
                     </div>
                 </Card>

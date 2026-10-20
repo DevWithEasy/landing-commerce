@@ -2,6 +2,7 @@ import { Image as ImageIcon, Star, Trash2, UploadCloud } from 'lucide-react';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useRef, useState } from 'react';
 import type { ProductImage } from '@/types';
+import { SafeImage } from './SafeImage';
 
 export interface ImageUploaderProps {
     existingImages?: ProductImage[];
@@ -123,10 +124,12 @@ export function ImageUploader({
                                 }`}
                             >
                                 <div className="aspect-square bg-gray-100 overflow-hidden">
-                                    <img
+                                    <SafeImage
                                         src={img.thumb_url || img.url}
                                         alt={img.alt_text || 'Product image'}
                                         className="w-full h-full object-cover object-center"
+                                        fallbackIconSize="w-8 h-8"
+                                        fallbackText="Missing File"
                                     />
                                 </div>
 
@@ -187,10 +190,12 @@ export function ImageUploader({
                                     className="relative rounded-lg border border-gray-200 overflow-hidden bg-white shadow-xs group"
                                 >
                                     <div className="aspect-square bg-gray-100 overflow-hidden">
-                                        <img
+                                        <SafeImage
                                             src={previewUrl}
                                             alt={file.name}
                                             className="w-full h-full object-cover object-center"
+                                            fallbackIconSize="w-8 h-8"
+                                            fallbackText=""
                                         />
                                     </div>
                                     <div className="p-2 text-xs truncate text-gray-600 bg-white">

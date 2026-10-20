@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Calendar, CreditCard, ExternalLink, MapPin, Package, Phone, Search, Truck, User } from 'lucide-react';
 import { CustomerLayout } from '@/Layouts/CustomerLayout';
 import { formatBdt } from '@/Shared/ProductCard';
+import { SafeImage } from '@/Shared/SafeImage';
 import type { Category, Order, OrderItem, ProductImage } from '@/types';
 import type { StorefrontTheme } from '@/types/storefront';
 
@@ -96,11 +97,13 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                                         <div key={item.id} className="p-5 flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-4 min-w-0">
                                                 <div className="w-16 h-16 rounded-xl border border-gray-200 bg-gray-50 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                                    {imgUrl ? (
-                                                        <img src={imgUrl} alt={item.product_title} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Package className="w-6 h-6 text-gray-400" />
-                                                    )}
+                                                    <SafeImage
+                                                        src={imgUrl}
+                                                        alt={item.product_title}
+                                                        className="w-full h-full object-cover"
+                                                        fallbackIconSize="w-6 h-6"
+                                                        fallbackText=""
+                                                    />
                                                 </div>
 
                                                 <div className="min-w-0">

@@ -13,6 +13,7 @@ import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Pagination } from '@/Shared/Pagination';
+import { SafeImage } from '@/Shared/SafeImage';
 import type { Category, CategoryIndexProps } from '@/types';
 
 export default function CategoryIndex({
@@ -273,15 +274,13 @@ export default function CategoryIndex({
                                     <tr key={cat.id} className="hover:bg-gray-50 transition">
                                         <td className="py-3.5 px-4 flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
-                                                {cat.image_url ? (
-                                                    <img
-                                                        src={cat.image_url}
-                                                        alt={cat.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <FolderTree className="w-5 h-5 text-gray-400" />
-                                                )}
+                                                <SafeImage
+                                                    src={cat.image_url}
+                                                    alt={cat.name}
+                                                    className="w-full h-full object-cover"
+                                                    fallbackIcon={<FolderTree className="w-5 h-5 text-gray-400" />}
+                                                    fallbackText=""
+                                                />
                                             </div>
                                             <div>
                                                 <div className="font-semibold text-gray-900">

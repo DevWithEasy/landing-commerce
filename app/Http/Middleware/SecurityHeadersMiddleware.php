@@ -11,6 +11,19 @@ use Symfony\Component\HttpFoundation\Response;
 class SecurityHeadersMiddleware
 {
     /**
+     * CSP directives that must reach the Vite dev server when it is running.
+     *
+     * @var list<string>
+     */
+    private const VITE_ASSET_DIRECTIVES = [
+        'script-src',
+        'style-src',
+        'img-src',
+        'font-src',
+        'connect-src',
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  Closure(Request): (Response)  $next
@@ -104,6 +117,7 @@ class SecurityHeadersMiddleware
         }
 
         $isLocal = app()->environment('local', 'development');
+        $viteOrigin = $this->viteDevServerOrigin();
         $policyParts = [];
 
         foreach ($directives as $directive => $sources) {
@@ -112,6 +126,18 @@ class SecurityHeadersMiddleware
             // In local development, permit Vite HMR connections
             if ($isLocal && $directive === 'connect-src') {
                 $sourceList = array_unique(array_merge($sourceList, ['ws:', 'wss:', 'http:']));
+            }
+
+            // While the Vite dev server is running it serves the app's JS, CSS
+            // and asset modules, so its loopback origin must be allowlisted.
+            if ($viteOrigin !== null && in_array($directive, self::VITE_ASSET_DIRECTIVES, true)) {
+                $viteSources = [$viteOrigin];
+
+                if ($directive === 'connect-src') {
+                    $viteSources[] = $this->websocketOrigin($viteOrigin);
+                }
+
+                $sourceList = array_unique(array_merge($sourceList, $viteSources));
             }
 
             $policyParts[] = $directive.' '.implode(' ', $sourceList);
@@ -123,6 +149,62 @@ class SecurityHeadersMiddleware
             : 'Content-Security-Policy';
 
         $response->headers->set($headerName, $policyString);
+    }
+
+    /**
+     * Resolve the loopback origin of a running Vite dev server, if any.
+     *
+     * Vite writes its address to public/hot. Only loopback origins are
+     * accepted so a stray or tampered hot file cannot widen the CSP to an
+     * arbitrary third-party host.
+     */
+    protected function viteDevServerOrigin(): ?string
+    {
+        $hotFile = public_path('hot');
+
+        if (! is_file($hotFile) || ! is_readable($hotFile)) {
+            return null;
+        }
+
+        $contents = file_get_contents($hotFile);
+
+        if ($contents === false) {
+            return null;
+        }
+
+        $url = trim(strtok($contents, "\r\n") ?: '');
+        $parts = parse_url($url);
+
+        if ($parts === false || ! isset($parts['scheme'], $parts['host'])) {
+            return null;
+        }
+
+        $scheme = strtolower($parts['scheme']);
+        $host = strtolower($parts['host']);
+
+        if (! in_array($scheme, ['http', 'https'], true)) {
+            return null;
+        }
+
+        if (! in_array($host, ['localhost', '127.0.0.1', '::1', '[::1]'], true)) {
+            return null;
+        }
+
+        $port = isset($parts['port']) ? ':'.(int) $parts['port'] : '';
+
+        return $scheme.'://'.$parts['host'].$port;
+    }
+
+    /**
+     * Build the WebSocket origin matching the given HTTP Vite origin.
+     */
+    protected function websocketOrigin(string $origin): string
+    {
+        if (str_starts_with($origin, 'https://')) {
+            return 'wss://'.substr($origin, strlen('https://'));
+        }
+
+        return 'ws://'.substr($origin, strlen('http://'));
     }
 
     /**

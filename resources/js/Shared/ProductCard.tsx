@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { Eye, ShoppingBag, ShoppingCart } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { Product } from '@/types';
+import { SafeImage } from './SafeImage';
 
 interface ProductCardProps {
     product: Product;
@@ -90,7 +91,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {/* Image & Badges */}
             <div className="relative aspect-square bg-gray-100 overflow-hidden">
                 <Link href={`/product/${product.slug}`} className="block w-full h-full">
-                    <img
+                    <SafeImage
                         src={imageUrl}
                         alt={product.title}
                         width={400}

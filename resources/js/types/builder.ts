@@ -17,7 +17,12 @@ export type BlockType =
     | 'FaqBlock'
     | 'CountdownTimerBlock'
     | 'StickyBarBlock'
-    | 'HtmlBlock';
+    | 'HtmlBlock'
+    | 'ContainerBlock'
+    | 'HeadingBlock'
+    | 'TextBlock'
+    | 'ImageBlock'
+    | 'ButtonBlock';
 
 export interface BlockStyles {
     color?: string;
@@ -184,6 +189,52 @@ export interface StickyBarBlockProps {
     placement?: 'top' | 'bottom';
 }
 
+export interface ContainerBlockProps {
+    direction?: 'column' | 'row';
+    wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
+    justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
+    alignItems?: 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'baseline';
+    gap?: string;
+}
+
+export interface HeadingBlockProps {
+    text: string;
+    tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+    align?: 'left' | 'center' | 'right';
+    color?: string;
+    fontSize?: string;
+    fontWeight?: string;
+}
+
+export interface TextBlockProps {
+    content: string;
+    align?: 'left' | 'center' | 'right' | 'justify';
+    color?: string;
+    fontSize?: string;
+    lineHeight?: string;
+}
+
+export interface ImageBlockProps {
+    imageUrl: string;
+    altText?: string;
+    caption?: string;
+    aspectRatio?: string;
+    linkUrl?: string;
+    align?: 'left' | 'center' | 'right';
+}
+
+export interface ButtonBlockProps {
+    text: string;
+    target?: string;
+    size?: 'sm' | 'md' | 'lg' | 'xl';
+    width?: 'auto' | 'full';
+    align?: 'left' | 'center' | 'right';
+    backgroundColor?: string;
+    textColor?: string;
+    borderRadius?: string;
+    pulseAnimation?: boolean;
+}
+
 export type BlockProps =
     | HeroBlockProps
     | ProductSelectorBlockProps
@@ -195,6 +246,11 @@ export type BlockProps =
     | CountdownTimerBlockProps
     | StickyBarBlockProps
     | HtmlBlockProps
+    | ContainerBlockProps
+    | HeadingBlockProps
+    | TextBlockProps
+    | ImageBlockProps
+    | ButtonBlockProps
     | Record<string, unknown>;
 
 export interface Block<TProps = BlockProps> {
@@ -202,6 +258,7 @@ export interface Block<TProps = BlockProps> {
     type: BlockType;
     props: TProps;
     styles: BlockStyles;
+    children?: Block[];
 }
 
 export interface PageSettings {

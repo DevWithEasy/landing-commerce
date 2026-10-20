@@ -1,6 +1,7 @@
 import { Camera, Check, Layers, Palette, Plus, Sparkles, Trash2, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from './Button';
+import { SafeImage } from './SafeImage';
 
 export interface VariantRowItem {
     id?: number;
@@ -595,10 +596,12 @@ export function VariantGenerator({
 
                                                 {previewImage ? (
                                                     <div className="relative group w-12 h-12 mx-auto rounded-lg border border-slate-300 overflow-hidden shadow-2xs">
-                                                        <img
+                                                        <SafeImage
                                                             src={previewImage}
                                                             alt={v.name}
                                                             className="w-full h-full object-cover"
+                                                            fallbackIconSize="w-5 h-5"
+                                                            fallbackText=""
                                                         />
                                                         <button
                                                             type="button"

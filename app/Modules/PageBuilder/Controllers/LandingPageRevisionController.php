@@ -46,20 +46,11 @@ class LandingPageRevisionController extends Controller
             'published_revision_id' => $revision->id,
         ];
 
-        // Sync primary product_id if found in AST blocks
+        // Sync primary product_id if found in AST blocks (including nested containers)
         if (! empty($validatedAst['blocks']) && is_array($validatedAst['blocks'])) {
-            foreach ($validatedAst['blocks'] as $block) {
-                if (in_array($block['type'] ?? '', ['ProductSelectorBlock', 'CodCheckoutBlock'], true)) {
-                    $pIds = $block['props']['productIds'] ?? null;
-                    if (is_array($pIds) && ! empty($pIds)) {
-                        $updates['product_id'] = (int) $pIds[0];
-                        break;
-                    }
-                    if (! empty($block['props']['productId'])) {
-                        $updates['product_id'] = (int) $block['props']['productId'];
-                        break;
-                    }
-                }
+            $extractedProductId = $this->extractPrimaryProductId($validatedAst['blocks']);
+            if ($extractedProductId !== null) {
+                $updates['product_id'] = $extractedProductId;
             }
         }
 
@@ -97,18 +88,9 @@ class LandingPageRevisionController extends Controller
         ];
 
         if (! empty($revision->ast_content['blocks']) && is_array($revision->ast_content['blocks'])) {
-            foreach ($revision->ast_content['blocks'] as $block) {
-                if (in_array($block['type'] ?? '', ['ProductSelectorBlock', 'CodCheckoutBlock'], true)) {
-                    $pIds = $block['props']['productIds'] ?? null;
-                    if (is_array($pIds) && ! empty($pIds)) {
-                        $updates['product_id'] = (int) $pIds[0];
-                        break;
-                    }
-                    if (! empty($block['props']['productId'])) {
-                        $updates['product_id'] = (int) $block['props']['productId'];
-                        break;
-                    }
-                }
+            $extractedProductId = $this->extractPrimaryProductId($revision->ast_content['blocks']);
+            if ($extractedProductId !== null) {
+                $updates['product_id'] = $extractedProductId;
             }
         }
 
@@ -120,5 +102,38 @@ class LandingPageRevisionController extends Controller
             'revision' => $newRevision,
             'published_revision_id' => $newRevision->id,
         ]);
+    }
+
+    /**
+     * Recursively extract the primary product ID from an AST block tree.
+     *
+     * @param  list<array<string, mixed>>  $blocks
+     */
+    protected function extractPrimaryProductId(array $blocks): ?int
+    {
+        foreach ($blocks as $block) {
+            if (! is_array($block)) {
+                continue;
+            }
+
+            if (in_array($block['type'] ?? '', ['ProductSelectorBlock', 'CodCheckoutBlock'], true)) {
+                $pIds = $block['props']['productIds'] ?? null;
+                if (is_array($pIds) && ! empty($pIds)) {
+                    return (int) $pIds[0];
+                }
+                if (! empty($block['props']['productId'])) {
+                    return (int) $block['props']['productId'];
+                }
+            }
+
+            if (! empty($block['children']) && is_array($block['children'])) {
+                $nestedId = $this->extractPrimaryProductId($block['children']);
+                if ($nestedId !== null) {
+                    return $nestedId;
+                }
+            }
+        }
+
+        return null;
     }
 }

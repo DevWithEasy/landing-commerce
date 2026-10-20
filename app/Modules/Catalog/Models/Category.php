@@ -167,20 +167,35 @@ class Category extends Model
     {
         $cacheKey = $onlyActive ? 'storefront_category_tree_active' : 'storefront_category_tree_all';
 
-        return Cache::remember($cacheKey, 3600, function () use ($onlyActive) {
-            $query = self::query()->root()->orderBy('sort_order')->orderBy('name');
-
-            if ($onlyActive) {
-                $query->active()->with(['children' => function ($q) {
-                    $q->active()->orderBy('sort_order')->orderBy('name');
-                }]);
-            } else {
-                $query->with(['children' => function ($q) {
-                    $q->orderBy('sort_order')->orderBy('name');
-                }]);
+        try {
+            $cached = Cache::get($cacheKey);
+            if ($cached instanceof Collection) {
+                return $cached;
             }
+        } catch (\Throwable) {
+            // Ignore corrupted or incompatible serialized cache
+        }
 
-            return $query->get();
-        });
+        $query = self::query()->root()->orderBy('sort_order')->orderBy('name');
+
+        if ($onlyActive) {
+            $query->active()->with(['children' => function ($q) {
+                $q->active()->orderBy('sort_order')->orderBy('name');
+            }]);
+        } else {
+            $query->with(['children' => function ($q) {
+                $q->orderBy('sort_order')->orderBy('name');
+            }]);
+        }
+
+        $tree = $query->get();
+
+        try {
+            Cache::put($cacheKey, $tree, 3600);
+        } catch (\Throwable) {
+            // Silently allow if cache storage fails
+        }
+
+        return $tree;
     }
 }

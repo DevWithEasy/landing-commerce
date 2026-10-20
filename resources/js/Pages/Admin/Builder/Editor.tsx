@@ -15,7 +15,7 @@ import { Inspector } from '@/Builder/components/Inspector';
 import { LeftSidebar } from '@/Builder/components/LeftSidebar';
 import { RevisionsDrawer } from '@/Builder/components/RevisionsDrawer';
 import { TopBar } from '@/Builder/components/TopBar';
-import { useBuilderStore } from '@/Builder/stores/useBuilderStore';
+import { findParentInTree, useBuilderStore } from '@/Builder/stores/useBuilderStore';
 import type { Block, BlockType, BuilderEditorProps, LandingPageRevisionSummary } from '@/types';
 
 export default function Editor({
@@ -24,13 +24,25 @@ export default function Editor({
     blockDefinitions,
     products,
 }: BuilderEditorProps) {
-    const { ast, setAst, setAvailableProducts, addBlock, reorderBlocks, undo, redo, canUndo, canRedo } =
-        useBuilderStore();
+    const {
+        ast,
+        setAst,
+        setAvailableProducts,
+        addBlock,
+        moveBlock,
+        reorderBlocks,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        setSelectedBlockId,
+    } = useBuilderStore();
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isRevisionsOpen, setIsRevisionsOpen] = useState(false);
+    const [targetContainerId, setTargetContainerId] = useState<string | null>(null);
 
     // Draggable sidebar widths with localStorage persistence
     const [leftWidth, setLeftWidth] = useState<number>(() => {
@@ -233,21 +245,38 @@ export default function Editor({
         })
     );
 
-    // Handle drag end reordering
+    // Handle drag end reordering & cross-container moving
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
-        const oldIndex = ast.blocks.findIndex((b) => b.id === active.id);
-        const newIndex = ast.blocks.findIndex((b) => b.id === over.id);
+        const activeId = String(active.id);
+        const overId = String(over.id);
 
-        if (oldIndex !== -1 && newIndex !== -1) {
-            reorderBlocks(oldIndex, newIndex);
+        // Case 1: Dropped onto empty container drop target
+        if (overId.startsWith('container_drop_')) {
+            const containerId = overId.replace('container_drop_', '');
+            moveBlock(activeId, containerId, 0);
+            return;
+        }
+
+        // Case 2: Dropped over a sibling or nested block
+        const targetInfo = findParentInTree(ast.blocks, overId);
+        if (targetInfo) {
+            const targetParentId = targetInfo.parent ? targetInfo.parent.id : null;
+            moveBlock(activeId, targetParentId, targetInfo.index);
+        } else {
+            // Root-level block fallback
+            const oldIndex = ast.blocks.findIndex((b) => b.id === activeId);
+            const newIndex = ast.blocks.findIndex((b) => b.id === overId);
+            if (oldIndex !== -1 && newIndex !== -1) {
+                reorderBlocks(oldIndex, newIndex);
+            }
         }
     };
 
-    // Add block from palette
-    const handleAddBlock = (blockType: BlockType) => {
+    // Add block from palette (to root or targeted container)
+    const handleAddBlock = (blockType: BlockType, targetParentId?: string | null) => {
         const def = blockDefinitions[blockType];
         if (!def) return;
 
@@ -263,14 +292,18 @@ export default function Editor({
             initialProps = { ...initialProps, productId: defaultProdId };
         }
 
+        const isContainer = blockType === 'ContainerBlock';
         const newBlock: Block = {
             id: newBlockId,
             type: blockType,
             props: initialProps,
             styles: { ...def.defaultStyles },
+            children: isContainer ? [] : undefined,
         };
 
-        addBlock(newBlock);
+        const destinationParentId = targetParentId !== undefined ? targetParentId : targetContainerId;
+        addBlock(newBlock, destinationParentId ?? null);
+        setSelectedBlockId(newBlockId);
     };
 
     return (
@@ -294,6 +327,8 @@ export default function Editor({
                         width={leftWidth}
                         blockDefinitions={blockDefinitions}
                         onAddBlock={handleAddBlock}
+                        targetContainerId={targetContainerId}
+                        onClearTargetContainer={() => setTargetContainerId(null)}
                     />
 
                     {/* Left Sidebar Resize Handle (Mouse Drag) */}
@@ -310,7 +345,13 @@ export default function Editor({
                         collisionDetection={closestCenter}
                         onDragEnd={handleDragEnd}
                     >
-                        <Canvas blockDefinitions={blockDefinitions} />
+                        <Canvas
+                            blockDefinitions={blockDefinitions}
+                            onAddBlockToContainer={(containerId) => {
+                                setSelectedBlockId(containerId);
+                                setTargetContainerId(containerId);
+                            }}
+                        />
                     </DndContext>
 
                     {/* Right Inspector Resize Handle (Mouse Drag) */}

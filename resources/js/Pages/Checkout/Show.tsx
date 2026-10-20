@@ -11,6 +11,7 @@ import {
     Truck,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { SafeImage } from '@/Shared/SafeImage';
 import { trackAddPaymentInfo, trackInitiateCheckout } from '@/Shared/Tracking';
 import type { CheckoutShowProps, District, ProductVariant } from '@/types';
 
@@ -792,10 +793,13 @@ export default function CheckoutShow({
                                             className="pt-3 first:pt-0 flex items-center justify-between gap-3"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <img
+                                                <SafeImage
                                                     src={item.image_url}
                                                     alt={item.product_title}
                                                     className="w-14 h-14 object-cover rounded-xl border border-slate-100 shrink-0"
+                                                    fallbackIconSize="w-5 h-5"
+                                                    fallbackText=""
+                                                    fallbackClassName="w-14 h-14 rounded-xl border border-slate-100 shrink-0"
                                                 />
                                                 <div className="min-w-0">
                                                     <h4 className="text-xs font-bold text-slate-900 truncate">
@@ -826,17 +830,15 @@ export default function CheckoutShow({
                                 </h3>
 
                                 <div className="flex gap-3.5 items-start">
-                                    {primaryImage ? (
-                                        <img
-                                            src={primaryImage.thumb_url || primaryImage.url}
-                                            alt={primaryImage.alt_text || product.title}
-                                            className="w-20 h-20 object-cover rounded-xl border border-slate-100 shrink-0"
+                                    <div className="w-20 h-20 rounded-xl border border-slate-100 shrink-0 overflow-hidden">
+                                        <SafeImage
+                                            src={primaryImage ? (primaryImage.thumb_url || primaryImage.url) : null}
+                                            alt={primaryImage?.alt_text || product.title}
+                                            className="w-full h-full object-cover"
+                                            fallbackIconSize="w-8 h-8"
+                                            fallbackText=""
                                         />
-                                    ) : (
-                                        <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                                            <Package className="w-8 h-8" />
-                                        </div>
-                                    )}
+                                    </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-sm font-bold text-slate-900 leading-snug truncate">
                                             {product.title}

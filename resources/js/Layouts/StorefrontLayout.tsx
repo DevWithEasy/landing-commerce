@@ -6,9 +6,13 @@ import {
     HelpCircle,
     Home,
     Layers,
+    LayoutDashboard,
+    LogOut,
     Menu,
+    Package,
     Phone,
     Search,
+    Settings,
     ShieldCheck,
     ShoppingBag,
     Store,
@@ -17,8 +21,9 @@ import {
     X,
 } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MiniCartDrawer } from '@/Shared/MiniCartDrawer';
+import { SafeImage } from '@/Shared/SafeImage';
 import type { Category, SharedProps } from '@/types';
 import type { CartSummary } from '@/types/cart';
 import type { StorefrontTheme } from '@/types/storefront';
@@ -53,7 +58,10 @@ export function StorefrontLayout({
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+    const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
     const [expandedMobileCategories, setExpandedMobileCategories] = useState<Record<number, boolean>>({});
+
+    const accountMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (page.props.cart) {
@@ -61,8 +69,36 @@ export function StorefrontLayout({
         }
     }, [page.props.cart]);
 
+    const adminUser = page.props.auth?.user;
     const customer = page.props.auth?.customer;
-    const accountUrl = customer ? '/customer/dashboard' : '/customer/login';
+
+    let accountUrl = '/customer/login';
+
+    if (adminUser) {
+        accountUrl = '/admin';
+    } else if (customer) {
+        accountUrl = '/customer/dashboard';
+    }
+
+    const adminRoleLabel =
+        adminUser?.role === 'super_admin'
+            ? 'সুপার অ্যাডমিন'
+            : adminUser?.role === 'store_manager'
+            ? 'স্টোর ম্যানেজার'
+            : adminUser?.role === 'fulfillment_agent'
+            ? 'ফুলফিলমেন্ট এজেন্ট'
+            : 'অ্যাডমিন মোড';
+
+    // Close account dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+                setIsAccountDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Listen for custom open-mini-cart events across the storefront
     useEffect(() => {
@@ -88,6 +124,7 @@ export function StorefrontLayout({
                 setIsMobileMenuOpen(false);
                 setIsCategoryDropdownOpen(false);
                 setIsMobileSearchOpen(false);
+                setIsAccountDropdownOpen(false);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -143,6 +180,16 @@ export function StorefrontLayout({
                     </div>
 
                     <div className="flex items-center gap-4">
+                        {adminUser && (
+                            <Link
+                                href="/admin"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-400 text-gray-950 font-bold rounded-full text-[11px] hover:bg-amber-300 transition shadow-xs"
+                                title="অ্যাডমিন প্যানেল খুলুন"
+                            >
+                                <ShieldCheck className="w-3.5 h-3.5 text-amber-900" />
+                                <span>অ্যাডমিন মোড সক্রিয়</span>
+                            </Link>
+                        )}
                         <Link
                             href="/track-order"
                             className="hidden sm:inline-flex items-center gap-1 text-gray-300 hover:text-white transition"
@@ -188,17 +235,17 @@ export function StorefrontLayout({
                         </button>
 
                         <Link href="/" className="flex items-center gap-2.5">
-                            {theme.logo_url ? (
-                                <img
-                                    src={theme.logo_url}
-                                    alt={theme.store_name}
-                                    className="h-10 sm:h-12 w-auto object-contain max-w-[180px]"
-                                />
-                            ) : (
-                                <span className="text-xl sm:text-2xl font-black tracking-tight text-indigo-600">
-                                    {theme.store_name}
-                                </span>
-                            )}
+                            <SafeImage
+                                src={theme.logo_url}
+                                alt={theme.store_name}
+                                className="h-10 sm:h-12 w-auto object-contain max-w-[180px]"
+                                fallbackText=""
+                                fallbackIcon={
+                                    <span className="text-xl sm:text-2xl font-black tracking-tight text-indigo-600">
+                                        {theme.store_name}
+                                    </span>
+                                }
+                            />
                         </Link>
                     </div>
 
@@ -235,15 +282,214 @@ export function StorefrontLayout({
                             <Search className="w-5 h-5" />
                         </button>
 
-                        {/* Customer Account Entry */}
-                        <Link
-                            href={accountUrl}
-                            className="p-2 text-gray-700 hover:text-indigo-600 rounded-full hover:bg-gray-100 transition"
-                            title={customer ? `আমার অ্যাকাউন্ট (${customer.name})` : 'লগইন / রেজিস্টার'}
-                            aria-label="Account"
-                        >
-                            <UserIcon className="w-5 h-5" />
-                        </Link>
+                        {/* Account Navigation & Dropdown */}
+                        <div className="relative" ref={accountMenuRef}>
+                            {adminUser ? (
+                                <div className="flex items-center bg-amber-50 hover:bg-amber-100/90 border border-amber-300/80 rounded-full pl-1.5 pr-1.5 py-1 transition shadow-xs">
+                                    <Link
+                                        href="/admin"
+                                        className="flex items-center gap-1.5 text-xs font-bold text-amber-900"
+                                        title={`অ্যাডমিন প্যানেল (${adminUser.name})`}
+                                    >
+                                        <div className="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs">
+                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                        </div>
+                                        <span className="hidden sm:inline-block max-w-[90px] truncate">{adminUser.name.split(' ')[0]}</span>
+                                        <span className="bg-amber-500 text-white text-[10px] uppercase font-black px-1.5 py-0.5 rounded-full tracking-wide">
+                                            Admin
+                                        </span>
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
+                                        className="p-1 ml-0.5 text-amber-800 hover:text-amber-950 rounded-full hover:bg-amber-200/60 transition"
+                                        aria-label="অ্যাডমিন মেনু খুলুন"
+                                        title="অ্যাডমিন মেনু"
+                                    >
+                                        <ChevronDown
+                                            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                                                isAccountDropdownOpen ? 'rotate-180' : ''
+                                            }`}
+                                        />
+                                    </button>
+                                </div>
+                            ) : customer ? (
+                                <div className="flex items-center bg-indigo-50 hover:bg-indigo-100/90 border border-indigo-200 rounded-full pl-1.5 pr-1.5 py-1 transition shadow-xs">
+                                    <Link
+                                        href="/customer/dashboard"
+                                        className="flex items-center gap-1.5 text-xs font-semibold text-indigo-950"
+                                        title={`আমার প্রোফাইল (${customer.name})`}
+                                    >
+                                        <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-[11px] shadow-xs">
+                                            {customer.name ? customer.name.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
+                                        </div>
+                                        <span className="hidden sm:inline-block max-w-[90px] truncate">{customer.name.split(' ')[0]}</span>
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
+                                        className="p-1 ml-0.5 text-indigo-700 hover:text-indigo-950 rounded-full hover:bg-indigo-200/60 transition"
+                                        aria-label="কাস্টমার মেনু খুলুন"
+                                        title="একাউন্ট মেনু"
+                                    >
+                                        <ChevronDown
+                                            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                                                isAccountDropdownOpen ? 'rotate-180' : ''
+                                            }`}
+                                        />
+                                    </button>
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/customer/login"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-gray-700 hover:text-indigo-600 hover:bg-indigo-50/60 border border-transparent hover:border-indigo-100 rounded-full text-xs font-semibold transition"
+                                    title="লগইন / রেজিস্টার"
+                                    aria-label="লগইন / রেজিস্টার"
+                                >
+                                    <UserIcon className="w-4 h-4 text-gray-600" />
+                                    <span className="hidden sm:inline font-medium">লগইন</span>
+                                </Link>
+                            )}
+
+                            {/* Dropdown Menu */}
+                            {isAccountDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2.5 z-50">
+                                    {adminUser && (
+                                        <>
+                                            <div className="px-4 py-2 border-b border-gray-100">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                                                        {adminRoleLabel}
+                                                    </span>
+                                                </div>
+                                                <p className="font-bold text-gray-900 text-sm mt-1 truncate">{adminUser.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{adminUser.email}</p>
+                                            </div>
+
+                                            <div className="py-1">
+                                                <Link
+                                                    href="/admin"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-amber-50 hover:text-amber-900 transition"
+                                                >
+                                                    <LayoutDashboard className="w-4 h-4 text-amber-600" />
+                                                    <span>অ্যাডমিন ড্যাশবোর্ড</span>
+                                                </Link>
+                                                <Link
+                                                    href="/admin/products"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <Package className="w-4 h-4 text-gray-500" />
+                                                    <span>পণ্য তালিকা ও স্টক</span>
+                                                </Link>
+                                                <Link
+                                                    href="/admin/orders"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <Truck className="w-4 h-4 text-gray-500" />
+                                                    <span>অর্ডার ব্যবস্থাপনা</span>
+                                                </Link>
+                                                <Link
+                                                    href="/admin/appearance"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <Settings className="w-4 h-4 text-gray-500" />
+                                                    <span>স্টোর ও থিম সেটিংস</span>
+                                                </Link>
+                                                {customer && (
+                                                    <Link
+                                                        href="/customer/dashboard"
+                                                        onClick={() => setIsAccountDropdownOpen(false)}
+                                                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 transition border-t border-gray-100"
+                                                    >
+                                                        <UserIcon className="w-4 h-4 text-indigo-600" />
+                                                        <span>কাস্টমার একাউন্ট</span>
+                                                    </Link>
+                                                )}
+                                            </div>
+
+                                            <div className="pt-1 mt-1 border-t border-gray-100 px-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsAccountDropdownOpen(false);
+                                                        router.post('/admin/logout');
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                                                >
+                                                    <LogOut className="w-4 h-4" />
+                                                    <span>অ্যাডমিন লগআউট</span>
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {!adminUser && customer && (
+                                        <>
+                                            <div className="px-4 py-2 border-b border-gray-100">
+                                                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-full">
+                                                    কাস্টমার একাউন্ট
+                                                </span>
+                                                <p className="font-bold text-gray-900 text-sm mt-1 truncate">{customer.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{customer.phone || customer.email}</p>
+                                            </div>
+
+                                            <div className="py-1">
+                                                <Link
+                                                    href="/customer/dashboard"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <LayoutDashboard className="w-4 h-4 text-indigo-600" />
+                                                    <span>আমার ড্যাশবোর্ড</span>
+                                                </Link>
+                                                <Link
+                                                    href="/customer/orders"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <Truck className="w-4 h-4 text-gray-500" />
+                                                    <span>আমার অর্ডারসমূহ</span>
+                                                </Link>
+                                                <Link
+                                                    href="/customer/wishlist"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <Heart className="w-4 h-4 text-rose-500" />
+                                                    <span>আমার উইশলিস্ট</span>
+                                                </Link>
+                                                <Link
+                                                    href="/track-order"
+                                                    onClick={() => setIsAccountDropdownOpen(false)}
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                                >
+                                                    <Search className="w-4 h-4 text-gray-500" />
+                                                    <span>অর্ডার ট্র্যাক করুন</span>
+                                                </Link>
+                                            </div>
+
+                                            <div className="pt-1 mt-1 border-t border-gray-100 px-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsAccountDropdownOpen(false);
+                                                        router.post('/customer/logout');
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                                                >
+                                                    <LogOut className="w-4 h-4" />
+                                                    <span>লগআউট</span>
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
 
                         {/* Wishlist Entry */}
                         <Link
@@ -423,6 +669,87 @@ export function StorefrontLayout({
                             </button>
                         </div>
 
+                        {/* Mobile Account Status Card */}
+                        <div className="p-3 border-b border-gray-100 bg-gray-50/50">
+                            {adminUser ? (
+                                <div className="p-3 bg-amber-50/90 border border-amber-200 rounded-xl">
+                                    <div className="flex items-center gap-2.5 mb-2.5">
+                                        <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
+                                            <ShieldCheck className="w-5 h-5" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <p className="text-xs font-bold text-amber-950 truncate">{adminUser.name}</p>
+                                                <span className="text-[9px] bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-extrabold uppercase">
+                                                    Admin
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-amber-800 truncate">{adminUser.email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Link
+                                            href="/admin"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold text-center transition shadow-xs"
+                                        >
+                                            অ্যাডমিন প্যানেল
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                router.post('/admin/logout');
+                                            }}
+                                            className="px-2.5 py-1.5 bg-white text-rose-600 hover:bg-rose-50 border border-amber-200 rounded-lg text-xs font-semibold text-center transition"
+                                        >
+                                            লগআউট
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : customer ? (
+                                <div className="p-3 bg-indigo-50/90 border border-indigo-100 rounded-xl">
+                                    <div className="flex items-center gap-2.5 mb-2.5">
+                                        <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
+                                            {customer.name ? customer.name.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-xs font-bold text-indigo-950 truncate">{customer.name}</p>
+                                            <p className="text-[11px] text-indigo-700 truncate">{customer.phone || customer.email}</p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Link
+                                            href="/customer/dashboard"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold text-center transition shadow-xs"
+                                        >
+                                            ড্যাশবোর্ড
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                router.post('/customer/logout');
+                                            }}
+                                            className="px-2.5 py-1.5 bg-white text-rose-600 hover:bg-rose-50 border border-indigo-200 rounded-lg text-xs font-semibold text-center transition"
+                                        >
+                                            লগআউট
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/customer/login"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="flex items-center justify-center gap-2 w-full py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs transition shadow-xs"
+                                >
+                                    <UserIcon className="w-4 h-4" />
+                                    <span>লগইন / একাউন্ট তৈরি করুন</span>
+                                </Link>
+                            )}
+                        </div>
+
                         {/* Search inside drawer */}
                         <div className="p-4 border-b border-gray-100">
                             <form onSubmit={handleSearchSubmit} className="relative">
@@ -524,7 +851,7 @@ export function StorefrontLayout({
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="block text-sm font-semibold text-gray-700 hover:text-indigo-600 py-1.5"
                                 >
-                                    {customer ? 'আমার একাউন্ট' : 'লগইন / রেজিস্টার'}
+                                    {adminUser ? 'অ্যাডমিন প্যানেল' : customer ? 'আমার একাউন্ট' : 'লগইন / রেজিস্টার'}
                                 </Link>
                                 <Link
                                     href="/pages/about"
@@ -646,15 +973,15 @@ export function StorefrontLayout({
                         {/* Column 1: Store info */}
                         <div>
                             <div className="flex items-center gap-2 mb-4">
-                                {theme.logo_url ? (
-                                    <img
-                                        src={theme.logo_url}
-                                        alt={theme.store_name}
-                                        className="h-10 w-auto brightness-200"
-                                    />
-                                ) : (
-                                    <span className="text-2xl font-black text-white">{theme.store_name}</span>
-                                )}
+                                <SafeImage
+                                    src={theme.logo_url}
+                                    alt={theme.store_name}
+                                    className="h-10 w-auto brightness-200"
+                                    fallbackText=""
+                                    fallbackIcon={
+                                        <span className="text-2xl font-black text-white">{theme.store_name}</span>
+                                    }
+                                />
                             </div>
                             <p className="text-sm text-gray-400 leading-relaxed mb-4">
                                 দেশজুড়ে বিশ্বস্ত গ্রাহকসেবা ও ক্যাশ অন ডেলিভারি সুবিধা নিয়ে আপনার সেরা কেনাকাটার নির্ভরযোগ্য ঠিকানা।

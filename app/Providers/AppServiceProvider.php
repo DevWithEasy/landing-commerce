@@ -53,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-shipping-methods', fn (User $user) => $user->canManageShippingAndPayments());
         Gate::define('manage-payment-methods', fn (User $user) => $user->canManageShippingAndPayments());
 
+        $this->ensureViteHotFileIsValid();
+
         // Apply decrypted database settings to runtime configuration
         $this->app->make(SettingsService::class)->applyRuntimeOverrides();
 
@@ -63,6 +65,27 @@ class AppServiceProvider extends ServiceProvider
                 CommercePreflightCommand::class,
                 CommerceInstallCommand::class,
             ]);
+        }
+    }
+
+    /**
+     * Prevent stale public/hot files from causing blank pages when Vite is closed.
+     */
+    protected function ensureViteHotFileIsValid(): void
+    {
+        $hotFile = public_path('hot');
+        if (is_file($hotFile)) {
+            $url = trim((string) @file_get_contents($hotFile));
+            $parts = parse_url($url);
+            $host = $parts['host'] ?? '127.0.0.1';
+            $port = (int) ($parts['port'] ?? 5173);
+
+            $connection = @fsockopen($host, $port, $errno, $errstr, 0.05);
+            if ($connection) {
+                fclose($connection);
+            } else {
+                @unlink($hotFile);
+            }
         }
     }
 }

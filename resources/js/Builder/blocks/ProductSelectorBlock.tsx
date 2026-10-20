@@ -1,5 +1,6 @@
-import { Check, Eye, Layers, Package, ShoppingBag, Tag, X } from 'lucide-react';
+import { Check, Eye, Layers, ShoppingBag, Tag, X } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
+import { SafeImage } from '@/Shared/SafeImage';
 import { useBuilderStore } from '../stores/useBuilderStore';
 import type { Product } from '@/types';
 import type { BlockStyles, ProductSelectorBlockProps } from '@/types/builder';
@@ -8,40 +9,6 @@ export interface ProductSelectorBlockComponentProps {
     props: ProductSelectorBlockProps;
     styles?: BlockStyles;
     isEditor?: boolean;
-}
-
-function SafeImage({
-    src,
-    alt,
-    className,
-    fallbackIconSize = 'w-10 h-10',
-    fallbackText = 'No Image',
-}: {
-    src?: string | null;
-    alt: string;
-    className: string;
-    fallbackIconSize?: string;
-    fallbackText?: string;
-}) {
-    const [hasError, setHasError] = useState(false);
-
-    if (!src || hasError) {
-        return (
-            <div className="text-gray-400 text-xs flex flex-col items-center justify-center p-2 text-center select-none w-full h-full">
-                <Package className={`${fallbackIconSize} mb-1 text-gray-300`} />
-                {fallbackText ? <span className="text-[10px] font-medium leading-none">{fallbackText}</span> : null}
-            </div>
-        );
-    }
-
-    return (
-        <img
-            src={src}
-            alt={alt}
-            className={className}
-            onError={() => setHasError(true)}
-        />
-    );
 }
 
 export function ProductSelectorBlock({

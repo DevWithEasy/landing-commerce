@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Pagination } from '@/Shared/Pagination';
+import { RichTextEditor } from '@/Shared/RichTextEditor';
 import type { PolicyPage, PolicyPageIndexProps } from '@/types';
 
 export default function PolicyPagesIndex({
@@ -316,7 +317,7 @@ export default function PolicyPagesIndex({
             {/* Create Policy Page Modal */}
             {isCreateOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-gray-200 my-8">
+                    <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl border border-gray-200 my-8">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <Plus className="w-5 h-5 text-indigo-600" />
@@ -367,20 +368,15 @@ export default function PolicyPagesIndex({
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                                    Page Content (HTML / Text) *
-                                </label>
-                                <textarea
-                                    rows={10}
+                                <RichTextEditor
+                                    label="Page Content"
                                     required
+                                    placeholder="Write or format your policy content here..."
                                     value={createContent}
-                                    onChange={(e) => setCreateContent(e.target.value)}
-                                    placeholder="<p>Write or paste your policy content here...</p>"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono text-xs leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    onChange={(html) => setCreateContent(html)}
+                                    error={formErrors.content}
+                                    minHeight="260px"
                                 />
-                                {formErrors.content && (
-                                    <p className="text-xs text-red-600 mt-1">{formErrors.content}</p>
-                                )}
                             </div>
 
                             <div className="flex items-center">
@@ -416,7 +412,7 @@ export default function PolicyPagesIndex({
             {/* Edit Policy Page Modal */}
             {isEditOpen && editingPage && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-gray-200 my-8">
+                    <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl border border-gray-200 my-8">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                 <Pencil className="w-5 h-5 text-indigo-600" />
@@ -465,19 +461,15 @@ export default function PolicyPagesIndex({
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                                    Page Content (HTML / Text) *
-                                </label>
-                                <textarea
-                                    rows={10}
+                                <RichTextEditor
+                                    label="Page Content"
                                     required
+                                    placeholder="Write or format your policy content here..."
                                     value={editContent}
-                                    onChange={(e) => setEditContent(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono text-xs leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    onChange={(html) => setEditContent(html)}
+                                    error={formErrors.content}
+                                    minHeight="260px"
                                 />
-                                {formErrors.content && (
-                                    <p className="text-xs text-red-600 mt-1">{formErrors.content}</p>
-                                )}
                             </div>
 
                             <div className="flex items-center">

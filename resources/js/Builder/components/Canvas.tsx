@@ -1,16 +1,19 @@
+import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, ChevronUp, GripVertical, Layers, Trash2 } from 'lucide-react';
+import { Box, ChevronDown, ChevronUp, GripVertical, Layers, Plus, Trash2 } from 'lucide-react';
 import type { CSSProperties, MouseEvent } from 'react';
+import { ContainerBlock } from '../blocks/ContainerBlock';
 import { renderAstBlock } from '../blocks';
 import { useBuilderStore } from '../stores/useBuilderStore';
-import type { Block, BlockDefinition, BlockType } from '@/types';
+import type { Block, BlockDefinition, BlockType, ContainerBlockProps } from '@/types';
 
 export interface CanvasProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
+    onAddBlockToContainer?: (containerId: string) => void;
 }
 
-export function Canvas({ blockDefinitions }: CanvasProps) {
+export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps) {
     const { ast, viewport, selectedBlockId, setSelectedBlockId, removeBlock, reorderBlocks } =
         useBuilderStore();
 
@@ -19,7 +22,6 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
     const pageFontFamily = settings.fontFamily || "'Inter', sans-serif";
     const pageBgColor = settings.backgroundColor || '#ffffff';
 
-    // Viewport styling
     const viewportClasses = {
         desktop: 'w-full max-w-full my-0 shadow-xs border border-gray-200/60',
         tablet: 'w-full max-w-[768px] mx-auto my-6 rounded-2xl shadow-2xl border-4 border-slate-700',
@@ -48,8 +50,7 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
                         </div>
                         <h3 className="font-bold text-gray-700 text-base">Your canvas is empty</h3>
                         <p className="text-xs text-gray-500 max-w-sm mt-1">
-                            Choose a section from the block palette on the left to start building
-                            your landing page.
+                            Choose a section or container from the block palette on the left to start building your landing page.
                         </p>
                     </div>
                 ) : (
@@ -62,16 +63,20 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
                                 <SortableBlockWrapper
                                     key={block.id}
                                     block={block}
+                                    parentId={null}
                                     index={index}
                                     totalBlocks={blocks.length}
+                                    depth={0}
                                     isSelected={selectedBlockId === block.id}
-                                    blockDefinition={blockDefinitions[block.type]}
-                                    onSelect={() => setSelectedBlockId(block.id)}
-                                    onRemove={() => removeBlock(block.id)}
-                                    onMoveUp={() => index > 0 && reorderBlocks(index, index - 1)}
-                                    onMoveDown={() =>
-                                        index < blocks.length - 1 && reorderBlocks(index, index + 1)
+                                    selectedBlockId={selectedBlockId}
+                                    blockDefinitions={blockDefinitions}
+                                    onSelect={(id) => setSelectedBlockId(id)}
+                                    onRemove={(id) => removeBlock(id)}
+                                    onMoveUp={(idx, pId) => idx > 0 && reorderBlocks(idx, idx - 1, pId)}
+                                    onMoveDown={(idx, total, pId) =>
+                                        idx < total - 1 && reorderBlocks(idx, idx + 1, pId)
                                     }
+                                    onAddBlockToContainer={onAddBlockToContainer}
                                 />
                             ))}
                         </div>
@@ -84,35 +89,48 @@ export function Canvas({ blockDefinitions }: CanvasProps) {
 
 interface SortableBlockWrapperProps {
     block: Block;
+    parentId: string | null;
     index: number;
     totalBlocks: number;
+    depth?: number;
     isSelected: boolean;
-    blockDefinition?: BlockDefinition;
-    onSelect: () => void;
-    onRemove: () => void;
-    onMoveUp: () => void;
-    onMoveDown: () => void;
+    selectedBlockId: string | null;
+    blockDefinitions: Record<BlockType, BlockDefinition>;
+    onSelect: (id: string) => void;
+    onRemove: (id: string) => void;
+    onMoveUp: (index: number, parentId: string | null) => void;
+    onMoveDown: (index: number, total: number, parentId: string | null) => void;
+    onAddBlockToContainer?: (containerId: string) => void;
 }
 
 function SortableBlockWrapper({
     block,
+    parentId,
     index,
     totalBlocks,
+    depth = 0,
     isSelected,
-    blockDefinition,
+    selectedBlockId,
+    blockDefinitions,
     onSelect,
     onRemove,
     onMoveUp,
     onMoveDown,
+    onAddBlockToContainer,
 }: SortableBlockWrapperProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: block.id,
+        data: { block, parentId },
     });
+
+    const isContainer = block.type === 'ContainerBlock';
+    const children = block.children || [];
+    const blockDefinition = blockDefinitions[block.type];
 
     const style: CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.4 : 1,
+        opacity: isDragging ? 0.35 : 1,
     };
 
     const handleActionClick = (e: MouseEvent, action: () => void) => {
@@ -126,13 +144,13 @@ function SortableBlockWrapper({
             style={style}
             onClick={(e) => {
                 e.stopPropagation();
-                onSelect();
+                onSelect(block.id);
             }}
             className={`relative group transition-all cursor-pointer ${
                 isSelected
                     ? 'ring-2 ring-primary-500 ring-offset-2 z-20'
                     : 'hover:ring-1 hover:ring-primary-300'
-            }`}
+            } ${isContainer ? 'p-1.5 rounded-xl border border-dashed border-gray-200 hover:border-primary-400' : ''}`}
         >
             {/* Quick Action Floating Toolbar for Selected Block */}
             {isSelected && (
@@ -150,15 +168,28 @@ function SortableBlockWrapper({
                         <GripVertical className="w-3.5 h-3.5" />
                     </button>
 
-                    <span className="font-bold text-[11px] px-1 text-primary-100">
+                    <span className="font-bold text-[11px] px-1 text-primary-100 flex items-center gap-1">
+                        {isContainer && <Box className="w-3 h-3 text-primary-300" />}
                         {blockDefinition?.name || block.type}
                     </span>
+
+                    {isContainer && onAddBlockToContainer && (
+                        <button
+                            type="button"
+                            onClick={(e) => handleActionClick(e, () => onAddBlockToContainer(block.id))}
+                            className="p-1 rounded text-primary-200 hover:text-white hover:bg-primary-800 flex items-center gap-0.5 text-[10px] font-semibold"
+                            title="Add Child Block to Container"
+                        >
+                            <Plus className="w-3 h-3" />
+                            <span>Add</span>
+                        </button>
+                    )}
 
                     <div className="h-3 w-px bg-primary-700 mx-0.5" />
 
                     <button
                         type="button"
-                        onClick={(e) => handleActionClick(e, onMoveUp)}
+                        onClick={(e) => handleActionClick(e, () => onMoveUp(index, parentId))}
                         disabled={index === 0}
                         className="p-1 rounded text-primary-200 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move Up"
@@ -168,7 +199,7 @@ function SortableBlockWrapper({
 
                     <button
                         type="button"
-                        onClick={(e) => handleActionClick(e, onMoveDown)}
+                        onClick={(e) => handleActionClick(e, () => onMoveDown(index, totalBlocks, parentId))}
                         disabled={index === totalBlocks - 1}
                         className="p-1 rounded text-primary-200 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move Down"
@@ -178,7 +209,7 @@ function SortableBlockWrapper({
 
                     <button
                         type="button"
-                        onClick={(e) => handleActionClick(e, onRemove)}
+                        onClick={(e) => handleActionClick(e, () => onRemove(block.id))}
                         className="p-1 rounded text-rose-300 hover:text-rose-100 hover:bg-rose-900/40"
                         title="Delete Block"
                     >
@@ -188,7 +219,121 @@ function SortableBlockWrapper({
             )}
 
             {/* Block Content Component */}
-            <div className="pointer-events-none select-none">{renderAstBlock(block, true)}</div>
+            {isContainer ? (
+                <ContainerWrapper
+                    block={block}
+                    childrenBlocks={children}
+                    selectedBlockId={selectedBlockId}
+                    depth={depth}
+                    blockDefinitions={blockDefinitions}
+                    onSelect={onSelect}
+                    onRemove={onRemove}
+                    onMoveUp={onMoveUp}
+                    onMoveDown={onMoveDown}
+                    onAddBlockToContainer={onAddBlockToContainer}
+                />
+            ) : (
+                <div className="pointer-events-none select-none">
+                    {renderAstBlock(block, true)}
+                </div>
+            )}
         </div>
+    );
+}
+
+interface ContainerWrapperProps {
+    block: Block;
+    childrenBlocks: Block[];
+    selectedBlockId: string | null;
+    depth: number;
+    blockDefinitions: Record<BlockType, BlockDefinition>;
+    onSelect: (id: string) => void;
+    onRemove: (id: string) => void;
+    onMoveUp: (index: number, parentId: string | null) => void;
+    onMoveDown: (index: number, total: number, parentId: string | null) => void;
+    onAddBlockToContainer?: (containerId: string) => void;
+}
+
+function ContainerWrapper({
+    block,
+    childrenBlocks,
+    selectedBlockId,
+    depth,
+    blockDefinitions,
+    onSelect,
+    onRemove,
+    onMoveUp,
+    onMoveDown,
+    onAddBlockToContainer,
+}: ContainerWrapperProps) {
+    const { setNodeRef: setDropRef, isOver } = useDroppable({
+        id: `container_drop_${block.id}`,
+        data: { containerId: block.id },
+    });
+
+    const hasChildren = childrenBlocks.length > 0;
+
+    return (
+        <ContainerBlock
+            props={block.props as unknown as ContainerBlockProps}
+            styles={block.styles}
+            children={childrenBlocks}
+            isEditor={true}
+            onAddChild={() => onAddBlockToContainer?.(block.id)}
+            renderChildren={() => (
+                <div
+                    ref={setDropRef}
+                    className={`w-full transition-colors rounded-lg ${
+                        isOver ? 'bg-primary-50/50 ring-2 ring-primary-400' : ''
+                    }`}
+                >
+                    {hasChildren ? (
+                        <SortableContext
+                            items={childrenBlocks.map((c) => c.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="w-full space-y-2">
+                                {childrenBlocks.map((child, childIdx) => (
+                                    <SortableBlockWrapper
+                                        key={child.id}
+                                        block={child}
+                                        parentId={block.id}
+                                        index={childIdx}
+                                        totalBlocks={childrenBlocks.length}
+                                        depth={depth + 1}
+                                        isSelected={selectedBlockId === child.id}
+                                        selectedBlockId={selectedBlockId}
+                                        blockDefinitions={blockDefinitions}
+                                        onSelect={onSelect}
+                                        onRemove={onRemove}
+                                        onMoveUp={onMoveUp}
+                                        onMoveDown={onMoveDown}
+                                        onAddBlockToContainer={onAddBlockToContainer}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    ) : (
+                        <div
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAddBlockToContainer?.(block.id);
+                            }}
+                            className={`w-full min-h-[90px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-4 text-center cursor-pointer transition-colors ${
+                                isOver
+                                    ? 'border-primary-500 bg-primary-100/60 text-primary-900'
+                                    : 'border-primary-300 bg-primary-50/40 hover:bg-primary-50 text-primary-700'
+                            }`}
+                        >
+                            <Box className="w-5 h-5 mb-1 opacity-70" />
+                            <span className="text-xs font-bold">Container is empty</span>
+                            <span className="text-[11px] opacity-80 mt-0.5">
+                                Drag widgets here or click to add
+                            </span>
+                        </div>
+                    )}
+                </div>
+            )}
+        />
     );
 }

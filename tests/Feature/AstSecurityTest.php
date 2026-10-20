@@ -489,3 +489,287 @@ test('html block with safe html and scoped css passes validation', function () {
     $response->assertStatus(201)
         ->assertJsonPath('success', true);
 });
+
+test('old flat AST without children field passes validation and backward compatibility is preserved', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            validHeroBlock(),
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(201)
+        ->assertJsonPath('success', true);
+});
+
+test('valid nested container with heading, text, image, and button passes validation', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_container_1',
+                'type' => 'ContainerBlock',
+                'props' => [
+                    'direction' => 'column',
+                    'gap' => '20px',
+                ],
+                'styles' => [
+                    'paddingTop' => '30px',
+                    'paddingBottom' => '30px',
+                    'display' => 'flex',
+                ],
+                'children' => [
+                    [
+                        'id' => 'blk_heading_1',
+                        'type' => 'HeadingBlock',
+                        'props' => [
+                            'text' => 'Premium Smartwatch 2026',
+                            'tag' => 'h1',
+                            'align' => 'center',
+                        ],
+                        'styles' => [
+                            'color' => '#0f172a',
+                        ],
+                    ],
+                    [
+                        'id' => 'blk_text_1',
+                        'type' => 'TextBlock',
+                        'props' => [
+                            'content' => 'High quality craftsmanship guaranteed nationwide.',
+                            'align' => 'center',
+                        ],
+                        'styles' => [
+                            'color' => '#475569',
+                        ],
+                    ],
+                    [
+                        'id' => 'blk_image_1',
+                        'type' => 'ImageBlock',
+                        'props' => [
+                            'imageUrl' => 'https://example.com/watch.webp',
+                            'altText' => 'Watch Image',
+                        ],
+                        'styles' => [
+                            'maxWidth' => '100%',
+                        ],
+                    ],
+                    [
+                        'id' => 'blk_btn_1',
+                        'type' => 'ButtonBlock',
+                        'props' => [
+                            'text' => 'অর্ডার করুন এখনই',
+                            'target' => '#cod-checkout',
+                        ],
+                        'styles' => [
+                            'backgroundColor' => '#16a34a',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(201)
+        ->assertJsonPath('success', true);
+});
+
+test('unknown nested block type is rejected with HTTP 422 with accurate AST path', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_container_1',
+                'type' => 'ContainerBlock',
+                'props' => [],
+                'styles' => [],
+                'children' => [
+                    [
+                        'id' => 'blk_sub_unknown',
+                        'type' => 'ArbitraryUnapprovedBlock',
+                        'props' => [],
+                        'styles' => [],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.children.0.type']);
+});
+
+test('invalid children type like string or number is rejected with HTTP 422', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_container_1',
+                'type' => 'ContainerBlock',
+                'props' => [],
+                'styles' => [],
+                'children' => 'not-an-array',
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.children']);
+});
+
+test('nested AST exceeding maximum depth of 5 is rejected with HTTP 422', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_lvl_1',
+                'type' => 'ContainerBlock',
+                'props' => [],
+                'styles' => [],
+                'children' => [
+                    [
+                        'id' => 'blk_lvl_2',
+                        'type' => 'ContainerBlock',
+                        'props' => [],
+                        'styles' => [],
+                        'children' => [
+                            [
+                                'id' => 'blk_lvl_3',
+                                'type' => 'ContainerBlock',
+                                'props' => [],
+                                'styles' => [],
+                                'children' => [
+                                    [
+                                        'id' => 'blk_lvl_4',
+                                        'type' => 'ContainerBlock',
+                                        'props' => [],
+                                        'styles' => [],
+                                        'children' => [
+                                            [
+                                                'id' => 'blk_lvl_5',
+                                                'type' => 'ContainerBlock',
+                                                'props' => [],
+                                                'styles' => [],
+                                                'children' => [
+                                                    [
+                                                        'id' => 'blk_lvl_6',
+                                                        'type' => 'HeadingBlock',
+                                                        'props' => ['text' => 'Too Deep'],
+                                                        'styles' => [],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.children.0.children.0.children.0.children.0.children.0']);
+});
+
+test('nested block with malicious XSS script tag is rejected with HTTP 422 pointing to nested path', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_container_1',
+                'type' => 'ContainerBlock',
+                'props' => [],
+                'styles' => [],
+                'children' => [
+                    [
+                        'id' => 'blk_nested_heading',
+                        'type' => 'HeadingBlock',
+                        'props' => [
+                            'text' => 'Heading with <script>alert("xss")</script>',
+                        ],
+                        'styles' => [],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.children.0.props.text']);
+});
+
+test('nested checkout block inside container correctly syncs product_id to landing page', function () {
+    $secondProduct = Product::create([
+        'title' => 'Wireless Noise Cancelling Earbuds',
+        'slug' => 'wireless-earbuds-pro',
+        'regular_price' => 3200.00,
+        'has_variants' => false,
+        'status' => 'active',
+    ]);
+
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'blk_container_checkout',
+                'type' => 'ContainerBlock',
+                'props' => [],
+                'styles' => [],
+                'children' => [
+                    [
+                        'id' => 'blk_nested_checkout',
+                        'type' => 'CodCheckoutBlock',
+                        'props' => [
+                            'productId' => $secondProduct->id,
+                            'productIds' => [$secondProduct->id],
+                        ],
+                        'styles' => [],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(201)
+        ->assertJsonPath('success', true);
+
+    $this->landingPage->refresh();
+    expect($this->landingPage->product_id)->toBe($secondProduct->id);
+});

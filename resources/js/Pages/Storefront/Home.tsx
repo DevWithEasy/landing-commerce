@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import { HeroSlider } from '@/Shared/HeroSlider';
 import { ProductCard } from '@/Shared/ProductCard';
+import { SafeImage } from '@/Shared/SafeImage';
 import { SeoHead } from '@/Shared/SeoHead';
 import type { Product } from '@/types';
 import type { StorefrontHomeProps } from '@/types/storefront';
@@ -149,17 +150,17 @@ export default function Home({
                                 className="group bg-white rounded-2xl p-4 border border-gray-200/80 hover:border-indigo-200 hover:shadow-md transition text-center flex flex-col items-center justify-center"
                             >
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-indigo-50/70 p-2 mb-3 flex items-center justify-center overflow-hidden group-hover:scale-105 transition duration-300">
-                                    {cat.image_url ? (
-                                        <img
-                                            src={cat.image_url}
-                                            alt={cat.name}
-                                            className="w-full h-full object-cover rounded-full"
-                                        />
-                                    ) : (
-                                        <span className="text-indigo-600 font-black text-xl">
-                                            {cat.name.charAt(0)}
-                                        </span>
-                                    )}
+                                    <SafeImage
+                                        src={cat.image_url}
+                                        alt={cat.name}
+                                        className="w-full h-full object-cover rounded-full"
+                                        fallbackText=""
+                                        fallbackIcon={
+                                            <span className="text-indigo-600 font-black text-xl">
+                                                {cat.name.charAt(0)}
+                                            </span>
+                                        }
+                                    />
                                 </div>
                                 <h3 className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-indigo-600 transition line-clamp-1">
                                     {cat.name}

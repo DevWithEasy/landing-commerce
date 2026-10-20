@@ -23,6 +23,11 @@ class BlockRegistry
         'CountdownTimerBlock',
         'StickyBarBlock',
         'HtmlBlock',
+        'ContainerBlock',
+        'HeadingBlock',
+        'TextBlock',
+        'ImageBlock',
+        'ButtonBlock',
     ];
 
     /**
@@ -206,6 +211,47 @@ class BlockRegistry
                 'css' => '.custom-promo { transition: transform 0.2s ease, box-shadow 0.2s ease; }'."\n".
                          '.custom-promo:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); }',
             ],
+            'ContainerBlock' => [
+                'direction' => 'column',
+                'wrap' => 'nowrap',
+                'justifyContent' => 'flex-start',
+                'alignItems' => 'stretch',
+                'gap' => '16px',
+            ],
+            'HeadingBlock' => [
+                'text' => 'Exclusive Collection Headline',
+                'tag' => 'h2',
+                'align' => 'left',
+                'color' => '#0f172a',
+                'fontSize' => '24px',
+                'fontWeight' => '700',
+            ],
+            'TextBlock' => [
+                'content' => 'High quality craftsmanship guaranteed with 100% genuine materials and nationwide delivery.',
+                'align' => 'left',
+                'color' => '#475569',
+                'fontSize' => '16px',
+                'lineHeight' => '1.6',
+            ],
+            'ImageBlock' => [
+                'imageUrl' => '',
+                'altText' => 'Product Feature Image',
+                'caption' => '',
+                'aspectRatio' => 'auto',
+                'linkUrl' => '',
+                'align' => 'center',
+            ],
+            'ButtonBlock' => [
+                'text' => 'অর্ডার করুন — ক্যাশ অন ডেলিভারি',
+                'target' => '#cod-checkout',
+                'size' => 'lg',
+                'width' => 'auto',
+                'align' => 'center',
+                'backgroundColor' => '#16a34a',
+                'textColor' => '#ffffff',
+                'borderRadius' => '12px',
+                'pulseAnimation' => false,
+            ],
             default => [],
         };
     }
@@ -243,6 +289,30 @@ class BlockRegistry
             'HtmlBlock' => [
                 'paddingTop' => '12px',
                 'paddingBottom' => '12px',
+            ],
+            'ContainerBlock' => [
+                'paddingTop' => '24px',
+                'paddingBottom' => '24px',
+                'paddingLeft' => '16px',
+                'paddingRight' => '16px',
+            ],
+            'HeadingBlock' => [
+                'marginTop' => '0px',
+                'marginBottom' => '12px',
+            ],
+            'TextBlock' => [
+                'marginTop' => '0px',
+                'marginBottom' => '16px',
+            ],
+            'ImageBlock' => [
+                'marginTop' => '8px',
+                'marginBottom' => '8px',
+                'maxWidth' => '100%',
+                'borderRadius' => '8px',
+            ],
+            'ButtonBlock' => [
+                'marginTop' => '8px',
+                'marginBottom' => '8px',
             ],
             default => [
                 'paddingTop' => '32px',
@@ -318,6 +388,36 @@ class BlockRegistry
                 'description' => 'Add custom HTML elements with scoped styling for advanced flexibility.',
                 'category' => 'Advanced',
                 'icon' => 'Code',
+            ],
+            'ContainerBlock' => [
+                'name' => 'Container',
+                'description' => 'Nested flexbox container to organize, group, and layout child elements.',
+                'category' => 'Layout',
+                'icon' => 'Box',
+            ],
+            'HeadingBlock' => [
+                'name' => 'Heading',
+                'description' => 'Customizable typography heading with H1-H6 tags and alignment.',
+                'category' => 'Basic',
+                'icon' => 'Type',
+            ],
+            'TextBlock' => [
+                'name' => 'Text Block',
+                'description' => 'Paragraph text block for descriptions, bullet features, and specifications.',
+                'category' => 'Basic',
+                'icon' => 'FileText',
+            ],
+            'ImageBlock' => [
+                'name' => 'Image',
+                'description' => 'Responsive image media element with optional link and aspect ratio control.',
+                'category' => 'Basic',
+                'icon' => 'Image',
+            ],
+            'ButtonBlock' => [
+                'name' => 'Button',
+                'description' => 'Call to action button linking to COD checkout or custom target.',
+                'category' => 'Basic',
+                'icon' => 'Square',
             ],
         ];
 
