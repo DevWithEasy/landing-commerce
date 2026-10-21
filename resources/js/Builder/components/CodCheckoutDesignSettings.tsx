@@ -27,8 +27,11 @@ interface CheckoutField {
     options?: Array<{ label: string; value: string }>;
 }
 
+type CheckoutSectionGroup = 'content' | 'styles';
+
 interface CheckoutSection {
     id: string;
+    group: CheckoutSectionGroup;
     title: string;
     description: string;
     icon: LucideIcon;
@@ -58,6 +61,7 @@ const BORDER_STYLE_OPTIONS = [
 const SECTIONS: CheckoutSection[] = [
     {
         id: 'content',
+        group: 'content',
         title: 'Header & Content',
         description: 'শেকআউটের টেক্সট ও কোন অংশ দেখাবে তা নিয়ন্ত্রণ করুন।',
         icon: LayoutTemplate,
@@ -67,25 +71,39 @@ const SECTIONS: CheckoutSection[] = [
             { key: 'showHeaderTitle', label: 'Show Header Title', kind: 'toggle' },
             { key: 'showHeaderSubtitle', label: 'Show Header Subtitle', kind: 'toggle' },
             { key: 'headerBadgeText', label: 'Badge Text', placeholder: 'Fast & Secure Checkout' },
-            { key: 'headerTitle', label: 'Header Title', placeholder: 'Cash On Delivery Available Nationwide' },
+            {
+                key: 'headerTitle',
+                label: 'Header Title',
+                placeholder: 'Cash On Delivery Available Nationwide',
+            },
             {
                 key: 'headerSubtitle',
                 label: 'Header Subtitle',
                 kind: 'textarea',
                 placeholder: 'Pay in cash only after receiving and inspecting your parcel.',
             },
-            { key: 'headerAlign', label: 'Header Alignment', kind: 'select', options: ALIGN_OPTIONS },
+            {
+                key: 'headerAlign',
+                label: 'Header Alignment',
+                kind: 'select',
+                options: ALIGN_OPTIONS,
+            },
             { key: 'showProductSelector', label: 'Show Product Selection Cards', kind: 'toggle' },
             { key: 'showVariants', label: 'Show Variant Buttons', kind: 'toggle' },
             { key: 'showSummary', label: 'Show Order Summary', kind: 'toggle' },
             { key: 'showTrustBadges', label: 'Show Trust Row', kind: 'toggle' },
             { key: 'showRequiredMark', label: 'Show Required (*) Mark', kind: 'toggle' },
             { key: 'trustText1', label: 'Trust Text 1', placeholder: '১০০% ক্যাশ অন ডেলিভারি' },
-            { key: 'trustText2', label: 'Trust Text 2', placeholder: 'প্রোডাক্ট দেখে মূল্য পরিশোধ' },
+            {
+                key: 'trustText2',
+                label: 'Trust Text 2',
+                placeholder: 'প্রোডাক্ট দেখে মূল্য পরিশোধ',
+            },
         ],
     },
     {
         id: 'layout',
+        group: 'styles',
         title: 'Layout & Accent',
         description: 'কনটেইনার প্রস্থ, প্যাডিং, ফন্ট ও অ্যাকসেন্ট কালার।',
         icon: Box,
@@ -104,16 +122,31 @@ const SECTIONS: CheckoutSection[] = [
     },
     {
         id: 'card',
+        group: 'styles',
         title: 'Card & Header Design',
         description: 'কার্ড, হেডার, ব্যাজ, টাইটেল ও সাবটাইটেলের প্রতিটি স্টাইল।',
         icon: Square,
         fields: [
             { key: 'cardBgColor', label: 'Card Background', kind: 'color', fallback: '#ffffff' },
-            { key: 'cardBorderColor', label: 'Card Border Color', kind: 'color', fallback: '#10b981' },
+            {
+                key: 'cardBorderColor',
+                label: 'Card Border Color',
+                kind: 'color',
+                fallback: '#10b981',
+            },
             { key: 'cardBorderWidth', label: 'Card Border Width', placeholder: '2px' },
-            { key: 'cardBorderStyle', label: 'Card Border Style', kind: 'select', options: BORDER_STYLE_OPTIONS },
+            {
+                key: 'cardBorderStyle',
+                label: 'Card Border Style',
+                kind: 'select',
+                options: BORDER_STYLE_OPTIONS,
+            },
             { key: 'cardBorderRadius', label: 'Card Border Radius', placeholder: '24px' },
-            { key: 'cardMinHeight', label: 'Card Min Height', placeholder: 'e.g. 480px (optional)' },
+            {
+                key: 'cardMinHeight',
+                label: 'Card Min Height',
+                placeholder: 'e.g. 480px (optional)',
+            },
             { key: 'cardPaddingTop', label: 'Card Padding Top', placeholder: '32px' },
             { key: 'cardPaddingBottom', label: 'Card Padding Bottom', placeholder: '32px' },
             { key: 'cardPaddingLeft', label: 'Card Padding Left', placeholder: '32px' },
@@ -125,11 +158,21 @@ const SECTIONS: CheckoutSection[] = [
                 hint: 'CSS box-shadow value দিন, অথবা none লিখুন।',
             },
             { key: 'headerPaddingBottom', label: 'Header Bottom Padding', placeholder: '24px' },
-            { key: 'headerBorderColor', label: 'Header Divider Color', kind: 'color', fallback: '#f1f5f9' },
+            {
+                key: 'headerBorderColor',
+                label: 'Header Divider Color',
+                kind: 'color',
+                fallback: '#f1f5f9',
+            },
             { key: 'headerBorderWidth', label: 'Header Divider Width', placeholder: '1px' },
             { key: 'bodyPaddingTop', label: 'Body Top Padding', placeholder: '24px' },
             { key: 'badgeBgColor', label: 'Badge Background', kind: 'color', fallback: '#d1fae5' },
-            { key: 'badgeTextColor', label: 'Badge Text Color', kind: 'color', fallback: '#065f46' },
+            {
+                key: 'badgeTextColor',
+                label: 'Badge Text Color',
+                kind: 'color',
+                fallback: '#065f46',
+            },
             { key: 'badgeBorderRadius', label: 'Badge Radius', placeholder: '9999px' },
             { key: 'badgeFontSize', label: 'Badge Font Size', placeholder: '11px' },
             { key: 'badgePaddingX', label: 'Badge Padding X', placeholder: '12px' },
@@ -146,6 +189,7 @@ const SECTIONS: CheckoutSection[] = [
     },
     {
         id: 'form',
+        group: 'styles',
         title: 'Labels & Inputs',
         description: 'লেবেল, ইনপুট, প্লেসহোল্ডার, ফোকাস রিং ও রিকোয়ার্ড মার্ক।',
         icon: Type,
@@ -161,23 +205,48 @@ const SECTIONS: CheckoutSection[] = [
                 options: TEXT_TRANSFORM_OPTIONS,
             },
             { key: 'labelMarginBottom', label: 'Label Bottom Margin', placeholder: '4px' },
-            { key: 'requiredMarkColor', label: 'Required Mark Color', kind: 'color', fallback: '#f43f5e' },
+            {
+                key: 'requiredMarkColor',
+                label: 'Required Mark Color',
+                kind: 'color',
+                fallback: '#f43f5e',
+            },
             { key: 'inputBgColor', label: 'Input Background', kind: 'color', fallback: '#ffffff' },
-            { key: 'inputTextColor', label: 'Input Text Color', kind: 'color', fallback: '#0f172a' },
-            { key: 'inputBorderColor', label: 'Input Border Color', kind: 'color', fallback: '#cbd5e1' },
+            {
+                key: 'inputTextColor',
+                label: 'Input Text Color',
+                kind: 'color',
+                fallback: '#0f172a',
+            },
+            {
+                key: 'inputBorderColor',
+                label: 'Input Border Color',
+                kind: 'color',
+                fallback: '#cbd5e1',
+            },
             { key: 'inputBorderWidth', label: 'Input Border Width', placeholder: '1px' },
             { key: 'inputBorderRadius', label: 'Input Border Radius', placeholder: '12px' },
             { key: 'inputPaddingX', label: 'Input Padding X', placeholder: '12px' },
             { key: 'inputPaddingY', label: 'Input Padding Y', placeholder: '10px' },
             { key: 'inputFontSize', label: 'Input Font Size', placeholder: '14px' },
-            { key: 'inputIconColor', label: 'Input Icon Color', kind: 'color', fallback: '#94a3b8' },
+            {
+                key: 'inputIconColor',
+                label: 'Input Icon Color',
+                kind: 'color',
+                fallback: '#94a3b8',
+            },
             {
                 key: 'inputPlaceholderColor',
                 label: 'Placeholder Color',
                 kind: 'color',
                 fallback: '#94a3b8',
             },
-            { key: 'inputFocusColor', label: 'Focus Border Color', kind: 'color', fallback: '#10b981' },
+            {
+                key: 'inputFocusColor',
+                label: 'Focus Border Color',
+                kind: 'color',
+                fallback: '#10b981',
+            },
             {
                 key: 'inputFocusRingColor',
                 label: 'Focus Ring Color',
@@ -188,23 +257,49 @@ const SECTIONS: CheckoutSection[] = [
     },
     {
         id: 'products',
+        group: 'styles',
         title: 'Product Cards',
         description: 'প্রোডাক্ট প্যানেল, কার্ড, প্রাইস, ইমেজ, ব্যাজ ও ভ্যারিয়েন্ট।',
         icon: ListChecks,
         fields: [
-            { key: 'productPanelBgColor', label: 'Panel Background', kind: 'color', fallback: '#f8fafc' },
-            { key: 'productPanelBorderColor', label: 'Panel Border Color', kind: 'color', fallback: '#e2e8f0' },
+            {
+                key: 'productPanelBgColor',
+                label: 'Panel Background',
+                kind: 'color',
+                fallback: '#f8fafc',
+            },
+            {
+                key: 'productPanelBorderColor',
+                label: 'Panel Border Color',
+                kind: 'color',
+                fallback: '#e2e8f0',
+            },
             { key: 'productPanelBorderRadius', label: 'Panel Radius', placeholder: '12px' },
             { key: 'productPanelPadding', label: 'Panel Padding', placeholder: '12px' },
-            { key: 'productPanelTitleColor', label: 'Panel Title Color', kind: 'color', fallback: '#334155' },
-            { key: 'productCardBgColor', label: 'Card Background', kind: 'color', fallback: '#ffffff' },
+            {
+                key: 'productPanelTitleColor',
+                label: 'Panel Title Color',
+                kind: 'color',
+                fallback: '#334155',
+            },
+            {
+                key: 'productCardBgColor',
+                label: 'Card Background',
+                kind: 'color',
+                fallback: '#ffffff',
+            },
             {
                 key: 'productCardSelectedBgColor',
                 label: 'Selected Card Background',
                 kind: 'color',
                 fallback: '#ecfdf5',
             },
-            { key: 'productCardBorderColor', label: 'Card Border Color', kind: 'color', fallback: '#e2e8f0' },
+            {
+                key: 'productCardBorderColor',
+                label: 'Card Border Color',
+                kind: 'color',
+                fallback: '#e2e8f0',
+            },
             {
                 key: 'productCardSelectedBorderColor',
                 label: 'Selected Card Border',
@@ -219,22 +314,66 @@ const SECTIONS: CheckoutSection[] = [
             },
             { key: 'productCardBorderRadius', label: 'Card Radius', placeholder: '12px' },
             { key: 'productCardPadding', label: 'Card Padding', placeholder: '10px' },
-            { key: 'productTitleColor', label: 'Product Title Color', kind: 'color', fallback: '#0f172a' },
+            {
+                key: 'productTitleColor',
+                label: 'Product Title Color',
+                kind: 'color',
+                fallback: '#0f172a',
+            },
             { key: 'productTitleFontSize', label: 'Product Title Size', placeholder: '12px' },
             { key: 'productPriceColor', label: 'Price Color', kind: 'color', fallback: '#059669' },
             { key: 'productPriceFontSize', label: 'Price Font Size', placeholder: '14px' },
-            { key: 'productOldPriceColor', label: 'Old Price Color', kind: 'color', fallback: '#94a3b8' },
-            { key: 'productInfoTextColor', label: 'Product Info Color', kind: 'color', fallback: '#64748b' },
+            {
+                key: 'productOldPriceColor',
+                label: 'Old Price Color',
+                kind: 'color',
+                fallback: '#94a3b8',
+            },
+            {
+                key: 'productInfoTextColor',
+                label: 'Product Info Color',
+                kind: 'color',
+                fallback: '#64748b',
+            },
             { key: 'productInfoFontSize', label: 'Product Info Size', placeholder: '10px' },
             { key: 'productImageSize', label: 'Image Size', placeholder: '40px' },
             { key: 'productImageRadius', label: 'Image Radius', placeholder: '8px' },
-            { key: 'productBadgeBgColor', label: 'Product Badge Background', kind: 'color', fallback: '#fef3c7' },
-            { key: 'productBadgeTextColor', label: 'Product Badge Text', kind: 'color', fallback: '#92400e' },
-            { key: 'productBadgeBorderRadius', label: 'Product Badge Radius', placeholder: '9999px' },
+            {
+                key: 'productBadgeBgColor',
+                label: 'Product Badge Background',
+                kind: 'color',
+                fallback: '#fef3c7',
+            },
+            {
+                key: 'productBadgeTextColor',
+                label: 'Product Badge Text',
+                kind: 'color',
+                fallback: '#92400e',
+            },
+            {
+                key: 'productBadgeBorderRadius',
+                label: 'Product Badge Radius',
+                placeholder: '9999px',
+            },
             { key: 'productBadgeFontSize', label: 'Product Badge Size', placeholder: '9px' },
-            { key: 'variantBgColor', label: 'Variant Background', kind: 'color', fallback: '#ffffff' },
-            { key: 'variantTextColor', label: 'Variant Text Color', kind: 'color', fallback: '#334155' },
-            { key: 'variantBorderColor', label: 'Variant Border Color', kind: 'color', fallback: '#e2e8f0' },
+            {
+                key: 'variantBgColor',
+                label: 'Variant Background',
+                kind: 'color',
+                fallback: '#ffffff',
+            },
+            {
+                key: 'variantTextColor',
+                label: 'Variant Text Color',
+                kind: 'color',
+                fallback: '#334155',
+            },
+            {
+                key: 'variantBorderColor',
+                label: 'Variant Border Color',
+                kind: 'color',
+                fallback: '#e2e8f0',
+            },
             {
                 key: 'variantSelectedBgColor',
                 label: 'Selected Variant Background',
@@ -259,46 +398,111 @@ const SECTIONS: CheckoutSection[] = [
     },
     {
         id: 'shipping',
+        group: 'styles',
         title: 'Shipping & Summary',
         description: 'শিপিং ড্রপডাউন এবং অর্ডার সামারি বক্সের স্টাইল।',
         icon: Truck,
         fields: [
-            { key: 'shippingBgColor', label: 'Shipping Background', kind: 'color', fallback: '#ecfdf5' },
-            { key: 'shippingTextColor', label: 'Shipping Text Color', kind: 'color', fallback: '#0f172a' },
-            { key: 'shippingBorderColor', label: 'Shipping Border Color', kind: 'color', fallback: '#10b981' },
+            {
+                key: 'shippingBgColor',
+                label: 'Shipping Background',
+                kind: 'color',
+                fallback: '#ecfdf5',
+            },
+            {
+                key: 'shippingTextColor',
+                label: 'Shipping Text Color',
+                kind: 'color',
+                fallback: '#0f172a',
+            },
+            {
+                key: 'shippingBorderColor',
+                label: 'Shipping Border Color',
+                kind: 'color',
+                fallback: '#10b981',
+            },
             { key: 'shippingBorderWidth', label: 'Shipping Border Width', placeholder: '2px' },
             { key: 'shippingBorderRadius', label: 'Shipping Radius', placeholder: '12px' },
             { key: 'shippingPadding', label: 'Shipping Padding', placeholder: '10px' },
             { key: 'shippingFontSize', label: 'Shipping Font Size', placeholder: '14px' },
             { key: 'shippingFontWeight', label: 'Shipping Font Weight', placeholder: '600' },
-            { key: 'summaryBgColor', label: 'Summary Background', kind: 'color', fallback: '#f8fafc' },
-            { key: 'summaryBorderColor', label: 'Summary Border Color', kind: 'color', fallback: '#e2e8f0' },
+            {
+                key: 'summaryBgColor',
+                label: 'Summary Background',
+                kind: 'color',
+                fallback: '#f8fafc',
+            },
+            {
+                key: 'summaryBorderColor',
+                label: 'Summary Border Color',
+                kind: 'color',
+                fallback: '#e2e8f0',
+            },
             { key: 'summaryBorderWidth', label: 'Summary Border Width', placeholder: '1px' },
             { key: 'summaryBorderRadius', label: 'Summary Radius', placeholder: '12px' },
             { key: 'summaryPadding', label: 'Summary Padding', placeholder: '16px' },
-            { key: 'summaryTextColor', label: 'Summary Text Color', kind: 'color', fallback: '#475569' },
-            { key: 'summaryValueColor', label: 'Summary Value Color', kind: 'color', fallback: '#1e293b' },
-            { key: 'summaryTotalColor', label: 'Total Amount Color', kind: 'color', fallback: '#059669' },
+            {
+                key: 'summaryTextColor',
+                label: 'Summary Text Color',
+                kind: 'color',
+                fallback: '#475569',
+            },
+            {
+                key: 'summaryValueColor',
+                label: 'Summary Value Color',
+                kind: 'color',
+                fallback: '#1e293b',
+            },
+            {
+                key: 'summaryTotalColor',
+                label: 'Total Amount Color',
+                kind: 'color',
+                fallback: '#059669',
+            },
             { key: 'summaryTotalFontSize', label: 'Total Amount Size', placeholder: '18px' },
             { key: 'summaryFontSize', label: 'Summary Font Size', placeholder: '12px' },
         ],
     },
     {
         id: 'button',
+        group: 'styles',
         title: 'Button & Trust Row',
         description: 'সাবমিট বাটন ও ট্রাস্ট ব্যাজের সব স্টাইল।',
         icon: Zap,
         fields: [
-            { key: 'buttonBgColor', label: 'Button Background', kind: 'color', fallback: '#059669' },
-            { key: 'buttonTextColor', label: 'Button Text Color', kind: 'color', fallback: '#ffffff' },
-            { key: 'buttonHoverBgColor', label: 'Button Hover Background', kind: 'color', fallback: '#047857' },
+            {
+                key: 'buttonBgColor',
+                label: 'Button Background',
+                kind: 'color',
+                fallback: '#059669',
+            },
+            {
+                key: 'buttonTextColor',
+                label: 'Button Text Color',
+                kind: 'color',
+                fallback: '#ffffff',
+            },
+            {
+                key: 'buttonHoverBgColor',
+                label: 'Button Hover Background',
+                kind: 'color',
+                fallback: '#047857',
+            },
             { key: 'buttonBorderRadius', label: 'Button Radius', placeholder: '12px' },
-            { key: 'buttonMinHeight', label: 'Button Min Height', placeholder: 'e.g. 56px (optional)' },
+            {
+                key: 'buttonMinHeight',
+                label: 'Button Min Height',
+                placeholder: 'e.g. 56px (optional)',
+            },
             { key: 'buttonPaddingY', label: 'Button Padding Y', placeholder: '16px' },
             { key: 'buttonPaddingX', label: 'Button Padding X', placeholder: '24px' },
             { key: 'buttonFontSize', label: 'Button Font Size', placeholder: '16px' },
             { key: 'buttonFontWeight', label: 'Button Font Weight', placeholder: '800' },
-            { key: 'buttonShadow', label: 'Button Shadow', placeholder: '0 20px 25px -5px rgb(5 150 105 / 0.3)' },
+            {
+                key: 'buttonShadow',
+                label: 'Button Shadow',
+                placeholder: '0 20px 25px -5px rgb(5 150 105 / 0.3)',
+            },
             {
                 key: 'buttonWidth',
                 label: 'Button Width',
@@ -315,9 +519,19 @@ const SECTIONS: CheckoutSection[] = [
                 options: TEXT_TRANSFORM_OPTIONS,
             },
             { key: 'buttonLetterSpacing', label: 'Button Letter Spacing', placeholder: '0px' },
-            { key: 'trustTextColor', label: 'Trust Text Color', kind: 'color', fallback: '#64748b' },
+            {
+                key: 'trustTextColor',
+                label: 'Trust Text Color',
+                kind: 'color',
+                fallback: '#64748b',
+            },
             { key: 'trustFontSize', label: 'Trust Font Size', placeholder: '11px' },
-            { key: 'trustIconColor', label: 'Trust Icon Color', kind: 'color', fallback: '#059669' },
+            {
+                key: 'trustIconColor',
+                label: 'Trust Icon Color',
+                kind: 'color',
+                fallback: '#059669',
+            },
             { key: 'trustPaddingTop', label: 'Trust Row Top Padding', placeholder: '8px' },
         ],
     },
@@ -326,9 +540,14 @@ const SECTIONS: CheckoutSection[] = [
 export interface CodCheckoutDesignSettingsProps {
     props: CodCheckoutBlockProps;
     onChange: (key: string, value: unknown) => void;
+    mode?: CheckoutSectionGroup;
 }
 
-export function CodCheckoutDesignSettings({ props, onChange }: CodCheckoutDesignSettingsProps) {
+export function CodCheckoutDesignSettings({
+    props,
+    onChange,
+    mode = 'styles',
+}: CodCheckoutDesignSettingsProps) {
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({
         content: true,
         layout: true,
@@ -338,6 +557,9 @@ export function CodCheckoutDesignSettings({ props, onChange }: CodCheckoutDesign
         shipping: false,
         button: true,
     });
+
+    const visibleSections = SECTIONS.filter((section) => section.group === mode);
+    const isStylesMode = mode === 'styles';
 
     const toggleSection = (id: string) => {
         setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -376,7 +598,11 @@ export function CodCheckoutDesignSettings({ props, onChange }: CodCheckoutDesign
                     <div className="flex items-center space-x-1.5">
                         <input
                             type="color"
-                            value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : (field.fallback || '#000000')}
+                            value={
+                                /^#[0-9a-fA-F]{6}$/.test(value)
+                                    ? value
+                                    : field.fallback || '#000000'
+                            }
                             onChange={(event) => onChange(field.key, event.target.value)}
                             className="h-7 w-7 shrink-0 cursor-pointer rounded border border-gray-300 p-0.5"
                         />
@@ -428,17 +654,27 @@ export function CodCheckoutDesignSettings({ props, onChange }: CodCheckoutDesign
             <div className="rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2">
                 <div className="flex items-center space-x-1.5 text-[11px] font-bold text-indigo-900">
                     <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-                    <span>Checkout Designer</span>
+                    <span>{isStylesMode ? 'Checkout Designer' : 'Checkout Content'}</span>
                 </div>
                 <p className="mt-0.5 text-[10px] leading-relaxed text-indigo-700">
-                    কার্ড, ইনপুট, প্রোডাক্ট কার্ড, শিপিং, সামারি ও বাটনের প্রতিটি স্টাইল এখান থেকে
-                    কাস্টমাইজ করুন। সেকশনের বাইরের background, padding, margin ও width ব্লকের{' '}
-                    <span className="font-bold">Styles</span> ট্যাব থেকে নিয়ন্ত্রণ করুন — নতুন ব্লকে
-                    বাইরের margin/padding ডিফল্টভাবে 0।
+                    {isStylesMode ? (
+                        <>
+                            কার্ড, ইনপুট, প্রোডাক্ট কার্ড, শিপিং, সামারি ও বাটনের প্রতিটি স্টাইল
+                            এখান থেকে কাস্টমাইজ করুন। সেকশনের বাইরের background, padding, margin ও
+                            width নিচের <span className="font-bold">Background</span>,{' '}
+                            <span className="font-bold">Spacing</span> অপশন থেকে নিয়ন্ত্রণ করুন।
+                        </>
+                    ) : (
+                        <>
+                            শেকআউটের টেক্সট, কোন অংশ দেখাবে এবং ফর্মের লেবেল/প্লেসহোল্ডার এখানে
+                            সম্পাদনা করুন। রঙ, প্যাডিং, বর্ডার ও টাইপোগ্রাফি{' '}
+                            <span className="font-bold">Styles</span> ট্যাবে পাবেন।
+                        </>
+                    )}
                 </p>
             </div>
 
-            {SECTIONS.map((section) => {
+            {visibleSections.map((section) => {
                 const Icon = section.icon;
                 const isOpen = Boolean(openSections[section.id]);
 
@@ -479,14 +715,17 @@ export function CodCheckoutDesignSettings({ props, onChange }: CodCheckoutDesign
                 );
             })}
 
-            <div className="flex items-start space-x-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10px] leading-relaxed text-amber-800">
-                <Receipt className="mt-0.5 h-3 w-3 shrink-0" />
-                <span>
-                    সিকিউরিটির জন্য <code className="font-mono">url()</code>, <code className="font-mono">@import</code>,
-                    <code className="font-mono"> expression()</code> এবং <code className="font-mono">;</code> যুক্ত
-                    ভ্যালু গ্রহণ করা হয় না।
-                </span>
-            </div>
+            {isStylesMode && (
+                <div className="flex items-start space-x-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10px] leading-relaxed text-amber-800">
+                    <Receipt className="mt-0.5 h-3 w-3 shrink-0" />
+                    <span>
+                        সিকিউরিটির জন্য <code className="font-mono">url()</code>,{' '}
+                        <code className="font-mono">@import</code>,
+                        <code className="font-mono"> expression()</code> এবং{' '}
+                        <code className="font-mono">;</code> যুক্ত ভ্যালু গ্রহণ করা হয় না।
+                    </span>
+                </div>
+            )}
         </div>
     );
 }

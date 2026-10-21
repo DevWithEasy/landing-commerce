@@ -91,8 +91,11 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
         updateBlockProps(selectedBlock.id, { [key]: value });
     };
 
-    const handleStyleChange = (key: keyof BlockStyles, value: any) => {
-        updateBlockStyles(selectedBlock.id, { [key]: value });
+    const handleStyleChange = (
+        key: keyof BlockStyles,
+        value: BlockStyles[keyof BlockStyles]
+    ) => {
+        updateBlockStyles(selectedBlock.id, { [key]: value } as Partial<BlockStyles>);
     };
 
     const handleBatchStyleChange = (updates: Partial<BlockStyles>) => {
@@ -178,11 +181,20 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
                         onChange={handlePropChange}
                     />
                 ) : (
-                    <BlockStylesForm
-                        styles={styles}
-                        onChange={handleStyleChange}
-                        onBatchChange={handleBatchStyleChange}
-                    />
+                    <div className="space-y-3">
+                        {selectedBlock.type === 'CodCheckoutBlock' && (
+                            <CodCheckoutDesignSettings
+                                mode="styles"
+                                props={selectedBlock.props as unknown as CodCheckoutBlockProps}
+                                onChange={handlePropChange}
+                            />
+                        )}
+                        <BlockStylesForm
+                            styles={styles}
+                            onChange={handleStyleChange}
+                            onBatchChange={handleBatchStyleChange}
+                        />
+                    </div>
                 )}
             </div>
         </aside>
@@ -779,7 +791,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         </div>
                     </div>
 
-                    <CodCheckoutDesignSettings props={p} onChange={onChange} />
+                    <CodCheckoutDesignSettings mode="content" props={p} onChange={onChange} />
                 </div>
             );
         }
@@ -2459,7 +2471,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
 
 interface BlockStylesFormProps {
     styles: BlockStyles;
-    onChange: (key: keyof BlockStyles, value: any) => void;
+    onChange: (key: keyof BlockStyles, value: BlockStyles[keyof BlockStyles]) => void;
     onBatchChange?: (updates: Partial<BlockStyles>) => void;
 }
 
