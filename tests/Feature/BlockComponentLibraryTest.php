@@ -213,6 +213,7 @@ test('cod checkout design props are rendered and unsafe css values are discarded
             'cardBgColor' => '#123456',
             'cardBorderRadius' => '6px',
             'containerMaxWidth' => '800px',
+            'containerPaddingX' => '37px',
             'buttonBgColor' => '#abcdef',
             'buttonTextColor' => '#111111',
             'inputFocusColor' => '#ff0000',
@@ -227,6 +228,10 @@ test('cod checkout design props are rendered and unsafe css values are discarded
         ->toContain('background-color: #123456')
         ->toContain('border-radius: 6px')
         ->toContain('max-width: 800px')
+        ->toContain('padding-top: 37px')
+        ->toContain('padding-bottom: 37px')
+        ->toContain('padding-left: 37px')
+        ->toContain('padding-right: 37px')
         ->toContain('background-color: #abcdef')
         ->toContain('color: #111111')
         ->toContain('--cod-focus: #ff0000')

@@ -83,6 +83,8 @@
 
     $containerStyle = $inlineStyle([
         'max-width' => $props['containerMaxWidth'] ?? '672px',
+        'padding-top' => $props['containerPaddingX'] ?? '16px',
+        'padding-bottom' => $props['containerPaddingX'] ?? '16px',
         'padding-left' => $props['containerPaddingX'] ?? '16px',
         'padding-right' => $props['containerPaddingX'] ?? '16px',
     ]);
@@ -359,7 +361,7 @@
     }
 </style>
 
-<section id="cod-checkout" {!! $styleAttribute !!} class="w-full">
+<section id="cod-checkout py-4" {!! $styleAttribute !!} class="w-full">
     <div class="mx-auto" {!! $containerStyle !!}>
         <div {!! $cardStyle !!}>
             @if ($showHeader)

@@ -116,7 +116,12 @@ const SECTIONS: CheckoutSection[] = [
             },
             { key: 'accentColor', label: 'Accent Color', kind: 'color', fallback: '#059669' },
             { key: 'containerMaxWidth', label: 'Content Max Width', placeholder: '672px' },
-            { key: 'containerPaddingX', label: 'Content Side Padding', placeholder: '16px' },
+            {
+                key: 'containerPaddingX',
+                label: 'Content Padding (All Sides)',
+                placeholder: '16px',
+                hint: 'উপর, নিচ, বাম ও ডান — চার দিকেই একই প্যাডিং প্রযোজ্য হবে।',
+            },
             { key: 'fieldGap', label: 'Gap Between Fields', placeholder: '16px' },
         ],
     },

@@ -90,6 +90,8 @@ export function CodCheckoutBlock({
 
     const containerStyle: CSSProperties = {
         maxWidth: safeCheckoutCss(props.containerMaxWidth) || '672px',
+        paddingTop: safeCheckoutCss(props.containerPaddingX) || '16px',
+        paddingBottom: safeCheckoutCss(props.containerPaddingX) || '16px',
         paddingLeft: safeCheckoutCss(props.containerPaddingX) || '16px',
         paddingRight: safeCheckoutCss(props.containerPaddingX) || '16px',
     };
