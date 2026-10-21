@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\PageBuilder\Models\PolicyPage;
 use Database\Seeders\PolicyPagesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -69,6 +70,14 @@ test('public route renders published policy page and sanitizes malicious script 
 
     $response = $this->get('/pages/privacy-safe');
     $response->assertStatus(200);
+    $response->assertInertia(fn (Assert $inertia) => $inertia
+        ->component('Storefront/Policy')
+        ->where('page.title', 'Privacy Protection')
+        ->where('page.slug', 'privacy-safe')
+        ->where('page.is_published', true)
+        ->has('categories')
+        ->has('theme')
+    );
     $response->assertSee('Privacy Protection');
     $response->assertSee('Safe intro');
 
@@ -92,9 +101,63 @@ test('unpublished policy page returns 404 on public route', function () {
 test('policy pages seeder populates standard default policies', function () {
     $this->seed(PolicyPagesSeeder::class);
 
-    $this->assertDatabaseHas('policy_pages', ['slug' => 'privacy-policy']);
-    $this->assertDatabaseHas('policy_pages', ['slug' => 'terms']);
-    $this->assertDatabaseHas('policy_pages', ['slug' => 'refund-policy']);
-    $this->assertDatabaseHas('policy_pages', ['slug' => 'about']);
-    $this->assertDatabaseHas('policy_pages', ['slug' => 'contact']);
+    $this->assertDatabaseHas('policy_pages', ['slug' => 'privacy-policy', 'is_protected' => 1]);
+    $this->assertDatabaseHas('policy_pages', ['slug' => 'terms', 'is_protected' => 1]);
+    $this->assertDatabaseHas('policy_pages', ['slug' => 'refund-policy', 'is_protected' => 1]);
+    $this->assertDatabaseHas('policy_pages', ['slug' => 'about', 'is_protected' => 1]);
+    $this->assertDatabaseHas('policy_pages', ['slug' => 'contact', 'is_protected' => 1]);
+});
+
+test('default navigation policy pages exist and are protected', function () {
+    $expectedTitles = [
+        'about' => 'আমাদের সম্পর্কে',
+        'contact' => 'যোগাযোগ',
+        'privacy-policy' => 'গোপনীয়তা নীতি',
+        'terms' => 'ব্যবহারের শর্তাবলী',
+        'refund-policy' => 'রিটার্ন ও রিফান্ড নীতি',
+    ];
+
+    foreach ($expectedTitles as $slug => $title) {
+        $page = PolicyPage::where('slug', $slug)->first();
+
+        expect($page)->not->toBeNull()
+            ->and($page->title)->toBe($title)
+            ->and($page->is_published)->toBeTrue()
+            ->and($page->is_protected)->toBeTrue()
+            ->and($page->isProtected())->toBeTrue();
+    }
+});
+
+test('default navigation pages are publicly accessible', function () {
+    foreach (PolicyPage::PROTECTED_SLUGS as $slug) {
+        $this->get("/pages/{$slug}")->assertStatus(200);
+    }
+});
+
+test('protected navigation pages cannot be deleted but remain editable', function () {
+    $admin = makePolicyTestUser('super_admin');
+    $page = PolicyPage::where('slug', 'privacy-policy')->firstOrFail();
+
+    $this->actingAs($admin)
+        ->delete("/admin/pages/{$page->id}")
+        ->assertRedirect('/admin/pages')
+        ->assertSessionHas('error');
+
+    $this->assertDatabaseHas('policy_pages', ['id' => $page->id, 'slug' => 'privacy-policy']);
+
+    $this->actingAs($admin)
+        ->put("/admin/pages/{$page->id}", [
+            'title' => 'আপডেটেড গোপনীয়তা নীতি',
+            'slug' => 'changed-privacy-slug',
+            'content' => '<p>Updated privacy content.</p>',
+            'is_published' => 1,
+        ])
+        ->assertRedirect('/admin/pages');
+
+    $page->refresh();
+
+    expect($page->title)->toBe('আপডেটেড গোপনীয়তা নীতি')
+        ->and($page->slug)->toBe('privacy-policy')
+        ->and($page->content)->toContain('Updated privacy content.')
+        ->and($page->is_protected)->toBeTrue();
 });

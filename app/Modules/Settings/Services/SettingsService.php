@@ -30,6 +30,7 @@ class SettingsService
         'sms.ssl_wireless.api_token',
         'sms.ssl_wireless.sid',
         'sms.smspoh.token',
+        'ai.gemini.api_key',
     ];
 
     /**
@@ -200,6 +201,12 @@ class SettingsService
             'store_name' => (string) $this->get('store.name', config('app.name', 'Landing Commerce')),
             'store_phone' => (string) $this->get('store.phone', ''),
             'store_whatsapp' => (string) $this->get('store.whatsapp', config('services.whatsapp.merchant_phone', '')),
+
+            // Customer-owned AI Design Generator
+            'ai_gemini_api_key' => $this->has('ai.gemini.api_key') ? static::SECRET_MASK : '',
+            'ai_gemini_api_key_configured' => $this->has('ai.gemini.api_key'),
+            'ai_model' => (string) $this->get('ai.gemini.model', config('ai.gemini.default_model', 'gemini-3.6-flash')),
+            'ai_enabled' => filter_var($this->get('ai.gemini.enabled', true), FILTER_VALIDATE_BOOLEAN) ? '1' : '0',
         ];
 
         return $settings;
@@ -243,6 +250,10 @@ class SettingsService
             'store_name' => ['key' => 'store.name', 'group' => 'general', 'secret' => false],
             'store_phone' => ['key' => 'store.phone', 'group' => 'general', 'secret' => false],
             'store_whatsapp' => ['key' => 'store.whatsapp', 'group' => 'general', 'secret' => false],
+
+            'ai_gemini_api_key' => ['key' => 'ai.gemini.api_key', 'group' => 'ai', 'secret' => true],
+            'ai_model' => ['key' => 'ai.gemini.model', 'group' => 'ai', 'secret' => false],
+            'ai_enabled' => ['key' => 'ai.gemini.enabled', 'group' => 'ai', 'secret' => false],
         ];
 
         foreach ($fieldMap as $inputKey => $meta) {
@@ -253,6 +264,10 @@ class SettingsService
             $rawValue = $inputs[$inputKey];
             $value = is_string($rawValue) ? trim($rawValue) : (string) $rawValue;
             $isSecret = (bool) $meta['secret'];
+
+            if ($inputKey === 'ai_enabled') {
+                $value = filter_var($rawValue, FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+            }
 
             // If it is a secret and the input is empty or contains the mask, skip updating it
             if ($isSecret) {
@@ -281,7 +296,7 @@ class SettingsService
             if (! Schema::hasTable('settings')) {
                 return;
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return;
         }
 

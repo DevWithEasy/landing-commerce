@@ -116,6 +116,48 @@ export function addBlockToTree(
     });
 }
 
+export function addBlocksToTree(
+    blocks: Block[],
+    newBlocks: Block[],
+    parentId: string
+): Block[] {
+    return blocks.map((b) => {
+        if (b.id === parentId) {
+            return { ...b, children: [...(b.children || []), ...newBlocks] };
+        }
+        if (b.children && b.children.length > 0) {
+            return { ...b, children: addBlocksToTree(b.children, newBlocks, parentId) };
+        }
+        return b;
+    });
+}
+
+function collectBlockIds(blocks: Block[], ids: Set<string> = new Set<string>()): Set<string> {
+    for (const block of blocks) {
+        ids.add(block.id);
+        if (block.children && block.children.length > 0) {
+            collectBlockIds(block.children, ids);
+        }
+    }
+    return ids;
+}
+
+function cloneBlockWithUniqueId(block: Block, usedIds: Set<string>): Block {
+    let id = block.id;
+    if (!id || usedIds.has(id)) {
+        do {
+            id = `blk_ai_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+        } while (usedIds.has(id));
+    }
+    usedIds.add(id);
+
+    return {
+        ...block,
+        id,
+        children: block.children?.map((child) => cloneBlockWithUniqueId(child, usedIds)),
+    };
+}
+
 export function reorderBlocksInTree(
     blocks: Block[],
     startIndex: number,
@@ -175,6 +217,7 @@ export interface BuilderState {
 
     // Block manipulations
     addBlock: (block: Block, parentId?: string | null, index?: number) => void;
+    addBlocks: (blocks: Block[], parentId?: string | null) => void;
     updateBlockProps: (id: string, props: Partial<BlockProps>) => void;
     updateBlockStyles: (id: string, styles: Partial<BlockStyles>) => void;
     removeBlock: (id: string) => void;
@@ -243,6 +286,30 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         set({
             ast: newAst,
             selectedBlockId: block.id,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+        });
+    },
+
+    addBlocks: (blocks: Block[], parentId?: string | null) => {
+        if (blocks.length === 0) return;
+
+        const { ast, history, historyIndex } = get();
+        const usedIds = collectBlockIds(ast.blocks);
+        const normalizedBlocks = blocks.map((block) => cloneBlockWithUniqueId(block, usedIds));
+
+        const targetParent = parentId ? findBlockInTree(ast.blocks, parentId) : null;
+        const newBlocks = targetParent?.type === 'ContainerBlock'
+            ? addBlocksToTree(ast.blocks, normalizedBlocks, targetParent.id)
+            : [...ast.blocks, ...normalizedBlocks];
+
+        const newAst: PageAst = { ...ast, blocks: newBlocks };
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newAst);
+
+        set({
+            ast: newAst,
+            selectedBlockId: normalizedBlocks[0]?.id ?? null,
             history: newHistory,
             historyIndex: newHistory.length - 1,
         });

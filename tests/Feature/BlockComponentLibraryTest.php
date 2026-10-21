@@ -23,12 +23,12 @@ beforeEach(function () {
     ]);
 });
 
-test('block registry returns all 10 approved blocks with complete schema definitions', function () {
+test('block registry returns all 18 approved blocks with complete schema definitions', function () {
     $blocks = BlockRegistry::APPROVED_BLOCKS;
-    expect($blocks)->toHaveCount(10);
+    expect($blocks)->toHaveCount(18);
 
     $definitions = BlockRegistry::getAllBlockDefinitions();
-    expect($definitions)->toHaveCount(10);
+    expect($definitions)->toHaveCount(18);
 
     foreach ($blocks as $blockType) {
         expect(BlockRegistry::isApproved($blockType))->toBeTrue();
@@ -42,6 +42,78 @@ test('block registry returns all 10 approved blocks with complete schema definit
         expect($definitions)->toHaveKey($blockType);
         expect($definitions[$blockType])->toHaveKeys(['type', 'name', 'category', 'defaultProps', 'defaultStyles']);
     }
+});
+
+test('feature list block defaults to a title and two list items', function () {
+    $props = BlockRegistry::getDefaultProps('IconListBlock');
+
+    expect($props['title'])->toBe('Title')
+        ->and($props['listType'])->toBe('ul')
+        ->and($props['showMarkers'])->toBeTrue()
+        ->and($props['itemSpacing'])->toBe(12)
+        ->and($props['items'])->toHaveCount(2)
+        ->and($props['items'][0]['text'])->toBe('List Item 01')
+        ->and($props['items'][1]['text'])->toBe('List Item 2');
+});
+
+test('feature list supports adjustable spacing between items', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'icon-list-spacing',
+        'type' => 'IconListBlock',
+        'props' => [
+            'title' => 'Feature Spacing',
+            'itemSpacing' => 28,
+            'items' => [
+                ['id' => '1', 'text' => 'First feature'],
+                ['id' => '2', 'text' => 'Second feature'],
+            ],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('row-gap: 28px')
+        ->toContain('First feature')
+        ->toContain('Second feature');
+});
+
+test('accordion block defaults to a title and one editable item', function () {
+    $props = BlockRegistry::getDefaultProps('AccordionBlock');
+
+    expect($props['title'])->toBe('Title')
+        ->and($props['items'])->toHaveCount(1)
+        ->and($props['items'][0]['title'])->not->toBeEmpty()
+        ->and($props['items'][0]['content'])->not->toBeEmpty();
+});
+
+test('accordion block renders multiple collapsible details items', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'accordion-1',
+        'type' => 'AccordionBlock',
+        'props' => [
+            'title' => 'Delivery Information',
+            'items' => [
+                [
+                    'id' => 'a1',
+                    'title' => 'Inside Dhaka',
+                    'content' => 'Delivery within 24-48 hours.',
+                ],
+                [
+                    'id' => 'a2',
+                    'title' => 'Outside Dhaka',
+                    'content' => 'Delivery within 48-72 hours.',
+                ],
+            ],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('Delivery Information')
+        ->toContain('Inside Dhaka')
+        ->toContain('Delivery within 24-48 hours.')
+        ->toContain('Outside Dhaka')
+        ->toContain('Delivery within 48-72 hours.')
+        ->toContain('<details')
+        ->toContain('name="accordion-accordion-1"');
 });
 
 test('hero block renders expected title and escaped markup', function () {
@@ -124,6 +196,145 @@ test('benefits grid block renders items properly', function () {
         ->toContain('100% Genuine')
         ->toContain('Fast Delivery')
         ->toContain('Open Box Check');
+});
+
+test('icon list block renders ordered text items without legacy icons', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'icon-list-1',
+        'type' => 'IconListBlock',
+        'props' => [
+            'title' => 'আমাদের ৫টি সুবিধা',
+            'listType' => 'ol',
+            'showMarkers' => true,
+            'showDividers' => true,
+            'items' => [
+                ['id' => '1', 'icon' => '🌸', 'text' => 'ত্বক উজ্জ্বল দেখাতে সাহায্য করে'],
+                ['id' => '2', 'icon' => '🌿', 'text' => 'প্রাকৃতিক উপাদানে তৈরি'],
+            ],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('<ol')
+        ->not->toContain('<ul')
+        ->toContain('আমাদের ৫টি সুবিধা')
+        ->toContain('aria-hidden="true"')
+        ->toMatch('/aria-hidden="true">\s*1\.\s*<\/span>/')
+        ->toMatch('/aria-hidden="true">\s*2\.\s*<\/span>/')
+        ->toContain('ত্বক উজ্জ্বল দেখাতে সাহায্য করে')
+        ->toContain('প্রাকৃতিক উপাদানে তৈরি')
+        ->toContain('<strong')
+        ->toContain('gap-1.5')
+        ->not->toContain('gap-3.5')
+        ->not->toContain('🌸')
+        ->not->toContain('🌿')
+        ->not->toContain('কেন InnerMe Cream নিবেন ?');
+});
+
+test('icon list block supports unordered markers and hiding them', function () {
+    $withBullets = $this->renderer->renderBlock([
+        'id' => 'icon-list-2',
+        'type' => 'IconListBlock',
+        'props' => [
+            'listType' => 'ul',
+            'showMarkers' => true,
+            'items' => [
+                ['id' => '1', 'text' => 'First benefit'],
+            ],
+        ],
+    ]);
+
+    expect($withBullets)
+        ->toContain('<ul')
+        ->not->toContain('<ol')
+        ->toContain('•')
+        ->toContain('First benefit');
+
+    $withoutMarkers = $this->renderer->renderBlock([
+        'id' => 'icon-list-3',
+        'type' => 'IconListBlock',
+        'props' => [
+            'listType' => 'ol',
+            'showMarkers' => false,
+            'items' => [
+                ['id' => '1', 'text' => 'Second benefit'],
+            ],
+        ],
+    ]);
+
+    expect($withoutMarkers)
+        ->toContain('<ol')
+        ->toContain('Second benefit')
+        ->not->toContain('•')
+        ->not->toContain('aria-hidden="true"');
+});
+
+test('image carousel block renders dynamic images and responsive item settings', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'carousel-1',
+        'type' => 'ImageCarouselBlock',
+        'props' => [
+            'title' => 'Product Gallery',
+            'desktopItemsPerView' => 4,
+            'mobileItemsPerView' => 2,
+            'gap' => '12px',
+            'aspectRatio' => '1 / 1',
+            'showArrows' => true,
+            'showDots' => true,
+            'images' => [
+                [
+                    'id' => '1',
+                    'imageUrl' => 'https://example.com/first.jpg',
+                    'altText' => 'First product image',
+                ],
+                [
+                    'id' => '2',
+                    'imageUrl' => 'https://example.com/second.jpg',
+                    'altText' => 'Second product image',
+                ],
+            ],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('Product Gallery')
+        ->toContain('https://example.com/first.jpg')
+        ->toContain('https://example.com/second.jpg')
+        ->toContain('alt="First product image"')
+        ->toContain('--lc-desktop: 4')
+        ->toContain('--lc-mobile: 2')
+        ->toContain('--lc-gap: 12px')
+        ->toContain('aspect-ratio: 1 / 1')
+        ->toContain('data-lc-carousel-track')
+        ->toContain('data-lc-prev')
+        ->toContain('data-lc-next');
+});
+
+test('image carousel block skips unsafe image schemes and escapes alt text', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'carousel-2',
+        'type' => 'ImageCarouselBlock',
+        'props' => [
+            'images' => [
+                [
+                    'id' => '1',
+                    'imageUrl' => 'https://example.com/safe.jpg',
+                    'altText' => '"><script>alert(1)</script>',
+                ],
+                [
+                    'id' => '2',
+                    'imageUrl' => 'javascript:alert(1)',
+                    'altText' => 'Unsafe image',
+                ],
+            ],
+        ],
+    ]);
+
+    expect($html)
+        ->not->toContain('javascript:alert')
+        ->not->toContain('<script>alert')
+        ->toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
+        ->toContain('https://example.com/safe.jpg');
 });
 
 test('reviews block renders customer feedback and star ratings', function () {

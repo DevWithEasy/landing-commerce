@@ -7,7 +7,9 @@ use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Models\OrderItem;
 use App\Modules\Orders\Models\OrderStatus;
+use App\Modules\Shipping\Models\ShippingMethod;
 use Database\Seeders\BangladeshGeographicSeeder;
+use Database\Seeders\ShippingAndPaymentMethodSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -16,6 +18,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(BangladeshGeographicSeeder::class);
+    $this->seed(ShippingAndPaymentMethodSeeder::class);
 
     $this->product = Product::create([
         'title' => 'Premium Ergonomic Backpack',
@@ -47,7 +50,7 @@ beforeEach(function () {
     ]);
 });
 
-test('renders customer checkout page with active product and 64 districts', function () {
+test('renders checkout page with database-driven delivery and payment methods', function () {
     $response = $this->get(route('checkout.show', $this->product->slug));
 
     $response->assertOk()
@@ -56,7 +59,13 @@ test('renders customer checkout page with active product and 64 districts', func
             ->has('product')
             ->where('product.slug', 'premium-ergonomic-backpack')
             ->has('product.variants', 2)
-            ->has('districts', 64)
+            ->has('shippingMethods', 4)
+            ->where('shippingMethods.0.code', 'inside_dhaka_standard')
+            ->where('shippingMethods.0.is_default', true)
+            ->has('paymentMethods', 1)
+            ->where('paymentMethods.0.code', 'cod')
+            ->has('theme')
+            ->has('categories')
             ->where('defaultShippingFee', 70)
             ->where('defaultZoneName', 'Inside Dhaka')
         );
@@ -71,6 +80,32 @@ test('renders customer checkout page without slug by falling back to first activ
             ->has('product')
             ->where('product.id', $this->product->id)
         );
+});
+
+test('places a COD order without district or upazila using the selected delivery method', function () {
+    $shippingMethod = ShippingMethod::where('code', 'outside_dhaka_standard')->firstOrFail();
+
+    $response = $this->postJson('/checkout/cod', [
+        'checkout_source' => 'direct',
+        'customer_name' => 'Test Customer',
+        'customer_phone' => '01712345678',
+        'delivery_address' => 'House 1, Road 2, Zindabazar, Sylhet',
+        'shipping_method_id' => $shippingMethod->id,
+        'payment_method' => 'cod',
+        'idempotency_key' => (string) Str::uuid(),
+        'items' => [
+            ['variant_id' => $this->variant1->id, 'quantity' => 1],
+        ],
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJsonPath('order.shipping_fee', '130.00')
+        ->assertJsonPath('order.shipping_method_id', $shippingMethod->id)
+        ->assertJsonPath('order.district', 'Outside Dhaka')
+        ->assertJsonPath('order.payment_method', 'cod');
+
+    expect(Order::count())->toBe(1)
+        ->and($this->variant1->fresh()->stock_quantity)->toBe(14);
 });
 
 test('calculates accurate dynamic shipping fees for all zones via shipping-fee endpoint', function () {

@@ -92,7 +92,9 @@ class PolicyPageController extends Controller
         ]);
 
         $baseSlug = ! empty($validated['slug']) ? Str::slug($validated['slug']) : Str::slug($validated['title']);
-        $slug = $baseSlug !== $page->slug ? $this->generateUniqueSlug($baseSlug, $page->id) : $page->slug;
+        $slug = $page->isProtected()
+            ? $page->slug
+            : ($baseSlug !== $page->slug ? $this->generateUniqueSlug($baseSlug, $page->id) : $page->slug);
 
         $page->update([
             'title' => trim($validated['title']),
@@ -112,6 +114,12 @@ class PolicyPageController extends Controller
     public function destroy(PolicyPage $page): RedirectResponse
     {
         Gate::authorize('manage-policy-pages');
+
+        if ($page->isProtected()) {
+            return redirect()
+                ->route('admin.pages.index')
+                ->with('error', "Required page '{$page->title}' cannot be deleted. You can update its content instead.");
+        }
 
         $title = $page->title;
         $page->delete();

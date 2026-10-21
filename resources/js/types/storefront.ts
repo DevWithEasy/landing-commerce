@@ -1,4 +1,4 @@
-import type { Category, PaginatedData, Product, SharedProps, Slider } from '@/types';
+import type { Category, PaginatedData, PolicyPage, Product, SharedProps, Slider } from '@/types';
 
 export interface StorefrontTheme {
     store_name: string;
@@ -61,5 +61,12 @@ export interface StorefrontProductProps extends SharedProps {
         cod_available: boolean;
         return_policy_days: number;
     };
+    theme: StorefrontTheme;
+}
+
+export interface StorefrontPolicyProps extends SharedProps {
+    page: Pick<PolicyPage, 'id' | 'title' | 'slug' | 'is_published' | 'is_protected'>;
+    content: string;
+    categories: Category[];
     theme: StorefrontTheme;
 }

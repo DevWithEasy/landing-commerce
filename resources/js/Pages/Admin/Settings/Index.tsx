@@ -1,13 +1,19 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
+    AlertCircle,
+    CheckCircle2,
     Eye,
     EyeOff,
+    Loader2,
     Lock,
     MessageSquare,
     Save,
     Shield,
+    Sparkles,
     Store,
+    Trash2,
     Truck,
+    Wifi,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
@@ -56,6 +62,11 @@ interface SettingsData {
     store_name: string;
     store_phone: string;
     store_whatsapp: string;
+
+    ai_gemini_api_key: string;
+    ai_gemini_api_key_configured: boolean;
+    ai_model: string;
+    ai_enabled: string;
 }
 
 interface SettingsIndexProps extends SharedProps {
@@ -64,6 +75,13 @@ interface SettingsIndexProps extends SharedProps {
     smsDrivers: Record<string, string>;
     courierConfigured: Record<string, boolean>;
     smsConfigured: Record<string, boolean>;
+    aiModels: Record<string, string>;
+}
+
+interface AiConnectionResponse {
+    success?: boolean;
+    message?: string;
+    errors?: Record<string, string[]>;
 }
 
 export default function SettingsIndex({
@@ -72,9 +90,15 @@ export default function SettingsIndex({
     smsDrivers,
     courierConfigured,
     smsConfigured,
+    aiModels,
 }: SettingsIndexProps) {
-    const [activeTab, setActiveTab] = useState<'couriers' | 'sms' | 'store'>('couriers');
+    const [activeTab, setActiveTab] = useState<'couriers' | 'sms' | 'store' | 'ai'>('couriers');
     const [revealedFields, setRevealedFields] = useState<Record<string, boolean>>({});
+    const [testingConnection, setTestingConnection] = useState(false);
+    const [testResult, setTestResult] = useState<{
+        type: 'success' | 'error';
+        message: string;
+    } | null>(null);
 
     const { data, setData, post, processing } = useForm({
         courier_default: settings.courier_default || 'mock',
@@ -106,6 +130,10 @@ export default function SettingsIndex({
         store_name: settings.store_name || '',
         store_phone: settings.store_phone || '',
         store_whatsapp: settings.store_whatsapp || '',
+
+        ai_gemini_api_key: settings.ai_gemini_api_key || '',
+        ai_model: settings.ai_model || Object.keys(aiModels)[0] || 'gemini-3.6-flash',
+        ai_enabled: settings.ai_enabled || '0',
     });
 
     const toggleReveal = (field: string) => {
@@ -121,6 +149,86 @@ export default function SettingsIndex({
             preserveScroll: true,
         });
     };
+
+    const handleTestConnection = async () => {
+        setTestingConnection(true);
+        setTestResult(null);
+
+        try {
+            const csrfToken =
+                (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ||
+                '';
+
+            const response = await fetch('/admin/ai/test-connection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify({
+                    api_key: data.ai_gemini_api_key,
+                    model: data.ai_model,
+                }),
+            });
+
+            let result: AiConnectionResponse = {};
+            try {
+                result = (await response.json()) as AiConnectionResponse;
+            } catch {
+                result = {};
+            }
+
+            if (!response.ok || !result.success) {
+                const firstValidationError = result.errors
+                    ? Object.values(result.errors).flat()[0]
+                    : undefined;
+                setTestResult({
+                    type: 'error',
+                    message:
+                        firstValidationError ||
+                        result.message ||
+                        'Could not connect to Gemini. Please try again.',
+                });
+                return;
+            }
+
+            setTestResult({
+                type: 'success',
+                message:
+                    result.message ||
+                    'Connection successful. The selected Gemini model is available.',
+            });
+        } catch {
+            setTestResult({
+                type: 'error',
+                message: 'Network error while testing the Gemini connection.',
+            });
+        } finally {
+            setTestingConnection(false);
+        }
+    };
+
+    const handleRemoveKey = () => {
+        if (
+            !window.confirm(
+                'Remove the saved Gemini API key? Existing pages, revisions, and generated blocks will not be changed.'
+            )
+        ) {
+            return;
+        }
+
+        router.delete('/admin/ai/key', {
+            preserveScroll: true,
+            onSuccess: () => {
+                setTestResult(null);
+                setData('ai_gemini_api_key', '');
+            },
+        });
+    };
+
+    const aiConfigured = settings.ai_gemini_api_key_configured;
+    const aiEnabled = data.ai_enabled === '1';
 
     return (
         <AdminLayout
@@ -200,6 +308,19 @@ export default function SettingsIndex({
                     >
                         <Store className="w-4 h-4" />
                         <span>Store Details</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('ai')}
+                        className={`pb-4 px-1 text-sm font-semibold border-b-2 flex items-center space-x-2 transition-colors ${
+                            activeTab === 'ai'
+                                ? 'border-primary-600 text-primary-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        <span>AI Settings</span>
                     </button>
                 </div>
 
@@ -899,6 +1020,215 @@ export default function SettingsIndex({
                                             className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg font-mono focus:ring-primary-500 focus:border-primary-500"
                                         />
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* AI SETTINGS TAB */}
+                    {activeTab === 'ai' && (
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-5">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-gray-100">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-gray-900 flex items-center space-x-2">
+                                            <Sparkles className="w-4 h-4 text-violet-600" />
+                                            <span>AI Design Generator</span>
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-0.5">
+                                            Each installation uses its own Google AI Studio key.
+                                            The key is encrypted at rest and never returned to the
+                                            browser.
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                                            aiConfigured && aiEnabled
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                                        }`}
+                                    >
+                                        <Shield className="w-3.5 h-3.5 mr-1" />
+                                        {aiConfigured && aiEnabled
+                                            ? 'AI Ready'
+                                            : aiConfigured
+                                              ? 'Configured · Disabled'
+                                              : 'Key Required'}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="sm:col-span-2">
+                                        <label
+                                            htmlFor="ai_gemini_api_key"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Google AI Studio API Key
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                id="ai_gemini_api_key"
+                                                type={
+                                                    revealedFields.ai_gemini_api_key
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
+                                                value={data.ai_gemini_api_key}
+                                                onChange={(e) => {
+                                                    setData('ai_gemini_api_key', e.target.value);
+                                                    setTestResult(null);
+                                                }}
+                                                placeholder={
+                                                    aiConfigured
+                                                        ? '••••••••'
+                                                        : 'AIza... (your own Gemini API key)'
+                                                }
+                                                autoComplete="new-password"
+                                                className="w-full px-3 py-2 pr-9 text-xs border border-gray-300 rounded-lg font-mono focus:ring-primary-500 focus:border-primary-500"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleReveal('ai_gemini_api_key')}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                                title={
+                                                    revealedFields.ai_gemini_api_key
+                                                        ? 'Hide API key'
+                                                        : 'Reveal API key'
+                                                }
+                                            >
+                                                {revealedFields.ai_gemini_api_key ? (
+                                                    <EyeOff className="w-4 h-4" />
+                                                ) : (
+                                                    <Eye className="w-4 h-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <p className="text-[11px] text-gray-400 mt-1">
+                                            Create or manage a key at{' '}
+                                            <a
+                                                href="https://aistudio.google.com/apikey"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-primary-600 hover:underline"
+                                            >
+                                                Google AI Studio
+                                            </a>
+                                            . Saving an empty or masked value keeps the existing
+                                            encrypted key.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="ai_model"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Gemini Model
+                                        </label>
+                                        <select
+                                            id="ai_model"
+                                            value={data.ai_model}
+                                            onChange={(e) => {
+                                                setData('ai_model', e.target.value);
+                                                setTestResult(null);
+                                            }}
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        >
+                                            {Object.entries(aiModels).map(([value, label]) => (
+                                                <option key={value} value={value}>
+                                                    {label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            htmlFor="ai_enabled"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            AI Generation Status
+                                        </label>
+                                        <select
+                                            id="ai_enabled"
+                                            value={data.ai_enabled}
+                                            onChange={(e) => {
+                                                setData('ai_enabled', e.target.value);
+                                                setTestResult(null);
+                                            }}
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                                        >
+                                            <option value="1">Enabled</option>
+                                            <option value="0">Disabled</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {testResult && (
+                                    <div
+                                        className={`flex items-start space-x-2 rounded-lg border p-3 text-xs ${
+                                            testResult.type === 'success'
+                                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                                : 'bg-rose-50 text-rose-800 border-rose-200'
+                                        }`}
+                                    >
+                                        {testResult.type === 'success' ? (
+                                            <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                                        ) : (
+                                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                                        )}
+                                        <span className="leading-relaxed">{testResult.message}</span>
+                                    </div>
+                                )}
+
+                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => void handleTestConnection()}
+                                        disabled={testingConnection}
+                                    >
+                                        {testingConnection ? (
+                                            <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                                        ) : (
+                                            <Wifi className="w-4 h-4 mr-1.5" />
+                                        )}
+                                        {testingConnection
+                                            ? 'Testing Connection...'
+                                            : 'Test Connection'}
+                                    </Button>
+
+                                    {aiConfigured && (
+                                        <Button
+                                            type="button"
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={handleRemoveKey}
+                                        >
+                                            <Trash2 className="w-4 h-4 mr-1.5" />
+                                            Remove Saved Key
+                                        </Button>
+                                    )}
+
+                                    <span className="text-[11px] text-gray-400">
+                                        Test uses the entered key when provided; otherwise it uses
+                                        the saved encrypted key.
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600 leading-relaxed">
+                                <div className="flex items-start space-x-2">
+                                    <Lock className="w-4 h-4 mt-0.5 text-slate-500 shrink-0" />
+                                    <p>
+                                        AI generation creates design-only Container, Heading,
+                                        Text, Image, and Button blocks. Generated content is
+                                        validated against strict allowlists before it reaches the
+                                        Builder and is inserted only after you click{' '}
+                                        <strong>Add to Canvas</strong>. Disabling AI or removing
+                                        the key never deletes pages, revisions, or existing blocks.
+                                    </p>
                                 </div>
                             </div>
                         </div>

@@ -31,6 +31,15 @@ class SettingController extends Controller
 
         $maskedSettings = $this->settingsService->getMaskedSettingsForUi();
 
+        $aiModels = (array) config('ai.gemini.models', []);
+        $defaultAiModel = (string) config('ai.gemini.default_model', 'gemini-3.6-flash');
+
+        // A previously saved model may have been removed or become unavailable.
+        // Show the effective fallback instead of a blank/stale model selection.
+        if (! array_key_exists((string) ($maskedSettings['ai_model'] ?? ''), $aiModels)) {
+            $maskedSettings['ai_model'] = $defaultAiModel;
+        }
+
         $courierDrivers = [
             'mock' => 'Mock Courier (Offline Simulation)',
             'steadfast' => 'Steadfast Courier',
@@ -65,6 +74,7 @@ class SettingController extends Controller
             'smsDrivers' => $smsDrivers,
             'courierConfigured' => $courierConfigured,
             'smsConfigured' => $smsConfigured,
+            'aiModels' => $aiModels,
         ]);
     }
 

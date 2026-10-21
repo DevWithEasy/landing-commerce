@@ -861,6 +861,13 @@ export function StorefrontLayout({
                                     আমাদের সম্পর্কে
                                 </Link>
                                 <Link
+                                    href="/pages/contact"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block text-sm text-gray-600 hover:text-indigo-600 py-1.5"
+                                >
+                                    যোগাযোগ
+                                </Link>
+                                <Link
                                     href="/pages/privacy-policy"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="block text-sm text-gray-600 hover:text-indigo-600 py-1.5"
@@ -872,7 +879,7 @@ export function StorefrontLayout({
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="block text-sm text-gray-600 hover:text-indigo-600 py-1.5"
                                 >
-                                    শর্তাবলী
+                                    ব্যবহারের শর্তাবলী
                                 </Link>
                                 <Link
                                     href="/pages/refund-policy"

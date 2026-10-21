@@ -9,6 +9,7 @@ import {
     Redo2,
     Save,
     Smartphone,
+    Sparkles,
     Tablet,
     Undo2,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ export interface TopBarProps {
     saveError: string | null;
     onSave: () => void;
     onOpenRevisions?: () => void;
+    onOpenAi: () => void;
 }
 
 export function TopBar({
@@ -31,6 +33,7 @@ export function TopBar({
     saveError,
     onSave,
     onOpenRevisions,
+    onOpenAi,
 }: TopBarProps) {
     const { viewport, setViewport, undo, redo, canUndo, canRedo } = useBuilderStore();
 
@@ -174,6 +177,16 @@ export function TopBar({
                         <span>Revisions ({landingPage.revisions?.length ?? 0})</span>
                     </button>
                 )}
+
+                <button
+                    type="button"
+                    onClick={onOpenAi}
+                    className="inline-flex items-center justify-center px-3 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-sm transition cursor-pointer"
+                    title="Generate an editable design with your own Gemini API key"
+                >
+                    <Sparkles className="w-4 h-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Generate with AI</span>
+                </button>
 
                 <button
                     type="button"

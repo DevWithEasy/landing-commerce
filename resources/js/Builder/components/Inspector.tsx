@@ -19,8 +19,11 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { PageSettingsInspector } from './PageSettingsInspector';
+import { CodeEditor } from './CodeEditor';
 import { findBlockInTree, useBuilderStore } from '../stores/useBuilderStore';
 import type {
+    AccordionBlockProps,
+    AccordionItem,
     BenefitItem,
     BenefitsGridBlockProps,
     Block,
@@ -36,7 +39,11 @@ import type {
     HeadingBlockProps,
     HeroBlockProps,
     HtmlBlockProps,
+    IconListBlockProps,
+    IconListItem,
     ImageBlockProps,
+    ImageCarouselBlockProps,
+    ImageCarouselItem,
     ProductSelectorBlockProps,
     ReviewItem,
     ReviewsBlockProps,
@@ -1117,6 +1124,109 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
             );
         }
 
+        case 'AccordionBlock': {
+            const p = props as unknown as AccordionBlockProps;
+            const items = p.items || [];
+
+            const handleUpdateAccordionItem = (
+                index: number,
+                key: keyof AccordionItem,
+                val: string
+            ) => {
+                const next = [...items];
+                next[index] = { ...next[index], [key]: val };
+                onChange('items', next);
+            };
+
+            const handleAddAccordionItem = () => {
+                onChange('items', [
+                    ...items,
+                    {
+                        id: String(Date.now()),
+                        title: `Accordion Item ${items.length + 1}`,
+                        content: 'Accordion content goes here.',
+                    },
+                ]);
+            };
+
+            const handleRemoveAccordionItem = (index: number) => {
+                onChange(
+                    'items',
+                    items.filter((_, itemIndex) => itemIndex !== index)
+                );
+            };
+
+            return (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Section Title
+                        </label>
+                        <input
+                            type="text"
+                            value={p.title || ''}
+                            onChange={(e) => onChange('title', e.target.value)}
+                            placeholder="Title"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-700">Accordion Items</span>
+                            <button
+                                type="button"
+                                onClick={handleAddAccordionItem}
+                                className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center"
+                            >
+                                <Plus className="w-3.5 h-3.5 mr-0.5" />
+                                <span>Add Item</span>
+                            </button>
+                        </div>
+
+                        {items.map((item, idx) => (
+                            <div
+                                key={item.id || idx}
+                                className="p-2.5 rounded-lg border border-gray-200 space-y-1.5 bg-gray-50/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-gray-400">
+                                        Item #{idx + 1}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveAccordionItem(idx)}
+                                        className="text-gray-400 hover:text-rose-600"
+                                        title="Remove item"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={item.title}
+                                    placeholder="Accordion item title"
+                                    onChange={(e) =>
+                                        handleUpdateAccordionItem(idx, 'title', e.target.value)
+                                    }
+                                    className="w-full text-xs rounded border-gray-300 p-1.5"
+                                />
+                                <textarea
+                                    rows={2}
+                                    value={item.content}
+                                    placeholder="Accordion item content"
+                                    onChange={(e) =>
+                                        handleUpdateAccordionItem(idx, 'content', e.target.value)
+                                    }
+                                    className="w-full text-xs rounded border-gray-300 p-1.5"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
         case 'CountdownTimerBlock': {
             const p = props as unknown as CountdownTimerBlockProps;
             return (
@@ -1248,13 +1358,13 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 &lt;html&gt;
                             </span>
                         </div>
-                        <textarea
-                            rows={9}
+                        <CodeEditor
+                            key={`${block.id}-html`}
+                            language="html"
                             value={p.html || ''}
-                            onChange={(e) => onChange('html', e.target.value)}
-                            placeholder="<div class='my-card'>&#10;  <h2>Special Title</h2>&#10;  <p>Your description...</p>&#10;</div>"
-                            className="w-full text-xs font-mono rounded-lg border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 p-2.5 bg-slate-900 text-slate-100 placeholder-slate-500 leading-relaxed tracking-wide"
-                            spellCheck={false}
+                            onChange={(value) => onChange('html', value)}
+                            ariaLabel="Custom HTML code"
+                            placeholder={"<div class='my-card'>\n  <h2>Special Title</h2>\n  <p>Your description...</p>\n</div>"}
                         />
                     </div>
 
@@ -1267,13 +1377,13 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 &#123;css&#125;
                             </span>
                         </div>
-                        <textarea
-                            rows={7}
+                        <CodeEditor
+                            key={`${block.id}-css`}
+                            language="css"
                             value={p.css || ''}
-                            onChange={(e) => onChange('css', e.target.value)}
-                            placeholder=".my-card {&#10;  background: #ffffff;&#10;  border-radius: 12px;&#10;  padding: 20px;&#10;}"
-                            className="w-full text-xs font-mono rounded-lg border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 p-2.5 bg-slate-900 text-emerald-400 placeholder-slate-500 leading-relaxed tracking-wide"
-                            spellCheck={false}
+                            onChange={(value) => onChange('css', value)}
+                            ariaLabel="Custom scoped CSS"
+                            placeholder={'.my-card {\n  background: #ffffff;\n  border-radius: 12px;\n  padding: 20px;\n}'}
                         />
                     </div>
 
@@ -1939,6 +2049,401 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 Elementor Pulse Animation
                             </span>
                         </label>
+                    </div>
+                </div>
+            );
+        }
+
+        case 'IconListBlock': {
+            const p = props as unknown as IconListBlockProps;
+            const items = p.items || [];
+
+            const handleUpdateItem = (index: number, key: keyof IconListItem, val: string) => {
+                const next = [...items];
+                next[index] = { ...next[index], [key]: val };
+                onChange('items', next);
+            };
+
+            const handleAddItem = () => {
+                onChange('items', [
+                    ...items,
+                    {
+                        id: String(Date.now()),
+                        text: 'New list item',
+                    },
+                ]);
+            };
+
+            const handleRemoveItem = (index: number) => {
+                onChange(
+                    'items',
+                    items.filter((_, itemIndex) => itemIndex !== index)
+                );
+            };
+
+            return (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Section Title (শিরোনাম)
+                        </label>
+                        <textarea
+                            rows={2}
+                            value={p.title || ''}
+                            onChange={(e) => onChange('title', e.target.value)}
+                            placeholder="Title"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            List Style (তালিকার ধরন)
+                        </label>
+                        <select
+                            value={p.listType || 'ul'}
+                            onChange={(e) => onChange('listType', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                        >
+                            <option value="ul">Bullet list (ul)</option>
+                            <option value="ol">Numbered list (ol)</option>
+                        </select>
+                    </div>
+
+                    <label className="flex items-center space-x-2 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={p.showMarkers !== false}
+                            onChange={(e) => onChange('showMarkers', e.target.checked)}
+                            className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                        />
+                        <span className="text-xs font-semibold text-gray-700">
+                            Show list markers (বুলেট/নম্বর)
+                        </span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={p.showDividers !== false}
+                            onChange={(e) => onChange('showDividers', e.target.checked)}
+                            className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                        />
+                        <span className="text-xs font-semibold text-gray-700">
+                            Show card borders
+                        </span>
+                    </label>
+
+                    <div className="pt-2 border-t border-gray-200">
+                        <div className="mb-1.5 flex items-center justify-between">
+                            <label className="text-xs font-bold text-gray-700">
+                                Item Spacing
+                            </label>
+                            <span className="text-[11px] font-bold text-primary-600">
+                                {p.itemSpacing ?? 12}px
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            min={0}
+                            max={48}
+                            step={2}
+                            value={p.itemSpacing ?? 12}
+                            onChange={(e) => onChange('itemSpacing', Number(e.target.value))}
+                            className="w-full accent-primary-600 cursor-pointer"
+                        />
+                        <div className="mt-1 flex justify-between text-[10px] text-gray-400">
+                            <span>Compact</span>
+                            <span>Spacious</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-700">List Items</span>
+                            <button
+                                type="button"
+                                onClick={handleAddItem}
+                                className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center"
+                            >
+                                <Plus className="w-3.5 h-3.5 mr-0.5" />
+                                <span>Add Item</span>
+                            </button>
+                        </div>
+
+                        {items.map((item, idx) => (
+                            <div
+                                key={item.id || idx}
+                                className="p-2.5 rounded-lg border border-gray-200 space-y-1.5 bg-gray-50/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-gray-400">
+                                        Item #{idx + 1}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveItem(idx)}
+                                        className="text-gray-400 hover:text-rose-600"
+                                        title="Remove item"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </div>
+                                <textarea
+                                    rows={2}
+                                    value={item.text}
+                                    placeholder="List item text"
+                                    onChange={(e) =>
+                                        handleUpdateItem(idx, 'text', e.target.value)
+                                    }
+                                    className="w-full text-xs rounded border-gray-300 p-1.5"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        case 'ImageCarouselBlock': {
+            const p = props as unknown as ImageCarouselBlockProps;
+            const images = p.images || [];
+
+            const handleUpdateImage = (
+                index: number,
+                key: keyof ImageCarouselItem,
+                val: string
+            ) => {
+                const next = [...images];
+                next[index] = { ...next[index], [key]: val };
+                onChange('images', next);
+            };
+
+            const handleAddImage = () => {
+                onChange('images', [
+                    ...images,
+                    {
+                        id: String(Date.now()),
+                        imageUrl: '',
+                        altText: `Slide ${images.length + 1}`,
+                    },
+                ]);
+            };
+
+            const handleRemoveImage = (index: number) => {
+                onChange(
+                    'images',
+                    images.filter((_, imageIndex) => imageIndex !== index)
+                );
+            };
+
+            return (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Section Title (ঐচ্ছিক)
+                        </label>
+                        <input
+                            type="text"
+                            value={p.title || ''}
+                            onChange={(e) => onChange('title', e.target.value)}
+                            placeholder="Product Gallery"
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                Desktop Items
+                            </label>
+                            <select
+                                value={p.desktopItemsPerView ?? 3}
+                                onChange={(e) =>
+                                    onChange('desktopItemsPerView', Number(e.target.value))
+                                }
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                            >
+                                {[1, 2, 3, 4, 5, 6].map((count) => (
+                                    <option key={count} value={count}>
+                                        {count} per row
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                Mobile Items
+                            </label>
+                            <select
+                                value={p.mobileItemsPerView ?? 1}
+                                onChange={(e) =>
+                                    onChange('mobileItemsPerView', Number(e.target.value))
+                                }
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                            >
+                                {[1, 2, 3, 4].map((count) => (
+                                    <option key={count} value={count}>
+                                        {count} per row
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                Gap Between Images
+                            </label>
+                            <input
+                                type="text"
+                                value={p.gap || ''}
+                                onChange={(e) => onChange('gap', e.target.value)}
+                                placeholder="16px"
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 font-mono"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                Aspect Ratio
+                            </label>
+                            <select
+                                value={p.aspectRatio || '4 / 3'}
+                                onChange={(e) => onChange('aspectRatio', e.target.value)}
+                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                            >
+                                <option value="1 / 1">Square (1:1)</option>
+                                <option value="4 / 3">Landscape (4:3)</option>
+                                <option value="16 / 9">Widescreen (16:9)</option>
+                                <option value="3 / 4">Portrait (3:4)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Image Fit
+                        </label>
+                        <select
+                            value={p.imageFit || 'cover'}
+                            onChange={(e) => onChange('imageFit', e.target.value)}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                        >
+                            <option value="cover">Cover (সব জায়গা ভরবে)</option>
+                            <option value="contain">Contain (পুরো ছবি দেখা যাবে)</option>
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <label className="flex items-center space-x-2 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={p.showArrows ?? true}
+                                onChange={(e) => onChange('showArrows', e.target.checked)}
+                                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                            />
+                            <span className="text-xs font-semibold text-gray-700">Arrows</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={p.showDots ?? true}
+                                onChange={(e) => onChange('showDots', e.target.checked)}
+                                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                            />
+                            <span className="text-xs font-semibold text-gray-700">Dots</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={p.autoplay ?? false}
+                                onChange={(e) => onChange('autoplay', e.target.checked)}
+                                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                            />
+                            <span className="text-xs font-semibold text-gray-700">Autoplay</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={p.loop ?? true}
+                                onChange={(e) => onChange('loop', e.target.checked)}
+                                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                            />
+                            <span className="text-xs font-semibold text-gray-700">Loop</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Autoplay Interval (seconds)
+                        </label>
+                        <input
+                            type="number"
+                            min={2}
+                            max={15}
+                            value={Math.round((p.autoplayInterval ?? 4000) / 1000)}
+                            onChange={(e) =>
+                                onChange(
+                                    'autoplayInterval',
+                                    Math.min(15000, Math.max(2000, Number(e.target.value) * 1000))
+                                )
+                            }
+                            className="w-full text-xs rounded-lg border-gray-300 p-2"
+                        />
+                    </div>
+
+                    <div className="space-y-2 pt-2 border-t border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-700">Images</span>
+                            <button
+                                type="button"
+                                onClick={handleAddImage}
+                                className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center"
+                            >
+                                <Plus className="w-3.5 h-3.5 mr-0.5" />
+                                <span>Add Image</span>
+                            </button>
+                        </div>
+
+                        {images.map((image, idx) => (
+                            <div
+                                key={image.id || idx}
+                                className="p-2.5 rounded-lg border border-gray-200 space-y-1.5 bg-gray-50/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-gray-400">
+                                        Image #{idx + 1}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveImage(idx)}
+                                        className="text-gray-400 hover:text-rose-600"
+                                        title="Remove image"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </button>
+                                </div>
+                                <input
+                                    type="url"
+                                    value={image.imageUrl}
+                                    placeholder="https://example.com/image.jpg"
+                                    onChange={(e) =>
+                                        handleUpdateImage(idx, 'imageUrl', e.target.value)
+                                    }
+                                    className="w-full text-xs rounded border-gray-300 p-1.5"
+                                />
+                                <input
+                                    type="text"
+                                    value={image.altText || ''}
+                                    placeholder="Alt text (SEO / accessibility)"
+                                    onChange={(e) =>
+                                        handleUpdateImage(idx, 'altText', e.target.value)
+                                    }
+                                    className="w-full text-xs rounded border-gray-300 p-1.5"
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
             );

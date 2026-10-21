@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\PageBuilder\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Catalog\Models\Category;
 use App\Modules\PageBuilder\Models\PolicyPage;
 use App\Modules\Settings\Services\SettingsService;
-use Illuminate\Contracts\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PublicPolicyPageController extends Controller
 {
     /**
-     * Display a public policy or content page.
+     * Display a public policy or content page inside the storefront layout.
      */
-    public function show(string $slug, SettingsService $settingsService): View
+    public function show(string $slug, SettingsService $settingsService): Response
     {
         $page = PolicyPage::where('slug', $slug)
             ->where('is_published', true)
@@ -22,12 +24,30 @@ class PublicPolicyPageController extends Controller
 
         $sanitizedContent = $this->sanitizeContent($page->content);
 
-        return view('storefront.policy', [
-            'page' => $page,
+        $theme = [
+            'store_name' => (string) $settingsService->get('store.name', config('app.name', 'Landing Commerce')),
+            'store_phone' => (string) $settingsService->get('store.phone', ''),
+            'store_whatsapp' => (string) $settingsService->get('store.whatsapp', ''),
+            'logo_url' => (string) $settingsService->get('store.logo_url', ''),
+            'favicon_url' => (string) $settingsService->get('store.favicon_url', ''),
+            'primary_color' => (string) $settingsService->get('theme.primary_color', '#4f46e5'),
+            'secondary_color' => (string) $settingsService->get('theme.secondary_color', '#06b6d4'),
+            'accent_color' => (string) $settingsService->get('theme.accent_color', '#f59e0b'),
+            'font_family' => (string) $settingsService->get('theme.font_family', 'Hind Siliguri, Inter, sans-serif'),
+            'custom_css' => (string) $settingsService->get('theme.custom_css', ''),
+        ];
+
+        return Inertia::render('Storefront/Policy', [
+            'page' => [
+                'id' => $page->id,
+                'title' => $page->title,
+                'slug' => $page->slug,
+                'is_published' => $page->is_published,
+                'is_protected' => $page->is_protected,
+            ],
             'content' => $sanitizedContent,
-            'storeName' => $settingsService->get('store.name', config('app.name', 'Landing Commerce')),
-            'logoUrl' => $settingsService->get('store.logo_url'),
-            'primaryColor' => $settingsService->get('theme.primary_color', '#4f46e5'),
+            'categories' => Category::toTree(true),
+            'theme' => $theme,
         ]);
     }
 

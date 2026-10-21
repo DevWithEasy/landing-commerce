@@ -52,6 +52,11 @@ class User extends Authenticatable
         return in_array($this->role, ['super_admin', 'store_manager'], true);
     }
 
+    public function canManageMedia(): bool
+    {
+        return in_array($this->role, ['super_admin', 'store_manager'], true);
+    }
+
     public function canManageOrders(): bool
     {
         return in_array($this->role, ['super_admin', 'store_manager', 'fulfillment_agent'], true);

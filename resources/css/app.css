@@ -47,3 +47,53 @@
         background-color: #f9fafb;
     }
 }
+
+/* Page builder image carousel (public Blade renderer) */
+.lc-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.lc-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.lc-carousel-slide {
+    flex: 0 0 auto;
+    width: calc(100% / var(--lc-desktop, 3));
+    padding-inline: calc(var(--lc-gap, 16px) / 2);
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+@media (max-width: 767px) {
+    .lc-carousel-slide {
+        width: calc(100% / var(--lc-mobile, 1));
+    }
+}
+
+.lc-carousel-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    background-color: #cbd5e1;
+    cursor: pointer;
+    transition: width 200ms ease, background-color 200ms ease;
+}
+
+.lc-carousel-dot:hover {
+    background-color: #94a3b8;
+}
+
+.lc-carousel-dot[data-active='true'] {
+    width: 1.5rem;
+    background-color: #0f172a;
+}

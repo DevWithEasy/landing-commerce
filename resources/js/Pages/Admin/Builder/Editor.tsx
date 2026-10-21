@@ -10,6 +10,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Head } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
+import { AiGenerateModal } from '@/Builder/components/AiGenerateModal';
 import { Canvas } from '@/Builder/components/Canvas';
 import { Inspector } from '@/Builder/components/Inspector';
 import { LeftSidebar } from '@/Builder/components/LeftSidebar';
@@ -23,12 +24,14 @@ export default function Editor({
     initialAst,
     blockDefinitions,
     products,
+    ai = { configured: false, enabled: false, model: null },
 }: BuilderEditorProps) {
     const {
         ast,
         setAst,
         setAvailableProducts,
         addBlock,
+        addBlocks,
         moveBlock,
         reorderBlocks,
         undo,
@@ -42,6 +45,7 @@ export default function Editor({
     const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isRevisionsOpen, setIsRevisionsOpen] = useState(false);
+    const [isAiOpen, setIsAiOpen] = useState(false);
     const [targetContainerId, setTargetContainerId] = useState<string | null>(null);
 
     // Draggable sidebar widths with localStorage persistence
@@ -306,6 +310,13 @@ export default function Editor({
         setSelectedBlockId(newBlockId);
     };
 
+    const handleInsertAiDesign = (generatedBlocks: Block[]) => {
+        // AI now creates one complete Custom HTML / CSS block. Add it at the
+        // page root so it is never nested inside an existing layout container.
+        addBlocks(generatedBlocks, null);
+        setIsAiOpen(false);
+    };
+
     return (
         <>
             <Head title={`Builder - ${landingPage.title}`} />
@@ -319,6 +330,7 @@ export default function Editor({
                     saveError={saveError}
                     onSave={handleSave}
                     onOpenRevisions={() => setIsRevisionsOpen(true)}
+                    onOpenAi={() => setIsAiOpen(true)}
                 />
 
                 {/* Main 3-Column Studio Workspace with Resizable Sidebars */}
@@ -379,6 +391,14 @@ export default function Editor({
                         setSaveSuccess(msg);
                         setTimeout(() => setSaveSuccess(null), 4000);
                     }}
+                />
+
+                <AiGenerateModal
+                    isOpen={isAiOpen}
+                    onClose={() => setIsAiOpen(false)}
+                    onInsert={handleInsertAiDesign}
+                    landingPageId={landingPage.id}
+                    aiConfig={ai}
                 />
             </div>
         </>

@@ -56,6 +56,15 @@ class UpdateSettingsRequest extends FormRequest
             'store_name' => ['nullable', 'string', 'max:100'],
             'store_phone' => ['nullable', 'string', 'max:50'],
             'store_whatsapp' => ['nullable', 'string', 'max:50'],
+
+            // Customer-owned AI Design Generator
+            'ai_gemini_api_key' => ['nullable', 'string', 'max:255'],
+            'ai_model' => [
+                'nullable',
+                'string',
+                'in:'.implode(',', array_keys((array) config('ai.gemini.models', []))),
+            ],
+            'ai_enabled' => ['nullable', 'boolean'],
         ];
     }
 }

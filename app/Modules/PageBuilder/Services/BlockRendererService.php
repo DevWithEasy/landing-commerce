@@ -24,6 +24,7 @@ class BlockRendererService
         'ReviewsBlock' => 'builder.blocks.reviews',
         'VideoBlock' => 'builder.blocks.video',
         'FaqBlock' => 'builder.blocks.faq',
+        'AccordionBlock' => 'builder.blocks.accordion',
         'CountdownTimerBlock' => 'builder.blocks.countdown-timer',
         'StickyBarBlock' => 'builder.blocks.sticky-bar',
         'HtmlBlock' => 'builder.blocks.html',
@@ -32,6 +33,8 @@ class BlockRendererService
         'TextBlock' => 'builder.blocks.text',
         'ImageBlock' => 'builder.blocks.image',
         'ButtonBlock' => 'builder.blocks.button',
+        'IconListBlock' => 'builder.blocks.icon-list',
+        'ImageCarouselBlock' => 'builder.blocks.image-carousel',
     ];
 
     /**

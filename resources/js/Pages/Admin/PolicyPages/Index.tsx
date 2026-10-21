@@ -3,6 +3,7 @@ import {
     AlertCircle,
     ExternalLink,
     FileText,
+    Lock,
     Pencil,
     Plus,
     Search,
@@ -237,7 +238,15 @@ export default function PolicyPagesIndex({
                                 pages.data.map((page) => (
                                     <tr key={page.id} className="hover:bg-gray-50 transition">
                                         <td className="py-3.5 px-4 font-semibold text-gray-900">
-                                            {page.title}
+                                            <div className="flex items-center gap-2">
+                                                <span>{page.title}</span>
+                                                {page.is_protected && (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700 border border-amber-200">
+                                                        <Lock className="w-3 h-3" />
+                                                        Protected
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="py-3.5 px-4 font-mono text-xs text-gray-500">
                                             /pages/{page.slug}
@@ -282,17 +291,26 @@ export default function PolicyPagesIndex({
                                                 >
                                                     <Pencil className="w-4 h-4" />
                                                 </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setDeletingPage(page);
-                                                        setIsDeleteOpen(true);
-                                                    }}
-                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-gray-100 transition"
-                                                    title="Delete page"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                {page.is_protected ? (
+                                                    <span
+                                                        className="p-1.5 rounded-lg text-amber-600 bg-amber-50 border border-amber-200"
+                                                        title="Required page — cannot be deleted"
+                                                    >
+                                                        <Lock className="w-4 h-4" />
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setDeletingPage(page);
+                                                            setIsDeleteOpen(true);
+                                                        }}
+                                                        className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-gray-100 transition"
+                                                        title="Delete page"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -452,8 +470,15 @@ export default function PolicyPagesIndex({
                                         type="text"
                                         value={editSlug}
                                         onChange={(e) => setEditSlug(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-xs"
+                                        disabled={editingPage.is_protected}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-xs disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                                     />
+                                    {editingPage.is_protected && (
+                                        <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1">
+                                            <Lock className="w-3 h-3" />
+                                            URL is locked because this page is linked from navigation.
+                                        </p>
+                                    )}
                                     {formErrors.slug && (
                                         <p className="text-xs text-red-600 mt-1">{formErrors.slug}</p>
                                     )}

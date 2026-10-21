@@ -12,6 +12,7 @@ use App\Modules\PageBuilder\Models\LandingPageRevision;
 use App\Modules\PageBuilder\Models\PolicyPage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class SeoAndPerformanceTest extends TestCase
@@ -84,13 +85,15 @@ class SeoAndPerformanceTest extends TestCase
             'sort_order' => 2,
         ]);
 
-        // 5. Create published policy page
-        PolicyPage::create([
-            'title' => 'Privacy Policy',
-            'slug' => 'privacy-policy',
-            'content' => 'Sample privacy content',
-            'is_published' => true,
-        ]);
+        // 5. Ensure the published privacy policy page exists
+        PolicyPage::firstOrCreate(
+            ['slug' => 'privacy-policy'],
+            [
+                'title' => 'Privacy Policy',
+                'content' => 'Sample privacy content',
+                'is_published' => true,
+            ]
+        );
 
         // 6. Create published landing page
         LandingPage::create([
@@ -267,7 +270,7 @@ class SeoAndPerformanceTest extends TestCase
         $this->assertStringContainsString('"price":1490', $content);
     }
 
-    public function test_policy_page_blade_view_contains_canonical_tag(): void
+    public function test_policy_page_renders_storefront_inertia_component(): void
     {
         $policy = PolicyPage::create([
             'title' => 'Terms and Conditions',
@@ -278,12 +281,16 @@ class SeoAndPerformanceTest extends TestCase
 
         $response = $this->get("/pages/{$policy->slug}");
         $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $inertia) => $inertia
+            ->component('Storefront/Policy')
+            ->where('page.title', 'Terms and Conditions')
+            ->where('page.slug', 'terms-conditions')
+            ->where('page.is_published', true)
+            ->has('categories')
+            ->has('theme')
+        );
 
-        $content = $response->getContent();
-        $this->assertIsString($content);
-
-        $this->assertStringContainsString('<link rel="canonical"', $content);
-        $this->assertStringContainsString('Terms and Conditions', $content);
+        $response->assertSee('These are our terms of service.');
     }
 
     public function test_unpublished_landing_page_returns_404(): void

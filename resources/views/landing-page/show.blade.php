@@ -99,6 +99,11 @@
         </footer>
     </div>
 
+    {{-- Page builder image carousel interactions --}}
+    @if(str_contains($renderedBlocksHtml, 'data-lc-carousel'))
+        @include('partials.image-carousel-scripts')
+    @endif
+
     {{-- Progressive vanilla JS for countdown timers if present --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {

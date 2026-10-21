@@ -189,6 +189,74 @@ test('public published landing page resolves dynamically under /p/{slug} and ren
     $response->assertSee('Eid Super Deal: Free delivery nationwide today!'); // StickyBarBlock
 });
 
+test('public landing page renders icon list and image carousel blocks with pushed carousel script', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            [
+                'id' => 'icon_list_blk',
+                'type' => 'IconListBlock',
+                'props' => [
+                    'title' => 'Public Icon List Title',
+                    'listType' => 'ol',
+                    'showMarkers' => true,
+                    'items' => [
+                        ['id' => '1', 'text' => 'Public carousel benefit'],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'carousel_blk',
+                'type' => 'ImageCarouselBlock',
+                'props' => [
+                    'title' => 'Public Carousel Title',
+                    'desktopItemsPerView' => 2,
+                    'mobileItemsPerView' => 1,
+                    'gap' => '12px',
+                    'images' => [
+                        [
+                            'id' => '1',
+                            'imageUrl' => 'https://example.com/carousel-one.jpg',
+                            'altText' => 'Carousel one',
+                        ],
+                        [
+                            'id' => '2',
+                            'imageUrl' => 'https://example.com/carousel-two.jpg',
+                            'altText' => 'Carousel two',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $revision = LandingPageRevision::create([
+        'landing_page_id' => $this->publishedPage->id,
+        'revision_number' => 3,
+        'ast_content' => $ast,
+        'created_by' => 'Tester',
+    ]);
+
+    $this->publishedPage->update([
+        'published_revision_id' => $revision->id,
+    ]);
+
+    $response = $this->get('/p/smartwatch-deal');
+
+    $response->assertStatus(200)
+        ->assertSee('Public Icon List Title')
+        ->assertSee('Public carousel benefit')
+        ->assertSee('<ol', false)
+        ->assertSee('aria-hidden="true"', false)
+        ->assertSee('Public Carousel Title')
+        ->assertSee('https://example.com/carousel-one.jpg')
+        ->assertSee('https://example.com/carousel-two.jpg')
+        ->assertSee('--lc-desktop: 2', false)
+        ->assertSee('--lc-mobile: 1', false)
+        ->assertSee('data-lc-carousel-track', false)
+        ->assertSee("document.querySelectorAll('[data-lc-carousel]')", false);
+});
+
 test('draft or archived landing pages return HTTP 404', function () {
     $draftPage = LandingPage::create([
         'product_id' => $this->product->id,

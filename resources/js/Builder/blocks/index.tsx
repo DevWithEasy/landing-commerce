@@ -1,4 +1,5 @@
 import type {
+    AccordionBlockProps,
     BenefitsGridBlockProps,
     Block,
     BlockProps,
@@ -11,7 +12,9 @@ import type {
     HeadingBlockProps,
     HeroBlockProps,
     HtmlBlockProps,
+    IconListBlockProps,
     ImageBlockProps,
+    ImageCarouselBlockProps,
     ProductSelectorBlockProps,
     ReviewsBlockProps,
     StickyBarBlockProps,
@@ -19,6 +22,7 @@ import type {
     VideoBlockProps,
 } from '@/types/builder';
 
+import { AccordionBlock } from './AccordionBlock';
 import { BenefitsGridBlock } from './BenefitsGridBlock';
 import { ButtonBlock } from './ButtonBlock';
 import { CodCheckoutBlock } from './CodCheckoutBlock';
@@ -28,7 +32,9 @@ import { FaqBlock } from './FaqBlock';
 import { HeadingBlock } from './HeadingBlock';
 import { HeroBlock } from './HeroBlock';
 import { HtmlBlock } from './HtmlBlock';
+import { IconListBlock } from './IconListBlock';
 import { ImageBlock } from './ImageBlock';
+import { ImageCarouselBlock } from './ImageCarouselBlock';
 import { ProductSelectorBlock } from './ProductSelectorBlock';
 import { ReviewsBlock } from './ReviewsBlock';
 import { StickyBarBlock } from './StickyBarBlock';
@@ -53,6 +59,7 @@ export const BLOCK_COMPONENTS = {
     ReviewsBlock,
     VideoBlock,
     FaqBlock,
+    AccordionBlock,
     CountdownTimerBlock,
     StickyBarBlock,
     HtmlBlock,
@@ -61,6 +68,8 @@ export const BLOCK_COMPONENTS = {
     TextBlock,
     ImageBlock,
     ButtonBlock,
+    IconListBlock,
+    ImageCarouselBlock,
 } as const;
 
 /**
@@ -187,6 +196,15 @@ export function renderAstBlock(
                     isEditor={isEditor}
                 />
             );
+        case 'AccordionBlock':
+            return (
+                <AccordionBlock
+                    key={block.id}
+                    props={block.props as unknown as AccordionBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
         case 'CountdownTimerBlock':
             return (
                 <CountdownTimerBlock
@@ -214,12 +232,31 @@ export function renderAstBlock(
                     isEditor={isEditor}
                 />
             );
+        case 'IconListBlock':
+            return (
+                <IconListBlock
+                    key={block.id}
+                    props={block.props as unknown as IconListBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
+        case 'ImageCarouselBlock':
+            return (
+                <ImageCarouselBlock
+                    key={block.id}
+                    props={block.props as unknown as ImageCarouselBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
         default:
             return null;
     }
 }
 
 export {
+    AccordionBlock,
     BenefitsGridBlock,
     ButtonBlock,
     CodCheckoutBlock,
@@ -229,7 +266,9 @@ export {
     HeadingBlock,
     HeroBlock,
     HtmlBlock,
+    IconListBlock,
     ImageBlock,
+    ImageCarouselBlock,
     ProductSelectorBlock,
     ReviewsBlock,
     StickyBarBlock,

@@ -1,5 +1,6 @@
 export * from './cart';
 import type { CartSummary } from './cart';
+import type { StorefrontTheme } from './storefront';
 
 export interface User {
     id: number;
@@ -103,6 +104,29 @@ export interface ProductImage {
     alt_text: string | null;
     url: string;
     thumb_url: string;
+}
+
+export interface MediaLibraryItem {
+    key: string;
+    source: 'product' | 'library';
+    record_id: number;
+    file_path: string;
+    url: string;
+    thumb_url: string;
+    name: string;
+    alt_text: string | null;
+    source_label: string;
+    is_primary: boolean;
+    created_at: string | null;
+}
+
+export interface MediaIndexProps extends SharedProps {
+    media: PaginatedData<MediaLibraryItem>;
+    stats: {
+        total: number;
+        product: number;
+        library: number;
+    };
 }
 
 export interface Product {
@@ -298,11 +322,12 @@ export interface CheckoutShowProps extends SharedProps {
     mode?: 'cart' | 'direct';
     cart?: CartSummary | null;
     product: Product;
-    districts: District[];
+    shippingMethods: ShippingMethod[];
+    paymentMethods: PaymentMethod[];
     defaultShippingFee: number;
     defaultZoneName: string;
-    defaultShippingMethods?: ShippingMethod[];
-    paymentMethods?: PaymentMethod[];
+    theme: StorefrontTheme;
+    categories: Category[];
 }
 
 export interface ThankYouProps extends SharedProps {
@@ -369,6 +394,7 @@ export interface PolicyPage {
     slug: string;
     content: string;
     is_published: boolean;
+    is_protected: boolean;
     created_at: string;
     updated_at: string;
 }

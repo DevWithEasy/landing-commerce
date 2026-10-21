@@ -20,6 +20,7 @@ class BlockRegistry
         'ReviewsBlock',
         'VideoBlock',
         'FaqBlock',
+        'AccordionBlock',
         'CountdownTimerBlock',
         'StickyBarBlock',
         'HtmlBlock',
@@ -28,6 +29,8 @@ class BlockRegistry
         'TextBlock',
         'ImageBlock',
         'ButtonBlock',
+        'IconListBlock',
+        'ImageCarouselBlock',
     ];
 
     /**
@@ -189,6 +192,16 @@ class BlockRegistry
                     ],
                 ],
             ],
+            'AccordionBlock' => [
+                'title' => 'Title',
+                'items' => [
+                    [
+                        'id' => 'ac1',
+                        'title' => 'Accordion Item 1',
+                        'content' => 'Accordion content goes here.',
+                    ],
+                ],
+            ],
             'CountdownTimerBlock' => [
                 'targetDate' => date('Y-m-d\TH:i:s\Z', strtotime('+2 days')),
                 'headline' => 'Flash Sale Ending Soon!',
@@ -252,6 +265,53 @@ class BlockRegistry
                 'borderRadius' => '12px',
                 'pulseAnimation' => false,
             ],
+            'IconListBlock' => [
+                'title' => 'Title',
+                'listType' => 'ul',
+                'showMarkers' => true,
+                'showDividers' => true,
+                'itemSpacing' => 12,
+                'items' => [
+                    [
+                        'id' => 'il1',
+                        'text' => 'List Item 01',
+                    ],
+                    [
+                        'id' => 'il2',
+                        'text' => 'List Item 2',
+                    ],
+                ],
+            ],
+            'ImageCarouselBlock' => [
+                'title' => '',
+                'images' => [
+                    [
+                        'id' => 'ic1',
+                        'imageUrl' => 'https://picsum.photos/seed/landing-carousel-1/1200/900',
+                        'altText' => 'Carousel image 1',
+                    ],
+                    [
+                        'id' => 'ic2',
+                        'imageUrl' => 'https://picsum.photos/seed/landing-carousel-2/1200/900',
+                        'altText' => 'Carousel image 2',
+                    ],
+                    [
+                        'id' => 'ic3',
+                        'imageUrl' => 'https://picsum.photos/seed/landing-carousel-3/1200/900',
+                        'altText' => 'Carousel image 3',
+                    ],
+                ],
+                'desktopItemsPerView' => 3,
+                'mobileItemsPerView' => 1,
+                'gap' => '16px',
+                'aspectRatio' => '4 / 3',
+                'imageFit' => 'cover',
+                'showArrows' => true,
+                'showDots' => true,
+                'autoplay' => false,
+                'autoplayInterval' => 4000,
+                'loop' => true,
+            ],
             default => [],
         };
     }
@@ -314,6 +374,21 @@ class BlockRegistry
                 'marginTop' => '8px',
                 'marginBottom' => '8px',
             ],
+            'IconListBlock' => [
+                'backgroundColor' => '#ffffff',
+                'paddingTop' => '48px',
+                'paddingBottom' => '48px',
+            ],
+            'AccordionBlock' => [
+                'backgroundColor' => '#ffffff',
+                'paddingTop' => '48px',
+                'paddingBottom' => '48px',
+            ],
+            'ImageCarouselBlock' => [
+                'backgroundColor' => '#ffffff',
+                'paddingTop' => '40px',
+                'paddingBottom' => '40px',
+            ],
             default => [
                 'paddingTop' => '32px',
                 'paddingBottom' => '32px',
@@ -371,6 +446,12 @@ class BlockRegistry
                 'category' => 'Content',
                 'icon' => 'HelpCircle',
             ],
+            'AccordionBlock' => [
+                'name' => 'Accordion',
+                'description' => 'Collapsible content sections with editable titles, descriptions, and add/remove controls.',
+                'category' => 'Content',
+                'icon' => 'ChevronDown',
+            ],
             'CountdownTimerBlock' => [
                 'name' => 'Urgency Countdown',
                 'description' => 'Live countdown timer creating urgency for limited-time flash deals.',
@@ -418,6 +499,18 @@ class BlockRegistry
                 'description' => 'Call to action button linking to COD checkout or custom target.',
                 'category' => 'Basic',
                 'icon' => 'Square',
+            ],
+            'IconListBlock' => [
+                'name' => 'Feature List',
+                'description' => 'Editable feature list with optional ordered or unordered markers and bold text.',
+                'category' => 'Content',
+                'icon' => 'ListChecks',
+            ],
+            'ImageCarouselBlock' => [
+                'name' => 'Image Carousel',
+                'description' => 'Responsive image slider with configurable desktop and mobile items per view.',
+                'category' => 'Media',
+                'icon' => 'Images',
             ],
         ];
 

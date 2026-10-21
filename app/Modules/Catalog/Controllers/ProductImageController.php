@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Catalog\Actions\DeleteProductImageAction;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductImage;
 use App\Modules\Media\Services\MediaUploadService;
@@ -48,7 +49,7 @@ class ProductImageController extends Controller
     public function destroy(
         Product $product,
         ProductImage $image,
-        MediaUploadService $mediaUploadService
+        DeleteProductImageAction $deleteProductImageAction
     ): RedirectResponse {
         Gate::authorize('update', $product);
 
@@ -56,18 +57,7 @@ class ProductImageController extends Controller
             abort(404, 'Image does not belong to this product.');
         }
 
-        $wasPrimary = $image->is_primary;
-
-        $mediaUploadService->delete($image->file_path);
-        $image->delete();
-
-        // If the primary image was deleted, promote the first remaining image
-        if ($wasPrimary) {
-            $nextImage = $product->images()->first();
-            if ($nextImage) {
-                $nextImage->update(['is_primary' => true]);
-            }
-        }
+        $deleteProductImageAction->execute($image);
 
         return back()->with('success', 'Image removed successfully.');
     }

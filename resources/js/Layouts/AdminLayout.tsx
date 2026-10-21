@@ -6,6 +6,7 @@ import {
     CreditCard,
     FileText,
     FolderTree,
+    Image as ImageIcon,
     Images,
     Layers,
     LogOut,
@@ -68,6 +69,12 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                       href: '/admin/landing-pages',
                       icon: Layers,
                       current: window.location.pathname.startsWith('/admin/landing-pages'),
+                  },
+                  {
+                      name: 'Media Library',
+                      href: '/admin/media',
+                      icon: ImageIcon,
+                      current: window.location.pathname.startsWith('/admin/media'),
                   },
                   {
                       name: 'Policy Pages',

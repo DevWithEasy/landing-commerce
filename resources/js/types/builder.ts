@@ -15,6 +15,7 @@ export type BlockType =
     | 'ReviewsBlock'
     | 'VideoBlock'
     | 'FaqBlock'
+    | 'AccordionBlock'
     | 'CountdownTimerBlock'
     | 'StickyBarBlock'
     | 'HtmlBlock'
@@ -22,7 +23,9 @@ export type BlockType =
     | 'HeadingBlock'
     | 'TextBlock'
     | 'ImageBlock'
-    | 'ButtonBlock';
+    | 'ButtonBlock'
+    | 'IconListBlock'
+    | 'ImageCarouselBlock';
 
 export interface BlockStyles {
     color?: string;
@@ -174,6 +177,17 @@ export interface FaqBlockProps {
     items: FaqItem[];
 }
 
+export interface AccordionItem {
+    id: string;
+    title: string;
+    content: string;
+}
+
+export interface AccordionBlockProps {
+    title?: string;
+    items: AccordionItem[];
+}
+
 export interface CountdownTimerBlockProps {
     targetDate: string; // ISO timestamp
     headline?: string;
@@ -235,6 +249,41 @@ export interface ButtonBlockProps {
     pulseAnimation?: boolean;
 }
 
+export interface IconListItem {
+    id: string;
+    text: string;
+}
+
+export interface IconListBlockProps {
+    title?: string;
+    listType?: 'ul' | 'ol';
+    showMarkers?: boolean;
+    items: IconListItem[];
+    showDividers?: boolean;
+    itemSpacing?: number;
+}
+
+export interface ImageCarouselItem {
+    id: string;
+    imageUrl: string;
+    altText?: string;
+}
+
+export interface ImageCarouselBlockProps {
+    title?: string;
+    images: ImageCarouselItem[];
+    desktopItemsPerView?: number;
+    mobileItemsPerView?: number;
+    gap?: string;
+    aspectRatio?: '1 / 1' | '4 / 3' | '16 / 9' | '3 / 4';
+    imageFit?: 'cover' | 'contain';
+    showArrows?: boolean;
+    showDots?: boolean;
+    autoplay?: boolean;
+    autoplayInterval?: number;
+    loop?: boolean;
+}
+
 export type BlockProps =
     | HeroBlockProps
     | ProductSelectorBlockProps
@@ -243,6 +292,7 @@ export type BlockProps =
     | ReviewsBlockProps
     | VideoBlockProps
     | FaqBlockProps
+    | AccordionBlockProps
     | CountdownTimerBlockProps
     | StickyBarBlockProps
     | HtmlBlockProps
@@ -251,6 +301,8 @@ export type BlockProps =
     | TextBlockProps
     | ImageBlockProps
     | ButtonBlockProps
+    | IconListBlockProps
+    | ImageCarouselBlockProps
     | Record<string, unknown>;
 
 export interface Block<TProps = BlockProps> {
@@ -315,6 +367,12 @@ export interface LandingPageData {
     revisions?: LandingPageRevisionSummary[];
 }
 
+export interface BuilderAiConfig {
+    configured: boolean;
+    enabled: boolean;
+    model: string | null;
+}
+
 export interface BuilderEditorProps {
     landingPage: LandingPageData;
     initialAst: PageAst;
@@ -326,4 +384,5 @@ export interface BuilderEditorProps {
         regular_price: string | number;
         sale_price: string | number | null;
     }>;
+    ai: BuilderAiConfig;
 }

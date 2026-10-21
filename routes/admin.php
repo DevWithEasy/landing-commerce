@@ -1,10 +1,12 @@
 <?php
 
+use App\Modules\Ai\Controllers\AiDesignController;
 use App\Modules\Auth\Controllers\AuthController;
 use App\Modules\Catalog\Controllers\CategoryController;
 use App\Modules\Catalog\Controllers\ProductController;
 use App\Modules\Catalog\Controllers\ProductImageController;
 use App\Modules\Catalog\Controllers\SliderController;
+use App\Modules\Media\Controllers\MediaController;
 use App\Modules\Orders\Controllers\OrderController;
 use App\Modules\Orders\Controllers\OrderCourierController;
 use App\Modules\PageBuilder\Controllers\LandingPageBuilderController;
@@ -55,6 +57,11 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
     Route::post('products/{product}/images/{image}/primary', [ProductImageController::class, 'setPrimary'])
         ->name('products.images.primary');
 
+    // Shared Media Library
+    Route::get('media', [MediaController::class, 'index'])->name('media.index');
+    Route::post('media', [MediaController::class, 'store'])->name('media.store');
+    Route::delete('media', [MediaController::class, 'destroy'])->name('media.destroy');
+
     // Orders & Fulfillment Pipeline
     Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
     Route::post('orders/bulk-transition', [OrderController::class, 'bulkTransition'])->name('orders.bulk-transition');
@@ -78,6 +85,11 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
         ->name('landing-pages.revisions.restore');
     Route::resource('landing-pages', LandingPageController::class)->except(['create', 'show', 'edit']);
 
+    // AI Design Generator (customer-owned Gemini key; returns validated blocks only)
+    Route::post('ai/generate-design', [AiDesignController::class, 'generate'])
+        ->middleware('throttle:6,1')
+        ->name('ai.generate-design');
+
     // Policy & Content Pages Management
     Route::post('pages/{page}/toggle', [PolicyPageController::class, 'toggle'])
         ->name('pages.toggle');
@@ -95,6 +107,14 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+
+    // AI Settings Connection Test & Explicit Key Removal
+    Route::post('ai/test-connection', [AiDesignController::class, 'testConnection'])
+        ->middleware('throttle:5,1')
+        ->name('ai.test-connection');
+    Route::delete('ai/key', [AiDesignController::class, 'removeKey'])
+        ->middleware('throttle:5,1')
+        ->name('ai.key.destroy');
 
     // Marketing Pixels & Analytics Tracking Management
     Route::get('tracking', [TrackingSettingsController::class, 'index'])->name('tracking.index');
