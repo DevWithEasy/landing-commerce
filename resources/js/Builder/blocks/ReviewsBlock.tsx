@@ -19,6 +19,7 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
         paddingRight: styles.paddingRight,
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
+        minHeight: styles.minHeight,
         borderRadius: styles.borderRadius,
         maxWidth: styles.maxWidth,
         boxShadow: styles.boxShadow,

@@ -176,6 +176,66 @@ test('cod checkout block renders nationwide guarantee and honeypot field', funct
         ->toContain('name="idempotency_key"');
 });
 
+test('cod checkout block ships with zero outer spacing by default', function () {
+    $defaults = BlockRegistry::getDefaultStyles('CodCheckoutBlock');
+
+    expect($defaults)
+        ->toMatchArray([
+            'paddingTop' => '0px',
+            'paddingBottom' => '0px',
+            'marginTop' => '0px',
+            'marginBottom' => '0px',
+        ]);
+
+    $html = $this->renderer->renderBlock([
+        'id' => 'cod-spacing',
+        'type' => 'CodCheckoutBlock',
+        'props' => ['productId' => $this->product->id],
+        'styles' => $defaults,
+    ]);
+
+    expect($html)
+        ->toContain('padding-top: 0px')
+        ->toContain('padding-bottom: 0px')
+        ->not->toContain('py-12')
+        ->not->toContain('py-10');
+});
+
+test('cod checkout design props are rendered and unsafe css values are discarded', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'cod-design',
+        'type' => 'CodCheckoutBlock',
+        'props' => [
+            'productId' => $this->product->id,
+            'headerTitle' => 'Custom Checkout Heading',
+            'headerSubtitle' => 'Custom subtitle copy',
+            'showHeaderSubtitle' => false,
+            'cardBgColor' => '#123456',
+            'cardBorderRadius' => '6px',
+            'containerMaxWidth' => '800px',
+            'buttonBgColor' => '#abcdef',
+            'buttonTextColor' => '#111111',
+            'inputFocusColor' => '#ff0000',
+            'fontFamily' => 'Arial, sans-serif',
+            'cardShadow' => 'red; position: fixed; z-index: 9999',
+        ],
+        'styles' => BlockRegistry::getDefaultStyles('CodCheckoutBlock'),
+    ]);
+
+    expect($html)
+        ->toContain('Custom Checkout Heading')
+        ->toContain('background-color: #123456')
+        ->toContain('border-radius: 6px')
+        ->toContain('max-width: 800px')
+        ->toContain('background-color: #abcdef')
+        ->toContain('color: #111111')
+        ->toContain('--cod-focus: #ff0000')
+        ->toContain('font-family: Arial, sans-serif')
+        ->not->toContain('Custom subtitle copy')
+        ->not->toContain('position: fixed')
+        ->not->toContain('z-index: 9999');
+});
+
 test('benefits grid block renders items properly', function () {
     $html = $this->renderer->renderBlock([
         'id' => 'ben-1',

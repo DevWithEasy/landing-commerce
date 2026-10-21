@@ -20,6 +20,7 @@ import {
 import { useState } from 'react';
 import { PageSettingsInspector } from './PageSettingsInspector';
 import { CodeEditor } from './CodeEditor';
+import { CodCheckoutDesignSettings } from './CodCheckoutDesignSettings';
 import { findBlockInTree, useBuilderStore } from '../stores/useBuilderStore';
 import type {
     AccordionBlockProps,
@@ -777,6 +778,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             />
                         </div>
                     </div>
+
+                    <CodCheckoutDesignSettings props={p} onChange={onChange} />
                 </div>
             );
         }
@@ -2772,6 +2775,18 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                                     </button>
                                 ))}
                             </div>
+                        </div>
+
+                        {/* Section Min Height */}
+                        <div>
+                            <label className="block text-[11px] text-gray-500 mb-0.5">Section Min Height</label>
+                            <input
+                                type="text"
+                                value={styles.minHeight || ''}
+                                onChange={(e) => onChange('minHeight', e.target.value)}
+                                placeholder="e.g. 480px (optional)"
+                                className="w-full text-xs rounded-lg border-gray-300 p-1.5"
+                            />
                         </div>
 
                         {/* Vertical Padding Presets */}

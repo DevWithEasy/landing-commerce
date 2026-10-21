@@ -17,12 +17,282 @@
     $firstProduct = $products->first() ?? $product;
     $firstVariant = $firstProduct?->variants?->first();
     $firstVariantId = $firstVariant?->id ?? 0;
-    $buttonBg = $styles['buttonBgColor'] ?? null;
-    $buttonTextColor = $styles['buttonTextColor'] ?? null;
-    $buttonPulse = !empty($styles['buttonPulseAnimation']);
-    $btnCustomStyle = '';
-    if ($buttonBg) $btnCustomStyle .= 'background-color: ' . e($buttonBg) . ';';
-    if ($buttonTextColor) $btnCustomStyle .= 'color: ' . e($buttonTextColor) . ';';
+
+    // Visibility & copy controls
+    $showHeader = $props['showHeader'] ?? true;
+    $showHeaderBadge = $props['showHeaderBadge'] ?? true;
+    $showHeaderTitle = $props['showHeaderTitle'] ?? true;
+    $showHeaderSubtitle = $props['showHeaderSubtitle'] ?? true;
+    $showProductSelector = $props['showProductSelector'] ?? true;
+    $showVariants = $props['showVariants'] ?? true;
+    $showSummary = $props['showSummary'] ?? true;
+    $showTrustBadges = $props['showTrustBadges'] ?? true;
+    $showRequiredMark = $props['showRequiredMark'] ?? true;
+    $headerBadgeText = $props['headerBadgeText'] ?? 'Fast & Secure Checkout';
+    $headerTitle = $props['headerTitle'] ?? 'Cash On Delivery Available Nationwide';
+    $headerSubtitle = $props['headerSubtitle'] ?? 'Pay in cash only after receiving and inspecting your parcel.';
+    $headerAlign = $props['headerAlign'] ?? 'center';
+    $trustText1 = $props['trustText1'] ?? '১০০% ক্যাশ অন ডেলিভারি';
+    $trustText2 = $props['trustText2'] ?? 'প্রোডাক্ট দেখে মূল্য পরিশোধ';
+
+    /**
+     * Only design tokens are accepted here. Semicolons, braces and remote
+     * resource loaders are rejected so a props value can never escape its
+     * inline declaration or inject additional CSS.
+     */
+    $safeCss = static function ($value): ?string {
+        if (! is_string($value) && ! is_numeric($value)) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (preg_match('/(?:expression\s*\(|@import|url\s*\(|javascript\s*:|behavior\s*:|-moz-binding|[;{}<>\\\\])/i', $value)) {
+            return null;
+        }
+
+        return $value;
+    };
+
+    $inlineStyle = static function (array $declarations) use ($safeCss): string {
+        $parts = [];
+
+        foreach ($declarations as $property => $value) {
+            $safeValue = $safeCss($value);
+
+            if ($safeValue !== null) {
+                $parts[] = $property.': '.$safeValue;
+            }
+        }
+
+        return $parts === [] ? '' : 'style="'.e(implode('; ', $parts)).'"';
+    };
+
+    $accentColor = $safeCss($props['accentColor'] ?? ($props['highlightColor'] ?? '#059669')) ?: '#059669';
+    $requiredMarkColor = $safeCss($props['requiredMarkColor'] ?? '#f43f5e') ?: '#f43f5e';
+    $inputHorizontalPadding = $safeCss($props['inputPaddingX'] ?? '12px') ?: '12px';
+    $productPanelTitleColor = $safeCss($props['productPanelTitleColor'] ?? '#334155') ?: '#334155';
+    $productOldPriceColor = $safeCss($props['productOldPriceColor'] ?? '#94a3b8') ?: '#94a3b8';
+    $variantTextColor = $safeCss($props['variantTextColor'] ?? '#64748b') ?: '#64748b';
+    $summaryBorderColor = $safeCss($props['summaryBorderColor'] ?? '#e2e8f0') ?: '#e2e8f0';
+    $trustIconColor = $safeCss($props['trustIconColor'] ?? $accentColor) ?: $accentColor;
+
+    $containerStyle = $inlineStyle([
+        'max-width' => $props['containerMaxWidth'] ?? '672px',
+        'padding-left' => $props['containerPaddingX'] ?? '16px',
+        'padding-right' => $props['containerPaddingX'] ?? '16px',
+    ]);
+
+    $cardStyle = $inlineStyle([
+        'font-family' => $props['fontFamily'] ?? null,
+        '--cod-accent' => $accentColor,
+        '--cod-focus' => $props['inputFocusColor'] ?? $accentColor,
+        '--cod-focus-ring' => $props['inputFocusRingColor'] ?? 'rgba(16, 185, 129, 0.18)',
+        '--cod-placeholder' => $props['inputPlaceholderColor'] ?? '#94a3b8',
+        '--cod-btn-hover' => $props['buttonHoverBgColor'] ?? '#047857',
+        '--cod-card-selected-bg' => $props['productCardSelectedBgColor'] ?? '#ecfdf5',
+        '--cod-card-selected-border' => $props['productCardSelectedBorderColor'] ?? $accentColor,
+        '--cod-card-selected-width' => $props['productCardSelectedBorderWidth'] ?? '2px',
+        '--cod-variant-active-bg' => $props['variantSelectedBgColor'] ?? $accentColor,
+        '--cod-variant-active-text' => $props['variantSelectedTextColor'] ?? '#ffffff',
+        '--cod-variant-active-border' => $props['variantSelectedBorderColor'] ?? $accentColor,
+        'background-color' => $props['cardBgColor'] ?? '#ffffff',
+        'border-color' => $props['cardBorderColor'] ?? '#10b981',
+        'border-width' => $props['cardBorderWidth'] ?? '2px',
+        'border-style' => $props['cardBorderStyle'] ?? 'solid',
+        'border-radius' => $props['cardBorderRadius'] ?? '24px',
+        'min-height' => $props['cardMinHeight'] ?? null,
+        'padding-top' => $props['cardPaddingTop'] ?? '32px',
+        'padding-bottom' => $props['cardPaddingBottom'] ?? '32px',
+        'padding-left' => $props['cardPaddingLeft'] ?? '32px',
+        'padding-right' => $props['cardPaddingRight'] ?? '32px',
+        'box-shadow' => $props['cardShadow'] ?? '0 25px 50px -12px rgb(0 0 0 / 0.25)',
+    ]);
+
+    $headerStyle = $inlineStyle([
+        'text-align' => $headerAlign,
+        'padding-bottom' => $props['headerPaddingBottom'] ?? '24px',
+        'border-bottom-width' => $props['headerBorderWidth'] ?? '1px',
+        'border-bottom-style' => 'solid',
+        'border-bottom-color' => $props['headerBorderColor'] ?? '#f1f5f9',
+    ]);
+
+    $bodyStyle = $inlineStyle([
+        'padding-top' => $props['bodyPaddingTop'] ?? '24px',
+        'display' => 'flex',
+        'flex-direction' => 'column',
+        'gap' => $props['fieldGap'] ?? '16px',
+    ]);
+
+    $badgeStyle = $inlineStyle([
+        'display' => 'inline-flex',
+        'align-items' => 'center',
+        'gap' => '6px',
+        'padding' => ($safeCss($props['badgePaddingY'] ?? '4px') ?: '4px').' '.($safeCss($props['badgePaddingX'] ?? '12px') ?: '12px'),
+        'border-radius' => $props['badgeBorderRadius'] ?? '9999px',
+        'background-color' => $props['badgeBgColor'] ?? '#d1fae5',
+        'color' => $props['badgeTextColor'] ?? '#065f46',
+        'font-size' => $props['badgeFontSize'] ?? '11px',
+        'font-weight' => '700',
+        'letter-spacing' => '0.05em',
+        'text-transform' => 'uppercase',
+        'margin-bottom' => '8px',
+    ]);
+
+    $titleStyle = $inlineStyle([
+        'color' => $props['titleColor'] ?? '#0f172a',
+        'font-size' => $props['titleFontSize'] ?? '30px',
+        'font-weight' => $props['titleFontWeight'] ?? '800',
+        'line-height' => $props['titleLineHeight'] ?? '1.2',
+        'margin' => '0',
+        'margin-bottom' => $props['titleMarginBottom'] ?? '4px',
+    ]);
+
+    $subtitleStyle = $inlineStyle([
+        'color' => $props['subtitleColor'] ?? '#64748b',
+        'font-size' => $props['subtitleFontSize'] ?? '13px',
+        'line-height' => $props['subtitleLineHeight'] ?? '1.5',
+        'margin' => '0',
+    ]);
+
+    $productPanelStyle = $inlineStyle([
+        'background-color' => $props['productPanelBgColor'] ?? '#f8fafc',
+        'border-color' => $props['productPanelBorderColor'] ?? '#e2e8f0',
+        'border-width' => '1px',
+        'border-style' => 'solid',
+        'border-radius' => $props['productPanelBorderRadius'] ?? '12px',
+        'padding' => $props['productPanelPadding'] ?? '12px',
+    ]);
+
+    $productCardBaseStyle = [
+        'background-color' => $props['productCardBgColor'] ?? '#ffffff',
+        'border-color' => $props['productCardBorderColor'] ?? '#e2e8f0',
+        'border-width' => $props['productCardBorderWidth'] ?? '1px',
+        'border-style' => 'solid',
+        'border-radius' => $props['productCardBorderRadius'] ?? '12px',
+        'padding' => $props['productCardPadding'] ?? '10px',
+    ];
+
+    $productThumbStyle = $inlineStyle([
+        'width' => $props['productImageSize'] ?? '48px',
+        'height' => $props['productImageSize'] ?? '48px',
+        'border-radius' => $props['productImageRadius'] ?? '8px',
+    ]);
+
+    $productTitleStyle = $inlineStyle([
+        'color' => $props['productTitleColor'] ?? '#0f172a',
+        'font-size' => $props['productTitleFontSize'] ?? '12px',
+    ]);
+
+    $productInfoStyle = $inlineStyle([
+        'color' => $props['productInfoTextColor'] ?? '#64748b',
+        'font-size' => $props['productInfoFontSize'] ?? '10px',
+    ]);
+
+    $productPriceStyle = $inlineStyle([
+        'color' => $props['productPriceColor'] ?? $accentColor,
+        'font-size' => $props['productPriceFontSize'] ?? '14px',
+    ]);
+
+    $productBadgeStyle = $inlineStyle([
+        'background-color' => $props['productBadgeBgColor'] ?? '#fef3c7',
+        'color' => $props['productBadgeTextColor'] ?? '#92400e',
+        'border-radius' => $props['productBadgeBorderRadius'] ?? '9999px',
+        'font-size' => $props['productBadgeFontSize'] ?? '9px',
+    ]);
+
+    $labelStyle = $inlineStyle([
+        'display' => 'block',
+        'color' => $props['labelColor'] ?? '#334155',
+        'font-size' => $props['labelFontSize'] ?? '11px',
+        'font-weight' => $props['labelFontWeight'] ?? '700',
+        'letter-spacing' => $props['labelLetterSpacing'] ?? '0.05em',
+        'text-transform' => $props['labelTextTransform'] ?? 'uppercase',
+        'margin-bottom' => $props['labelMarginBottom'] ?? '4px',
+    ]);
+
+    $inputStyle = $inlineStyle([
+        'width' => '100%',
+        'background-color' => $props['inputBgColor'] ?? '#ffffff',
+        'color' => $props['inputTextColor'] ?? '#0f172a',
+        'border-color' => $props['inputBorderColor'] ?? '#cbd5e1',
+        'border-width' => $props['inputBorderWidth'] ?? '1px',
+        'border-style' => 'solid',
+        'border-radius' => $props['inputBorderRadius'] ?? '12px',
+        'padding-top' => $props['inputPaddingY'] ?? '10px',
+        'padding-bottom' => $props['inputPaddingY'] ?? '10px',
+        'padding-left' => $inputHorizontalPadding,
+        'padding-right' => $inputHorizontalPadding,
+        'font-size' => $props['inputFontSize'] ?? '14px',
+        'font-family' => 'inherit',
+        'transition' => 'border-color 0.15s ease, box-shadow 0.15s ease',
+    ]);
+
+    $shippingStyle = $inlineStyle([
+        'width' => '100%',
+        'background-color' => $props['shippingBgColor'] ?? '#ecfdf5',
+        'color' => $props['shippingTextColor'] ?? '#0f172a',
+        'border-color' => $props['shippingBorderColor'] ?? '#10b981',
+        'border-width' => $props['shippingBorderWidth'] ?? '2px',
+        'border-style' => 'solid',
+        'border-radius' => $props['shippingBorderRadius'] ?? '12px',
+        'padding' => $props['shippingPadding'] ?? '10px',
+        'font-size' => $props['shippingFontSize'] ?? '14px',
+        'font-weight' => $props['shippingFontWeight'] ?? '600',
+        'font-family' => 'inherit',
+    ]);
+
+    $summaryStyle = $inlineStyle([
+        'background-color' => $props['summaryBgColor'] ?? '#f8fafc',
+        'border-color' => $props['summaryBorderColor'] ?? '#e2e8f0',
+        'border-width' => $props['summaryBorderWidth'] ?? '1px',
+        'border-style' => 'solid',
+        'border-radius' => $props['summaryBorderRadius'] ?? '12px',
+        'padding' => $props['summaryPadding'] ?? '16px',
+        'color' => $props['summaryTextColor'] ?? '#475569',
+        'font-size' => $props['summaryFontSize'] ?? '12px',
+    ]);
+
+    $summaryValueStyle = $inlineStyle([
+        'color' => $props['summaryValueColor'] ?? '#1e293b',
+    ]);
+
+    $summaryTotalStyle = $inlineStyle([
+        'color' => $props['summaryTotalColor'] ?? $accentColor,
+        'font-size' => $props['summaryTotalFontSize'] ?? '18px',
+    ]);
+
+    $buttonBg = $props['buttonBgColor'] ?? ($styles['buttonBgColor'] ?? '#059669');
+    $buttonTextColor = $props['buttonTextColor'] ?? ($styles['buttonTextColor'] ?? '#ffffff');
+    $buttonPulse = ! empty($styles['buttonPulseAnimation']);
+
+    $buttonStyle = $inlineStyle([
+        'width' => ($props['buttonWidth'] ?? 'full') === 'auto' ? 'auto' : '100%',
+        'background-color' => $buttonBg,
+        'color' => $buttonTextColor,
+        'border-radius' => $props['buttonBorderRadius'] ?? '12px',
+        'min-height' => $props['buttonMinHeight'] ?? null,
+        'padding-top' => $props['buttonPaddingY'] ?? '16px',
+        'padding-bottom' => $props['buttonPaddingY'] ?? '16px',
+        'padding-left' => $props['buttonPaddingX'] ?? '24px',
+        'padding-right' => $props['buttonPaddingX'] ?? '24px',
+        'font-size' => $props['buttonFontSize'] ?? '16px',
+        'font-weight' => $props['buttonFontWeight'] ?? '800',
+        'box-shadow' => $props['buttonShadow'] ?? '0 20px 25px -5px rgb(5 150 105 / 0.3)',
+        'text-transform' => $props['buttonTextTransform'] ?? 'none',
+        'letter-spacing' => $props['buttonLetterSpacing'] ?? '0px',
+        'transition' => 'background-color 0.15s ease, transform 0.15s ease',
+    ]);
+
+    $trustRowStyle = $inlineStyle([
+        'padding-top' => $props['trustPaddingTop'] ?? '8px',
+        'color' => $props['trustTextColor'] ?? '#64748b',
+        'font-size' => $props['trustFontSize'] ?? '11px',
+    ]);
 
     // Resolve active shipping methods or fallbacks
     $activeMethods = $shippingMethods ?? collect();
@@ -48,23 +318,73 @@
     $defaultShippingFee = (float) ($firstMethod?->rate ?? 70.0);
 @endphp
 
-<section id="cod-checkout" {!! $styleAttribute !!} class="w-full py-12 bg-slate-50 border-t border-slate-200">
-    <div class="max-w-2xl mx-auto px-4 sm:px-6">
-        <div class="text-center mb-8">
-            <span
-                class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary-100 text-primary-800 mb-2">
-                Fast & Secure Checkout
-            </span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                Cash On Delivery Available Nationwide
-            </h2>
-            <p class="text-sm text-slate-600 mt-1">
-                Pay in cash only after receiving and inspecting your parcel.
-            </p>
-        </div>
+<style>
+    #cod-checkout input:focus,
+    #cod-checkout select:focus,
+    #cod-checkout textarea:focus {
+        outline: none !important;
+        border-color: var(--cod-focus, #10b981) !important;
+        box-shadow: 0 0 0 3px var(--cod-focus-ring, rgba(16, 185, 129, 0.18)) !important;
+    }
 
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 sm:p-8">
-            <form id="landing-cod-form" method="POST" action="{{ route('checkout.cod.store') }}" class="space-y-4">
+    #cod-checkout input::placeholder,
+    #cod-checkout textarea::placeholder {
+        color: var(--cod-placeholder, #94a3b8) !important;
+        opacity: 1;
+    }
+
+    #cod-checkout .cod-submit-btn:hover:not(:disabled) {
+        background-color: var(--cod-btn-hover, #047857) !important;
+    }
+
+    #cod-checkout .cod-product-card {
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    }
+
+    #cod-checkout .cod-product-card.cod-card-selected {
+        background-color: var(--cod-card-selected-bg, #ecfdf5) !important;
+        border-color: var(--cod-card-selected-border, #10b981) !important;
+        border-width: var(--cod-card-selected-width, 2px) !important;
+    }
+
+    #cod-checkout .cod-variant-btn.cod-variant-active {
+        background-color: var(--cod-variant-active-bg, #059669) !important;
+        color: var(--cod-variant-active-text, #ffffff) !important;
+        border-color: var(--cod-variant-active-border, #059669) !important;
+        font-weight: 700 !important;
+    }
+
+    #cod-checkout .cod-product-card:not(.cod-card-selected):hover {
+        border-color: var(--cod-accent, #10b981) !important;
+    }
+</style>
+
+<section id="cod-checkout" {!! $styleAttribute !!} class="w-full">
+    <div class="mx-auto" {!! $containerStyle !!}>
+        <div {!! $cardStyle !!}>
+            @if ($showHeader)
+                <div {!! $headerStyle !!}>
+                    @if ($showHeaderBadge)
+                        <div {!! $badgeStyle !!}>
+                            <svg class="h-4 w-4" style="color: {{ e($accentColor) }}" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                            </svg>
+                            <span>{{ $headerBadgeText }}</span>
+                        </div>
+                    @endif
+                    @if ($showHeaderTitle)
+                        <h2 {!! $titleStyle !!}>{{ $headerTitle }}</h2>
+                    @endif
+                    @if ($showHeaderSubtitle)
+                        <p {!! $subtitleStyle !!}>{{ $headerSubtitle }}</p>
+                    @endif
+                </div>
+            @endif
+
+            <form id="landing-cod-form" method="POST" action="{{ route('checkout.cod.store') }}"
+                {!! $bodyStyle !!}>
                 @csrf
                 <input type="hidden" name="idempotency_key" id="cod_idempotency_key"
                     value="{{ Str::uuid()->toString() }}" />
@@ -78,18 +398,19 @@
                 </div>
 
                 {{-- Product selection cards in Checkout form --}}
-                @if ($hasMultiple)
-                    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 mb-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                @if ($hasMultiple && $showProductSelector)
+                    <div {!! $productPanelStyle !!}>
+                        <div class="flex items-center justify-between"
+                            style="margin-bottom: 8px; color: {{ e($productPanelTitleColor) }}; font-size: 11px; font-weight: 700;">
+                            <span>
                                 Order Items ({{ $mode === 'multiple' ? 'Check Multiple' : 'Select One' }}):
                             </span>
-                            <span class="text-[11px] font-semibold text-primary-600">
+                            <span style="color: {{ e($accentColor) }}; font-weight: 600;">
                                 {{ $mode === 'multiple' ? 'Checkbox Selection' : 'Radio Selection' }}
                             </span>
                         </div>
 
-                        <div class="space-y-2.5">
+                        <div class="flex flex-col" style="gap: 8px;">
                             @foreach ($products as $pIndex => $pItem)
                                 @php
                                     $pVar = $pItem->variants->first();
@@ -118,22 +439,27 @@
                                     } else {
                                         $isItemChecked = $pIndex === 0;
                                     }
+
+                                    $itemCardStyle = $inlineStyle($productCardBaseStyle);
                                 @endphp
-                                <div
-                                    class="cod-product-card relative flex flex-col p-3 rounded-xl border bg-white transition hover:border-primary-400 {{ $isItemChecked ? 'border-primary-500 ring-2 ring-primary-500/20 bg-primary-50/20' : 'border-slate-200' }}">
-                                    <label class="flex items-center justify-between cursor-pointer w-full">
-                                        <div class="flex items-center space-x-3 flex-1 min-w-0">
+                                <div class="cod-product-card relative flex flex-col {{ $isItemChecked ? 'cod-card-selected' : '' }}"
+                                    {!! $itemCardStyle !!}>
+                                    <label class="flex w-full cursor-pointer items-center justify-between">
+                                        <div class="flex min-w-0 flex-1 items-center space-x-3">
                                             {{-- Selector Input --}}
                                             @if ($mode === 'multiple')
                                                 <input type="checkbox"
-                                                    class="cod-product-toggle rounded text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
+                                                    class="cod-product-toggle h-4 w-4 flex-shrink-0 rounded"
+                                                    style="accent-color: {{ e($accentColor) }};"
                                                     data-product-id="{{ $pItem->id }}"
                                                     data-variant-id="{{ $pVarId }}"
-                                                    data-price="{{ $pEffPrice }}" data-title="{{ e($pItem->title) }}"
+                                                    data-price="{{ $pEffPrice }}"
+                                                    data-title="{{ e($pItem->title) }}"
                                                     {{ $isItemChecked ? 'checked' : '' }} />
                                             @else
                                                 <input type="radio" name="cod_radio_product"
-                                                    class="cod-product-toggle text-primary-600 focus:ring-primary-500 border-gray-300 w-4 h-4 flex-shrink-0"
+                                                    class="cod-product-toggle h-4 w-4 flex-shrink-0"
+                                                    style="accent-color: {{ e($accentColor) }};"
                                                     data-product-id="{{ $pItem->id }}"
                                                     data-variant-id="{{ $pVarId }}"
                                                     data-price="{{ $pEffPrice }}"
@@ -142,13 +468,13 @@
                                             @endif
 
                                             {{-- Product Thumbnail --}}
-                                            <div
-                                                class="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                            <div class="flex flex-shrink-0 items-center justify-center overflow-hidden border border-gray-200 bg-gray-50"
+                                                {!! $productThumbStyle !!}>
                                                 @if ($pImgUrl)
                                                     <img src="{{ e($pImgUrl) }}" alt="{{ e($pItem->title) }}"
-                                                        class="cod-card-img w-full h-full object-cover" />
+                                                        class="cod-card-img h-full w-full object-cover" />
                                                 @else
-                                                    <svg class="w-6 h-6 text-gray-300" fill="none"
+                                                    <svg class="h-6 w-6 text-gray-300" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
@@ -159,25 +485,26 @@
 
                                             {{-- Title & Badge --}}
                                             <div class="min-w-0 flex-1">
-                                                <div class="flex items-center space-x-1.5 mb-0.5">
-                                                    <span class="text-xs font-bold text-slate-800 truncate block">
+                                                <div class="mb-0.5 flex items-center space-x-1.5">
+                                                    <span class="block truncate font-bold" {!! $productTitleStyle !!}>
                                                         {{ $pItem->title }}
                                                     </span>
                                                     @if (!empty($itemBadge))
-                                                        <span
-                                                            class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500 text-white flex-shrink-0">
+                                                        <span class="flex-shrink-0 px-1.5 py-0.5 font-bold"
+                                                            {!! $productBadgeStyle !!}>
                                                             {{ $itemBadge }}
                                                         </span>
                                                     @endif
                                                 </div>
 
                                                 <div class="flex items-baseline space-x-2">
-                                                    <span
-                                                        class="cod-card-price text-xs font-extrabold text-primary-600">
+                                                    <span class="cod-card-price font-extrabold"
+                                                        {!! $productPriceStyle !!}>
                                                         ৳{{ number_format($pEffPrice, 0) }}
                                                     </span>
                                                     @if ($pHasDiscount)
-                                                        <span class="text-[10px] text-gray-400 line-through">
+                                                        <span class="text-[10px] line-through"
+                                                            style="color: {{ e($productOldPriceColor) }};">
                                                             ৳{{ number_format($pRegPrice, 0) }}
                                                         </span>
                                                         @if ($showDiscountBadge)
@@ -191,20 +518,30 @@
                                         </div>
                                     </label>
 
-                                    {{-- WooCommerce style variants selector inside card (only shown when product is selected) --}}
-                                    @if ($pItem->variants->count() > 1)
-                                        <div
-                                            class="cod-variant-container mt-2.5 pt-2 border-t border-gray-100 flex flex-wrap items-center gap-1.5 {{ $isItemChecked ? '' : 'hidden' }}">
+                                    {{-- Variants selector inside card (only shown when product is selected) --}}
+                                    @if ($showVariants && $pItem->variants->count() > 1)
+                                        <div class="cod-variant-container mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-gray-100 pt-2 {{ $isItemChecked ? '' : 'hidden' }}">
                                             <span
-                                                class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mr-1">ভ্যারিয়েন্ট:</span>
+                                                class="mr-1 text-[10px] font-bold uppercase tracking-wider"
+                                                style="color: {{ e($variantTextColor) }};">ভ্যারিয়েন্ট:</span>
                                             @foreach ($pItem->variants as $vIdx => $vObj)
                                                 @php
                                                     $vItemPrice = (float) ($vObj->sale_price ?? $vObj->regular_price);
                                                     $vItemImg = $vObj->images->first()?->url ?? $pImgUrl;
                                                     $isVActive = $vIdx === 0;
+                                                    $variantButtonStyle = $inlineStyle([
+                                                        'background-color' => $props['variantBgColor'] ?? '#ffffff',
+                                                        'color' => $variantTextColor,
+                                                        'border-color' => $props['variantBorderColor'] ?? '#e2e8f0',
+                                                        'border-radius' => $props['variantBorderRadius'] ?? '6px',
+                                                        'font-size' => $props['variantFontSize'] ?? '11px',
+                                                        'font-weight' => '500',
+                                                        'padding' => '2px 8px',
+                                                    ]);
                                                 @endphp
                                                 <button type="button"
-                                                    class="cod-variant-btn px-2 py-0.5 text-[11px] font-medium rounded-md border transition {{ $isVActive ? 'border-primary-600 bg-primary-50 text-primary-900 ring-1 ring-primary-500 font-bold' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50' }}"
+                                                    class="cod-variant-btn rounded-md border transition {{ $isVActive ? 'cod-variant-active' : '' }}"
+                                                    {!! $variantButtonStyle !!}
                                                     data-product-id="{{ $pItem->id }}"
                                                     data-variant-id="{{ $vObj->id }}"
                                                     data-price="{{ $vItemPrice }}" data-image="{{ $vItemImg }}"
@@ -258,43 +595,53 @@
 
                 {{-- Alert Box for Errors --}}
                 <div id="cod-error-box"
-                    class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
+                    class="hidden rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
                 </div>
 
                 {{-- Customer Fields (Name, Phone, Address) - Fully Customizable --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        {{ $nameLabel }} <span class="text-rose-500">*</span>
+                    <label {!! $labelStyle !!}>
+                        {{ $nameLabel }}
+                        @if ($showRequiredMark)
+                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                        @endif
                     </label>
-                    <input type="text" name="customer_name" required placeholder="{{ $namePlaceholder }}"
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white" />
+                    <input type="text" name="customer_name" required
+                        placeholder="{{ $namePlaceholder }}" {!! $inputStyle !!} />
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        {{ $phoneLabel }} <span class="text-rose-500">*</span>
+                    <label {!! $labelStyle !!}>
+                        {{ $phoneLabel }}
+                        @if ($showRequiredMark)
+                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                        @endif
                     </label>
                     <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}"
-                        pattern="01[3-9][0-9]{8}"
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-mono" />
+                        pattern="01[3-9][0-9]{8}" {!! $inputStyle !!} />
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        {{ $addressLabel }} <span class="text-rose-500">*</span>
+                    <label {!! $labelStyle !!}>
+                        {{ $addressLabel }}
+                        @if ($showRequiredMark)
+                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                        @endif
                     </label>
-                    <textarea name="delivery_address" required rows="2" placeholder="{{ $addressPlaceholder }}"
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white"></textarea>
+                    <textarea name="delivery_address" required rows="2"
+                        placeholder="{{ $addressPlaceholder }}" {!! $inputStyle !!}></textarea>
                 </div>
 
                 {{-- Shipping Method Dropdown --}}
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        {{ $shippingLabel }} <span class="text-rose-500">*</span>
+                    <label {!! $labelStyle !!}>
+                        {{ $shippingLabel }}
+                        @if ($showRequiredMark)
+                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                        @endif
                     </label>
                     <div class="relative">
-                        <select name="shipping_method_id" id="cod_shipping_method"
-                            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 text-sm bg-white font-medium">
+                        <select name="shipping_method_id" id="cod_shipping_method" {!! $shippingStyle !!}>
                             @foreach ($activeMethods as $sMethod)
                                 @php
                                     $sRate = (float) ($sMethod->rate ?? 70.0);
@@ -318,29 +665,32 @@
                 </div>
 
                 {{-- Live Summary Breakdown --}}
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
-                    <div class="flex justify-between text-slate-600">
-                        <span>Items Subtotal:</span>
-                        <span id="cod-summary-subtotal" class="font-bold text-slate-800">৳0</span>
+                @if ($showSummary)
+                    <div class="space-y-2" {!! $summaryStyle !!}>
+                        <div class="flex justify-between">
+                            <span>Items Subtotal:</span>
+                            <span id="cod-summary-subtotal" class="font-bold"
+                                {!! $summaryValueStyle !!}>৳0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery Charge:</span>
+                            <span id="cod-summary-shipping" class="font-bold"
+                                style="color: {{ e($accentColor) }};">৳{{ number_format($defaultShippingFee, 0) }}</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-2 font-extrabold"
+                            style="border-color: {{ e($summaryBorderColor) }};">
+                            <span>Total Payable:</span>
+                            <span id="cod-summary-total" class="font-black" {!! $summaryTotalStyle !!}>৳0</span>
+                        </div>
                     </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Delivery Charge:</span>
-                        <span id="cod-summary-shipping"
-                            class="font-bold text-emerald-600">৳{{ number_format($defaultShippingFee, 0) }}</span>
-                    </div>
-                    <div
-                        class="border-t border-slate-200 pt-2 flex justify-between text-sm font-extrabold text-slate-900">
-                        <span>Total Payable:</span>
-                        <span id="cod-summary-total" class="text-lg font-black text-primary-600">৳0</span>
-                    </div>
-                </div>
+                @endif
 
-                <div class="pt-2">
+                <div>
                     <button type="submit" id="cod-submit-btn"
-                        style="{{ $btnCustomStyle }}"
-                        class="w-full py-4 px-6 rounded-xl text-white font-bold text-base bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/30 transition flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed {{ $buttonPulse ? 'animate-pulse' : '' }}">
+                        data-default-text="{{ e($buttonText) }}" {!! $buttonStyle !!}
+                        class="cod-submit-btn flex w-full cursor-pointer items-center justify-center space-x-2 text-white transition disabled:cursor-not-allowed disabled:opacity-60 {{ $buttonPulse ? 'animate-pulse' : '' }}">
                         <span id="cod-btn-spinner" class="hidden">
-                            <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none"
+                            <svg class="-ml-1 mr-2 h-5 w-5 animate-spin text-white" fill="none"
                                 viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10"
                                     stroke="currentColor" stroke-width="4"></circle>
@@ -350,6 +700,27 @@
                         <span id="cod-btn-text">{{ $buttonText }}</span>
                     </button>
                 </div>
+
+                @if ($showTrustBadges)
+                    <div class="flex items-center justify-center space-x-4 text-center" {!! $trustRowStyle !!}>
+                        <span class="inline-flex items-center">
+                            <svg class="mr-1 h-3.5 w-3.5" style="color: {{ e($trustIconColor) }};"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            {{ $trustText1 }}
+                        </span>
+                        <span class="inline-flex items-center">
+                            <svg class="mr-1 h-3.5 w-3.5" style="color: {{ e($trustIconColor) }};"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            {{ $trustText2 }}
+                        </span>
+                    </div>
+                @endif
             </form>
         </div>
     </div>
@@ -373,6 +744,7 @@
             var shippingSelect = document.getElementById('cod_shipping_method');
             var districtInput = document.getElementById('cod_district');
             var variantBtns = form.querySelectorAll('.cod-variant-btn');
+            var defaultButtonText = submitBtn ? (submitBtn.getAttribute('data-default-text') || 'Confirm Order - Cash on Delivery') : 'Confirm Order - Cash on Delivery';
 
             // Variant button click handler
             variantBtns.forEach(function(btn) {
@@ -400,14 +772,9 @@
                     var container = card.querySelector('.cod-variant-container');
                     if (container) {
                         container.querySelectorAll('.cod-variant-btn').forEach(function(b) {
-                            b.classList.remove('border-primary-600', 'bg-primary-50',
-                                'text-primary-900', 'ring-1', 'ring-primary-500',
-                                'font-bold');
-                            b.classList.add('border-gray-200', 'bg-white', 'text-gray-700');
+                            b.classList.remove('cod-variant-active');
                         });
-                        btn.classList.add('border-primary-600', 'bg-primary-50', 'text-primary-900',
-                            'ring-1', 'ring-primary-500', 'font-bold');
-                        btn.classList.remove('border-gray-200', 'bg-white', 'text-gray-700');
+                        btn.classList.add('cod-variant-active');
                     }
 
                     // Update card price text
@@ -481,9 +848,7 @@
                     var variantContainer = card ? card.querySelector('.cod-variant-container') : null;
                     if (t.checked) {
                         if (card) {
-                            card.classList.add('border-primary-500', 'ring-2', 'ring-primary-500/20',
-                                'bg-primary-50/20');
-                            card.classList.remove('border-slate-200');
+                            card.classList.add('cod-card-selected');
                         }
                         if (variantContainer) {
                             variantContainer.classList.remove('hidden');
@@ -497,9 +862,7 @@
                         });
                     } else {
                         if (card) {
-                            card.classList.remove('border-primary-500', 'ring-2', 'ring-primary-500/20',
-                                'bg-primary-50/20');
-                            card.classList.add('border-slate-200');
+                            card.classList.remove('cod-card-selected');
                         }
                         if (variantContainer) {
                             variantContainer.classList.add('hidden');
@@ -543,13 +906,9 @@
                         var variantContainer = card ? card.querySelector('.cod-variant-container') : null;
                         if (card) {
                             if (t.checked) {
-                                card.classList.add('border-primary-500', 'ring-2',
-                                    'ring-primary-500/20', 'bg-primary-50/20');
-                                card.classList.remove('border-slate-200');
+                                card.classList.add('cod-card-selected');
                             } else {
-                                card.classList.remove('border-primary-500', 'ring-2',
-                                    'ring-primary-500/20', 'bg-primary-50/20');
-                                card.classList.add('border-slate-200');
+                                card.classList.remove('cod-card-selected');
                             }
                         }
                         if (variantContainer) {
@@ -625,7 +984,7 @@
 
                             if (submitBtn) submitBtn.disabled = false;
                             if (btnSpinner) btnSpinner.classList.add('hidden');
-                            if (btnText) btnText.innerText = 'Confirm Order - Cash on Delivery';
+                            if (btnText) btnText.innerText = defaultButtonText;
                             return;
                         }
 
@@ -646,7 +1005,7 @@
                         }
                         if (submitBtn) submitBtn.disabled = false;
                         if (btnSpinner) btnSpinner.classList.add('hidden');
-                        if (btnText) btnText.innerText = 'Confirm Order - Cash on Delivery';
+                        if (btnText) btnText.innerText = defaultButtonText;
                     });
             });
         }

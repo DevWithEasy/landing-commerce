@@ -29,6 +29,7 @@ export function ButtonBlock({ props, styles = {} }: ButtonBlockComponentProps) {
         borderRadius: props.borderRadius || styles.buttonBorderRadius || '12px',
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
+        minHeight: styles.minHeight,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
     };

@@ -48,6 +48,7 @@ export interface BlockStyles {
     letterSpacing?: string;
     textAlign?: 'left' | 'center' | 'right' | 'justify';
     maxWidth?: string;
+    minHeight?: string;
     borderColor?: string;
     borderWidth?: string;
     borderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
@@ -128,6 +129,169 @@ export interface CodCheckoutBlockProps {
     addressPlaceholder?: string;
     shippingLabel?: string;
     highlightColor?: string;
+
+    // ---------------------------------------------------------------------
+    // Content visibility & copy
+    // ---------------------------------------------------------------------
+    showHeader?: boolean;
+    showHeaderBadge?: boolean;
+    showHeaderTitle?: boolean;
+    showHeaderSubtitle?: boolean;
+    headerBadgeText?: string;
+    headerTitle?: string;
+    headerSubtitle?: string;
+    headerAlign?: 'left' | 'center' | 'right';
+    showProductSelector?: boolean;
+    showVariants?: boolean;
+    showSummary?: boolean;
+    showTrustBadges?: boolean;
+    showRequiredMark?: boolean;
+    trustText1?: string;
+    trustText2?: string;
+
+    // ---------------------------------------------------------------------
+    // Typography & layout
+    // ---------------------------------------------------------------------
+    fontFamily?: string;
+    accentColor?: string;
+    containerMaxWidth?: string;
+    containerPaddingX?: string;
+    fieldGap?: string;
+
+    // Header design
+    headerPaddingBottom?: string;
+    headerBorderColor?: string;
+    headerBorderWidth?: string;
+    bodyPaddingTop?: string;
+    badgeBgColor?: string;
+    badgeTextColor?: string;
+    badgeBorderRadius?: string;
+    badgeFontSize?: string;
+    badgePaddingX?: string;
+    badgePaddingY?: string;
+    titleColor?: string;
+    titleFontSize?: string;
+    titleFontWeight?: string;
+    titleLineHeight?: string;
+    titleMarginBottom?: string;
+    subtitleColor?: string;
+    subtitleFontSize?: string;
+    subtitleLineHeight?: string;
+
+    // Card design
+    cardBgColor?: string;
+    cardBorderColor?: string;
+    cardBorderWidth?: string;
+    cardBorderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
+    cardBorderRadius?: string;
+    cardMinHeight?: string;
+    cardPaddingTop?: string;
+    cardPaddingBottom?: string;
+    cardPaddingLeft?: string;
+    cardPaddingRight?: string;
+    cardShadow?: string;
+
+    // Labels
+    labelColor?: string;
+    labelFontSize?: string;
+    labelFontWeight?: string;
+    labelLetterSpacing?: string;
+    labelTextTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+    labelMarginBottom?: string;
+    requiredMarkColor?: string;
+
+    // Inputs
+    inputBgColor?: string;
+    inputTextColor?: string;
+    inputBorderColor?: string;
+    inputBorderWidth?: string;
+    inputBorderRadius?: string;
+    inputPaddingX?: string;
+    inputPaddingY?: string;
+    inputFontSize?: string;
+    inputIconColor?: string;
+    inputPlaceholderColor?: string;
+    inputFocusColor?: string;
+    inputFocusRingColor?: string;
+
+    // Product cards
+    productPanelBgColor?: string;
+    productPanelBorderColor?: string;
+    productPanelBorderRadius?: string;
+    productPanelPadding?: string;
+    productPanelTitleColor?: string;
+    productCardBgColor?: string;
+    productCardSelectedBgColor?: string;
+    productCardBorderColor?: string;
+    productCardSelectedBorderColor?: string;
+    productCardBorderWidth?: string;
+    productCardSelectedBorderWidth?: string;
+    productCardBorderRadius?: string;
+    productCardPadding?: string;
+    productTitleColor?: string;
+    productTitleFontSize?: string;
+    productPriceColor?: string;
+    productPriceFontSize?: string;
+    productOldPriceColor?: string;
+    productInfoTextColor?: string;
+    productInfoFontSize?: string;
+    productImageSize?: string;
+    productImageRadius?: string;
+    productBadgeBgColor?: string;
+    productBadgeTextColor?: string;
+    productBadgeBorderRadius?: string;
+    productBadgeFontSize?: string;
+    variantBgColor?: string;
+    variantTextColor?: string;
+    variantBorderColor?: string;
+    variantSelectedBgColor?: string;
+    variantSelectedTextColor?: string;
+    variantSelectedBorderColor?: string;
+    variantBorderRadius?: string;
+    variantFontSize?: string;
+
+    // Shipping select
+    shippingBgColor?: string;
+    shippingTextColor?: string;
+    shippingBorderColor?: string;
+    shippingBorderWidth?: string;
+    shippingBorderRadius?: string;
+    shippingPadding?: string;
+    shippingFontSize?: string;
+    shippingFontWeight?: string;
+
+    // Summary
+    summaryBgColor?: string;
+    summaryBorderColor?: string;
+    summaryBorderWidth?: string;
+    summaryBorderRadius?: string;
+    summaryPadding?: string;
+    summaryTextColor?: string;
+    summaryValueColor?: string;
+    summaryTotalColor?: string;
+    summaryTotalFontSize?: string;
+    summaryFontSize?: string;
+
+    // Submit button
+    buttonBgColor?: string;
+    buttonTextColor?: string;
+    buttonHoverBgColor?: string;
+    buttonBorderRadius?: string;
+    buttonMinHeight?: string;
+    buttonPaddingY?: string;
+    buttonPaddingX?: string;
+    buttonFontSize?: string;
+    buttonFontWeight?: string;
+    buttonShadow?: string;
+    buttonWidth?: 'full' | 'auto';
+    buttonTextTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+    buttonLetterSpacing?: string;
+
+    // Trust row
+    trustTextColor?: string;
+    trustFontSize?: string;
+    trustIconColor?: string;
+    trustPaddingTop?: string;
 }
 
 export interface BenefitItem {

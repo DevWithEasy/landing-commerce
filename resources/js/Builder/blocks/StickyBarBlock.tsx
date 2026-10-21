@@ -21,6 +21,7 @@ export function StickyBarBlock({
         color: styles.color || '#ffffff',
         zIndex: styles.zIndex ? Math.min(Number(styles.zIndex), 50) : 40,
         boxShadow: styles.boxShadow,
+        minHeight: styles.minHeight,
     };
 
     const buttonCustomStyle: CSSProperties = {

@@ -12,6 +12,7 @@ export function ImageBlock({ props, styles = {} }: ImageBlockComponentProps) {
     const inlineStyles: CSSProperties = {
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom || '8px',
+        minHeight: styles.minHeight,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,

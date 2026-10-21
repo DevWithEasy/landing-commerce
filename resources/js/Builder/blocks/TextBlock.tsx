@@ -15,6 +15,7 @@ export function TextBlock({ props, styles = {} }: TextBlockComponentProps) {
         textAlign: props.align || styles.textAlign || 'left',
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom || '16px',
+        minHeight: styles.minHeight,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,

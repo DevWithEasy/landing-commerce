@@ -33,6 +33,7 @@ export function ContainerBlock({
         paddingRight: styles.paddingRight || '16px',
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom,
+        minHeight: styles.minHeight,
         borderRadius: styles.borderRadius,
         borderWidth: styles.borderWidth,
         borderStyle: styles.borderStyle,

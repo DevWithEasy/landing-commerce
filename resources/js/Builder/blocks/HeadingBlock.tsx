@@ -20,6 +20,7 @@ export function HeadingBlock({ props, styles = {} }: HeadingBlockComponentProps)
         textAlign: props.align || styles.textAlign || 'left',
         marginTop: styles.marginTop,
         marginBottom: styles.marginBottom || '12px',
+        minHeight: styles.minHeight,
         paddingTop: styles.paddingTop,
         paddingBottom: styles.paddingBottom,
         paddingLeft: styles.paddingLeft,
