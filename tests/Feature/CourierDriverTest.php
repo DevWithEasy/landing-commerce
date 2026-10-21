@@ -89,6 +89,172 @@ test('unconfigured drivers throw CourierConfigurationException', function () {
         ->toThrow(CourierConfigurationException::class);
 });
 
+test('mock courier connection test succeeds without an external endpoint', function () {
+    $result = (new MockCourierDriver)->testConnection();
+
+    expect($result->success)->toBeTrue();
+    expect($result->message)->toContain('Mock Courier');
+    expect($result->httpStatus)->toBeNull();
+});
+
+test('steadfast connection test verifies credentials against the balance endpoint', function () {
+    Http::fake([
+        'https://portal.steadfast.com.bd/api/v1/get_balance' => Http::response([
+            'status' => 200,
+            'current_balance' => 0,
+        ], 200),
+    ]);
+
+    $driver = new SteadfastCourierDriver([
+        'api_key' => 'entered_api_key',
+        'secret_key' => 'entered_secret_key',
+        'base_url' => 'https://portal.steadfast.com.bd/api/v1',
+    ]);
+
+    $result = $driver->testConnection();
+
+    expect($result->success)->toBeTrue();
+    expect($result->httpStatus)->toBe(200);
+    expect($result->message)->toContain('Steadfast connection verified');
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://portal.steadfast.com.bd/api/v1/get_balance'
+        && $request->hasHeader('Api-Key', 'entered_api_key')
+        && $request->hasHeader('Secret-Key', 'entered_secret_key'));
+});
+
+test('steadfast connection test reports rejected credentials', function () {
+    Http::fake([
+        'https://portal.steadfast.com.bd/api/v1/get_balance' => Http::response([
+            'status' => 401,
+            'message' => 'Invalid API credentials.',
+        ], 401),
+    ]);
+
+    $driver = new SteadfastCourierDriver([
+        'api_key' => 'invalid_api_key',
+        'secret_key' => 'invalid_secret_key',
+    ]);
+
+    $result = $driver->testConnection();
+
+    expect($result->success)->toBeFalse();
+    expect($result->httpStatus)->toBe(401);
+    expect($result->message)->toContain('Invalid API credentials');
+});
+
+test('pathao connection test forces a fresh token and verifies store access', function () {
+    Cache::flush();
+
+    Http::fake([
+        'https://api-hermes.pathao.com/aladdin/api/v1/issue-token' => Http::response([
+            'access_token' => 'fresh_pathao_token',
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+        ], 200),
+        'https://api-hermes.pathao.com/aladdin/api/v1/stores*' => Http::response([
+            'data' => [
+                'data' => [
+                    ['store_id' => 101, 'store_name' => 'Main Store'],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $cacheKey = 'courier_pathao_token_'.md5('client_123merchant@example.com');
+    Cache::put($cacheKey, 'stale_cached_token', 3600);
+
+    $driver = new PathaoCourierDriver([
+        'client_id' => 'client_123',
+        'client_secret' => 'secret_123',
+        'username' => 'merchant@example.com',
+        'password' => 'secret_pass',
+        'store_id' => '101',
+    ]);
+
+    $result = $driver->testConnection();
+
+    expect($result->success)->toBeTrue();
+    expect($result->httpStatus)->toBe(200);
+    expect($result->message)->toContain('store access verified');
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://api-hermes.pathao.com/aladdin/api/v1/issue-token'
+        && $request->method() === 'POST');
+    Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://api-hermes.pathao.com/aladdin/api/v1/stores')
+        && $request->hasHeader('Authorization', 'Bearer fresh_pathao_token'));
+});
+
+test('pathao connection test reports a store id mismatch after authentication', function () {
+    Cache::flush();
+
+    Http::fake([
+        'https://api-hermes.pathao.com/aladdin/api/v1/issue-token' => Http::response([
+            'access_token' => 'fresh_pathao_token',
+            'expires_in' => 3600,
+        ], 200),
+        'https://api-hermes.pathao.com/aladdin/api/v1/stores*' => Http::response([
+            'data' => [
+                'data' => [
+                    ['store_id' => 999, 'store_name' => 'Other Store'],
+                ],
+            ],
+        ], 200),
+    ]);
+
+    $driver = new PathaoCourierDriver([
+        'client_id' => 'client_123',
+        'client_secret' => 'secret_123',
+        'username' => 'merchant@example.com',
+        'password' => 'secret_pass',
+        'store_id' => '101',
+    ]);
+
+    $result = $driver->testConnection();
+
+    expect($result->success)->toBeFalse();
+    expect($result->message)->toContain('store ID 101');
+});
+
+test('redx connection test verifies the api token against the areas endpoint', function () {
+    Http::fake([
+        'https://openapi.redx.com.bd/v1.0.0-sandbox/areas' => Http::response([
+            'areas' => [
+                ['id' => 1, 'name' => 'Dhaka'],
+            ],
+        ], 200),
+    ]);
+
+    $driver = new RedXCourierDriver([
+        'api_token' => 'redx_test_token',
+    ]);
+
+    $result = $driver->testConnection();
+
+    expect($result->success)->toBeTrue();
+    expect($result->httpStatus)->toBe(200);
+    expect($result->message)->toContain('RedX connection verified');
+
+    Http::assertSent(fn ($request) => $request->url() === 'https://openapi.redx.com.bd/v1.0.0-sandbox/areas'
+        && $request->hasHeader('API-ACCESS-TOKEN', 'Bearer redx_test_token'));
+});
+
+test('redx connection test reports rejected api tokens', function () {
+    Http::fake([
+        'https://openapi.redx.com.bd/v1.0.0-sandbox/areas' => Http::response([
+            'message' => 'Unauthenticated.',
+        ], 401),
+    ]);
+
+    $driver = new RedXCourierDriver([
+        'api_token' => 'invalid_redx_token',
+    ]);
+
+    $result = $driver->testConnection();
+
+    expect($result->success)->toBeFalse();
+    expect($result->httpStatus)->toBe(401);
+    expect($result->message)->toContain('Unauthenticated');
+});
+
 test('steadfast driver books and tracks consignments correctly via API', function () {
     Http::fake([
         'https://portal.steadfast.com.bd/api/v1/create_order' => Http::response([

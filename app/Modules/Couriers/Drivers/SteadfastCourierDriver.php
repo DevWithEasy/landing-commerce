@@ -6,6 +6,7 @@ namespace App\Modules\Couriers\Drivers;
 
 use App\Modules\Couriers\Contracts\CourierDriverInterface;
 use App\Modules\Couriers\DTOs\CourierBookingResult;
+use App\Modules\Couriers\DTOs\CourierConnectionResult;
 use App\Modules\Couriers\DTOs\CourierTrackingResult;
 use App\Modules\Couriers\Exceptions\CourierConfigurationException;
 use App\Modules\Couriers\Exceptions\CourierException;
@@ -30,6 +31,40 @@ class SteadfastCourierDriver implements CourierDriverInterface
     public function isConfigured(): bool
     {
         return ! empty($this->config['api_key']) && ! empty($this->config['secret_key']);
+    }
+
+    public function testConnection(): CourierConnectionResult
+    {
+        $this->ensureConfigured();
+
+        try {
+            $response = Http::withHeaders($this->getHeaders())
+                ->timeout(10)
+                ->get("{$this->getBaseUrl()}/get_balance");
+
+            $body = $response->json();
+            $body = is_array($body) ? $body : [];
+
+            if ($response->successful() && (int) ($body['status'] ?? 0) === 200) {
+                return CourierConnectionResult::success(
+                    'Steadfast connection verified successfully.',
+                    $response->status()
+                );
+            }
+
+            $message = (string) ($body['message'] ?? 'Steadfast rejected the API credentials.');
+
+            return CourierConnectionResult::failure(
+                "Steadfast connection failed: {$message}",
+                $response->status()
+            );
+        } catch (CourierConfigurationException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            return CourierConnectionResult::failure(
+                "Steadfast connection failed: {$exception->getMessage()}"
+            );
+        }
     }
 
     /**

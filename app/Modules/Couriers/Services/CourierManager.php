@@ -10,6 +10,7 @@ use App\Modules\Couriers\Drivers\PathaoCourierDriver;
 use App\Modules\Couriers\Drivers\RedXCourierDriver;
 use App\Modules\Couriers\Drivers\SteadfastCourierDriver;
 use App\Modules\Couriers\DTOs\CourierBookingResult;
+use App\Modules\Couriers\DTOs\CourierConnectionResult;
 use App\Modules\Couriers\DTOs\CourierTrackingResult;
 use App\Modules\Couriers\Exceptions\CourierException;
 use App\Modules\Orders\Models\Order;
@@ -42,25 +43,44 @@ class CourierManager
     }
 
     /**
-     * Resolve a driver by name.
+     * Resolve a driver by name using the active runtime configuration.
      */
     protected function resolveDriver(string $name): CourierDriverInterface
     {
+        return $this->makeDriver($name, (array) config("courier.drivers.{$name}", []));
+    }
+
+    /**
+     * Build a driver instance with an explicit configuration payload.
+     *
+     * This is used by the admin connection test so that unsaved form values
+     * can be verified without mutating the stored settings.
+     *
+     * @param  array<string, mixed>  $config
+     *
+     * @throws InvalidArgumentException
+     */
+    public function makeDriver(string $name, array $config = []): CourierDriverInterface
+    {
+        $name = strtolower(trim($name));
+
         return match ($name) {
-            'mock' => new MockCourierDriver(
-                (array) config('courier.drivers.mock', [])
-            ),
-            'steadfast' => new SteadfastCourierDriver(
-                (array) config('courier.drivers.steadfast', [])
-            ),
-            'pathao' => new PathaoCourierDriver(
-                (array) config('courier.drivers.pathao', [])
-            ),
-            'redx' => new RedXCourierDriver(
-                (array) config('courier.drivers.redx', [])
-            ),
+            'mock' => new MockCourierDriver($config),
+            'steadfast' => new SteadfastCourierDriver($config),
+            'pathao' => new PathaoCourierDriver($config),
+            'redx' => new RedXCourierDriver($config),
             default => throw new InvalidArgumentException("Unsupported courier driver [{$name}]."),
         };
+    }
+
+    /**
+     * Verify credentials and endpoint connectivity without saving settings.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public function testConnection(string $driver, array $config = []): CourierConnectionResult
+    {
+        return $this->makeDriver($driver, $config)->testConnection();
     }
 
     /**

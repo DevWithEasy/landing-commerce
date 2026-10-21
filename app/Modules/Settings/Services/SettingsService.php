@@ -47,6 +47,7 @@ class SettingsService
         'courier.pathao.client_secret' => 'courier.drivers.pathao.client_secret',
         'courier.pathao.username' => 'courier.drivers.pathao.username',
         'courier.pathao.password' => 'courier.drivers.pathao.password',
+        'courier.pathao.store_id' => 'courier.drivers.pathao.store_id',
         'courier.pathao.base_url' => 'courier.drivers.pathao.base_url',
         'courier.redx.api_token' => 'courier.drivers.redx.api_token',
         'courier.redx.base_url' => 'courier.drivers.redx.base_url',
@@ -174,6 +175,7 @@ class SettingsService
             'pathao_username_configured' => $this->has('courier.pathao.username'),
             'pathao_password' => $this->has('courier.pathao.password') ? static::SECRET_MASK : '',
             'pathao_password_configured' => $this->has('courier.pathao.password'),
+            'pathao_store_id' => (string) $this->get('courier.pathao.store_id', config('courier.drivers.pathao.store_id', '')),
             'pathao_base_url' => (string) $this->get('courier.pathao.base_url', config('courier.drivers.pathao.base_url', 'https://api-hermes.pathao.com')),
 
             'redx_api_token' => $this->has('courier.redx.api_token') ? static::SECRET_MASK : '',
@@ -230,6 +232,7 @@ class SettingsService
             'pathao_client_secret' => ['key' => 'courier.pathao.client_secret', 'group' => 'courier', 'secret' => true],
             'pathao_username' => ['key' => 'courier.pathao.username', 'group' => 'courier', 'secret' => true],
             'pathao_password' => ['key' => 'courier.pathao.password', 'group' => 'courier', 'secret' => true],
+            'pathao_store_id' => ['key' => 'courier.pathao.store_id', 'group' => 'courier', 'secret' => false],
             'pathao_base_url' => ['key' => 'courier.pathao.base_url', 'group' => 'courier', 'secret' => false],
 
             'redx_api_token' => ['key' => 'courier.redx.api_token', 'group' => 'courier', 'secret' => true],

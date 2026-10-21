@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Couriers\Contracts;
 
 use App\Modules\Couriers\DTOs\CourierBookingResult;
+use App\Modules\Couriers\DTOs\CourierConnectionResult;
 use App\Modules\Couriers\DTOs\CourierTrackingResult;
 use App\Modules\Orders\Models\Order;
 
@@ -19,6 +20,11 @@ interface CourierDriverInterface
      * Determine whether the courier driver has all required credentials configured.
      */
     public function isConfigured(): bool;
+
+    /**
+     * Verify that the configured credentials and API endpoint are reachable.
+     */
+    public function testConnection(): CourierConnectionResult;
 
     /**
      * Book/create a delivery consignment for the given order.

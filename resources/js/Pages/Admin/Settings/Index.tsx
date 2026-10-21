@@ -37,6 +37,7 @@ interface SettingsData {
     pathao_username_configured: boolean;
     pathao_password: string;
     pathao_password_configured: boolean;
+    pathao_store_id: string;
     pathao_base_url: string;
 
     redx_api_token: string;
@@ -78,10 +79,17 @@ interface SettingsIndexProps extends SharedProps {
     aiModels: Record<string, string>;
 }
 
-interface AiConnectionResponse {
+interface ConnectionTestResponse {
     success?: boolean;
     message?: string;
     errors?: Record<string, string[]>;
+}
+
+type CourierDriverKey = 'mock' | 'steadfast' | 'pathao' | 'redx';
+
+interface CourierTestResult {
+    type: 'success' | 'error';
+    message: string;
 }
 
 export default function SettingsIndex({
@@ -99,6 +107,10 @@ export default function SettingsIndex({
         type: 'success' | 'error';
         message: string;
     } | null>(null);
+    const [testingCourier, setTestingCourier] = useState<CourierDriverKey | null>(null);
+    const [courierTestResults, setCourierTestResults] = useState<
+        Partial<Record<CourierDriverKey, CourierTestResult>>
+    >({});
 
     const { data, setData, post, processing } = useForm({
         courier_default: settings.courier_default || 'mock',
@@ -110,6 +122,7 @@ export default function SettingsIndex({
         pathao_client_secret: settings.pathao_client_secret || '',
         pathao_username: settings.pathao_username || '',
         pathao_password: settings.pathao_password || '',
+        pathao_store_id: settings.pathao_store_id || '',
         pathao_base_url: settings.pathao_base_url || '',
 
         redx_api_token: settings.redx_api_token || '',
@@ -172,9 +185,9 @@ export default function SettingsIndex({
                 }),
             });
 
-            let result: AiConnectionResponse = {};
+            let result: ConnectionTestResponse = {};
             try {
-                result = (await response.json()) as AiConnectionResponse;
+                result = (await response.json()) as ConnectionTestResponse;
             } catch {
                 result = {};
             }
@@ -207,6 +220,142 @@ export default function SettingsIndex({
         } finally {
             setTestingConnection(false);
         }
+    };
+
+    const clearCourierTestResult = (driver: CourierDriverKey) => {
+        setCourierTestResults((previous) => {
+            if (!(driver in previous)) {
+                return previous;
+            }
+
+            const next = { ...previous };
+            delete next[driver];
+
+            return next;
+        });
+    };
+
+    const handleTestCourierConnection = async (driver: CourierDriverKey) => {
+        setTestingCourier(driver);
+        clearCourierTestResult(driver);
+
+        try {
+            const csrfToken =
+                (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ||
+                '';
+            const payload: Record<string, string> = { driver };
+
+            if (driver === 'steadfast') {
+                payload.steadfast_api_key = data.steadfast_api_key;
+                payload.steadfast_secret_key = data.steadfast_secret_key;
+                payload.steadfast_base_url = data.steadfast_base_url;
+            } else if (driver === 'pathao') {
+                payload.pathao_client_id = data.pathao_client_id;
+                payload.pathao_client_secret = data.pathao_client_secret;
+                payload.pathao_username = data.pathao_username;
+                payload.pathao_password = data.pathao_password;
+                payload.pathao_store_id = data.pathao_store_id;
+                payload.pathao_base_url = data.pathao_base_url;
+            } else if (driver === 'redx') {
+                payload.redx_api_token = data.redx_api_token;
+                payload.redx_base_url = data.redx_base_url;
+            }
+
+            const response = await fetch('/admin/couriers/test-connection', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            let result: ConnectionTestResponse = {};
+            try {
+                result = (await response.json()) as ConnectionTestResponse;
+            } catch {
+                result = {};
+            }
+
+            if (!response.ok || !result.success) {
+                const firstValidationError = result.errors
+                    ? Object.values(result.errors).flat()[0]
+                    : undefined;
+
+                setCourierTestResults((previous) => ({
+                    ...previous,
+                    [driver]: {
+                        type: 'error',
+                        message:
+                            firstValidationError ||
+                            result.message ||
+                            'Could not verify this courier connection. Please try again.',
+                    },
+                }));
+                return;
+            }
+
+            setCourierTestResults((previous) => ({
+                ...previous,
+                [driver]: {
+                    type: 'success',
+                    message: result.message || 'Courier connection verified successfully.',
+                },
+            }));
+        } catch {
+            setCourierTestResults((previous) => ({
+                ...previous,
+                [driver]: {
+                    type: 'error',
+                    message: 'Network error while testing the courier connection.',
+                },
+            }));
+        } finally {
+            setTestingCourier(null);
+        }
+    };
+
+    const renderCourierCheckButton = (driver: 'steadfast' | 'pathao' | 'redx') => (
+        <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => void handleTestCourierConnection(driver)}
+            disabled={testingCourier !== null}
+        >
+            {testingCourier === driver ? (
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+            ) : (
+                <Wifi className="w-4 h-4 mr-1.5" />
+            )}
+            {testingCourier === driver ? 'Checking...' : 'Check Connection'}
+        </Button>
+    );
+
+    const renderCourierTestResult = (driver: CourierDriverKey) => {
+        const result = courierTestResults[driver];
+
+        if (!result) {
+            return null;
+        }
+
+        return (
+            <div
+                className={`flex items-start space-x-2 rounded-lg border p-3 text-xs ${
+                    result.type === 'success'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : 'bg-rose-50 text-rose-800 border-rose-200'
+                }`}
+            >
+                {result.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                ) : (
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                )}
+                <span className="leading-relaxed">{result.message}</span>
+            </div>
+        );
     };
 
     const handleRemoveKey = () => {
@@ -359,12 +508,21 @@ export default function SettingsIndex({
                                             </option>
                                         ))}
                                     </select>
+                                    <p className="text-[11px] text-gray-500 mt-2 leading-relaxed">
+                                        Use the Check Connection button on each provider card to
+                                        verify the entered credentials and API endpoint before
+                                        saving. Masked secrets are tested using the saved encrypted
+                                        values.
+                                    </p>
                                 </div>
                             </div>
 
                             {/* Steadfast Courier */}
-                            <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-4">
-                                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                            <div
+                                className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-4"
+                                onChange={() => clearCourierTestResult('steadfast')}
+                            >
+                                <div className="flex flex-col gap-3 pb-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <h3 className="text-sm font-bold text-gray-900">
                                             Steadfast Courier
@@ -374,23 +532,28 @@ export default function SettingsIndex({
                                             Bangladesh
                                         </p>
                                     </div>
-                                    <span
-                                        className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 ${
-                                            settings.steadfast_api_key_configured &&
-                                            settings.steadfast_secret_key_configured
-                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                                        }`}
-                                    >
-                                        <Shield className="w-3.5 h-3.5" />
-                                        <span>
-                                            {settings.steadfast_api_key_configured &&
-                                            settings.steadfast_secret_key_configured
-                                                ? 'Encrypted & Ready'
-                                                : 'Credentials Missing'}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span
+                                            className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 ${
+                                                settings.steadfast_api_key_configured &&
+                                                settings.steadfast_secret_key_configured
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                            }`}
+                                        >
+                                            <Shield className="w-3.5 h-3.5" />
+                                            <span>
+                                                {settings.steadfast_api_key_configured &&
+                                                settings.steadfast_secret_key_configured
+                                                    ? 'Encrypted & Ready'
+                                                    : 'Credentials Missing'}
+                                            </span>
                                         </span>
-                                    </span>
+                                        {renderCourierCheckButton('steadfast')}
+                                    </div>
                                 </div>
+
+                                {renderCourierTestResult('steadfast')}
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
@@ -494,8 +657,11 @@ export default function SettingsIndex({
                             </div>
 
                             {/* Pathao Courier */}
-                            <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-4">
-                                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                            <div
+                                className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-4"
+                                onChange={() => clearCourierTestResult('pathao')}
+                            >
+                                <div className="flex flex-col gap-3 pb-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <h3 className="text-sm font-bold text-gray-900">
                                             Pathao Courier
@@ -505,21 +671,26 @@ export default function SettingsIndex({
                                             Aladdin API
                                         </p>
                                     </div>
-                                    <span
-                                        className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 ${
-                                            courierConfigured.pathao
-                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                                        }`}
-                                    >
-                                        <Shield className="w-3.5 h-3.5" />
-                                        <span>
-                                            {courierConfigured.pathao
-                                                ? 'Encrypted & Ready'
-                                                : 'Credentials Missing'}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span
+                                            className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 ${
+                                                courierConfigured.pathao
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                            }`}
+                                        >
+                                            <Shield className="w-3.5 h-3.5" />
+                                            <span>
+                                                {courierConfigured.pathao
+                                                    ? 'Encrypted & Ready'
+                                                    : 'Credentials Missing'}
+                                            </span>
                                         </span>
-                                    </span>
+                                        {renderCourierCheckButton('pathao')}
+                                    </div>
                                 </div>
+
+                                {renderCourierTestResult('pathao')}
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
@@ -626,6 +797,29 @@ export default function SettingsIndex({
                                         />
                                     </div>
 
+                                    <div>
+                                        <label
+                                            htmlFor="pathao_store_id"
+                                            className="block text-xs font-semibold text-gray-700 mb-1"
+                                        >
+                                            Store ID
+                                        </label>
+                                        <input
+                                            id="pathao_store_id"
+                                            type="text"
+                                            value={data.pathao_store_id}
+                                            onChange={(e) =>
+                                                setData('pathao_store_id', e.target.value)
+                                            }
+                                            placeholder="e.g. 123456"
+                                            className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg font-mono focus:ring-primary-500 focus:border-primary-500"
+                                        />
+                                        <p className="text-[11px] text-gray-400 mt-1">
+                                            Required for Pathao parcel booking. Copy it from your
+                                            Pathao Merchant Dashboard.
+                                        </p>
+                                    </div>
+
                                     <div className="sm:col-span-2">
                                         <label
                                             htmlFor="pathao_base_url"
@@ -647,8 +841,11 @@ export default function SettingsIndex({
                             </div>
 
                             {/* RedX Courier */}
-                            <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-4">
-                                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                            <div
+                                className="bg-white rounded-xl shadow-xs border border-gray-200 p-6 space-y-4"
+                                onChange={() => clearCourierTestResult('redx')}
+                            >
+                                <div className="flex flex-col gap-3 pb-3 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <h3 className="text-sm font-bold text-gray-900">
                                             RedX Courier
@@ -657,21 +854,26 @@ export default function SettingsIndex({
                                             RedX doorstep parcel pickup and cash-on-delivery service
                                         </p>
                                     </div>
-                                    <span
-                                        className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 ${
-                                            settings.redx_api_token_configured
-                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                : 'bg-amber-50 text-amber-700 border border-amber-200'
-                                        }`}
-                                    >
-                                        <Shield className="w-3.5 h-3.5" />
-                                        <span>
-                                            {settings.redx_api_token_configured
-                                                ? 'Encrypted & Ready'
-                                                : 'Credentials Missing'}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span
+                                            className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 ${
+                                                settings.redx_api_token_configured
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                                            }`}
+                                        >
+                                            <Shield className="w-3.5 h-3.5" />
+                                            <span>
+                                                {settings.redx_api_token_configured
+                                                    ? 'Encrypted & Ready'
+                                                    : 'Credentials Missing'}
+                                            </span>
                                         </span>
-                                    </span>
+                                        {renderCourierCheckButton('redx')}
+                                    </div>
                                 </div>
+
+                                {renderCourierTestResult('redx')}
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>

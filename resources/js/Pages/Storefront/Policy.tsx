@@ -51,19 +51,14 @@ export default function Policy({
                             <span className="font-semibold text-gray-900">{page.title}</span>
                         </nav>
 
-                        <div className="flex items-start gap-4">
-                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                                <FileText className="h-6 w-6" />
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                                <FileText className="h-5 w-5" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+                                <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-2xl">
                                     {page.title}
                                 </h1>
-                                {description && (
-                                    <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-500">
-                                        {description}
-                                    </p>
-                                )}
                             </div>
                         </div>
                     </div>

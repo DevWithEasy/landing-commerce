@@ -115,6 +115,18 @@ test('submitting masked credentials does not overwrite existing encrypted secret
     expect($service->get('courier.steadfast.api_key'))->toBe('new_rotated_secret_9988');
 });
 
+test('pathao store id is persisted and exposed to the settings ui', function () {
+    $service = app(SettingsService::class);
+
+    $service->updateSettings([
+        'pathao_store_id' => '55876',
+    ]);
+
+    expect($service->get('courier.pathao.store_id'))->toBe('55876');
+    expect(config('courier.drivers.pathao.store_id'))->toBe('55876');
+    expect($service->getMaskedSettingsForUi()['pathao_store_id'])->toBe('55876');
+});
+
 test('super admin has full access to settings, catalog, orders, and backups', function () {
     $superAdmin = createRbacUser('super_admin');
 

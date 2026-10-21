@@ -107,6 +107,9 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
     // Settings & Integration Credentials Management
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('couriers/test-connection', [SettingController::class, 'testCourierConnection'])
+        ->middleware('throttle:10,1')
+        ->name('couriers.test-connection');
 
     // AI Settings Connection Test & Explicit Key Removal
     Route::post('ai/test-connection', [AiDesignController::class, 'testConnection'])

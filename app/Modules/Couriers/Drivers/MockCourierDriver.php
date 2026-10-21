@@ -6,6 +6,7 @@ namespace App\Modules\Couriers\Drivers;
 
 use App\Modules\Couriers\Contracts\CourierDriverInterface;
 use App\Modules\Couriers\DTOs\CourierBookingResult;
+use App\Modules\Couriers\DTOs\CourierConnectionResult;
 use App\Modules\Couriers\DTOs\CourierTrackingResult;
 use App\Modules\Orders\Models\Order;
 use App\Modules\Orders\Models\OrderStatus;
@@ -27,6 +28,13 @@ class MockCourierDriver implements CourierDriverInterface
     public function isConfigured(): bool
     {
         return true;
+    }
+
+    public function testConnection(): CourierConnectionResult
+    {
+        return CourierConnectionResult::success(
+            'Mock Courier is always available for offline testing. No external endpoint is required.'
+        );
     }
 
     public function createOrder(Order $order, array $options = []): CourierBookingResult

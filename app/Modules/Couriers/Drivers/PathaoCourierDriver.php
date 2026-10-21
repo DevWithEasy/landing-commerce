@@ -6,6 +6,7 @@ namespace App\Modules\Couriers\Drivers;
 
 use App\Modules\Couriers\Contracts\CourierDriverInterface;
 use App\Modules\Couriers\DTOs\CourierBookingResult;
+use App\Modules\Couriers\DTOs\CourierConnectionResult;
 use App\Modules\Couriers\DTOs\CourierTrackingResult;
 use App\Modules\Couriers\Exceptions\CourierConfigurationException;
 use App\Modules\Couriers\Exceptions\CourierException;
@@ -68,20 +69,93 @@ class PathaoCourierDriver implements CourierDriverInterface
         return rtrim((string) ($this->config['base_url'] ?? 'https://api-hermes.pathao.com'), '/');
     }
 
+    public function testConnection(): CourierConnectionResult
+    {
+        $this->ensureConfigured();
+
+        try {
+            // Force a fresh token so unsaved credential changes are actually tested.
+            $token = $this->getAccessToken(true);
+
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->timeout(10)->get(
+                "{$this->getBaseUrl()}/aladdin/api/v1/stores",
+                ['per_page' => 1000]
+            );
+
+            if (! $response->successful()) {
+                $body = $response->json();
+                $body = is_array($body) ? $body : [];
+                $message = (string) ($body['message'] ?? 'Pathao rejected the API credentials.');
+
+                return CourierConnectionResult::failure(
+                    "Pathao connection failed: {$message}",
+                    $response->status()
+                );
+            }
+
+            $body = $response->json();
+            $body = is_array($body) ? $body : [];
+            $stores = $body['data']['data'] ?? $body['data'] ?? [];
+
+            if (! is_array($stores)) {
+                return CourierConnectionResult::failure(
+                    'Pathao returned an unexpected store list response.',
+                    $response->status()
+                );
+            }
+
+            $storeId = trim((string) $this->config['store_id']);
+            $storeExists = false;
+
+            foreach ($stores as $store) {
+                if (is_array($store) && (string) ($store['store_id'] ?? '') === $storeId) {
+                    $storeExists = true;
+                    break;
+                }
+            }
+
+            if (! $storeExists) {
+                return CourierConnectionResult::failure(
+                    "Pathao authentication succeeded, but store ID {$storeId} was not found in this account.",
+                    $response->status()
+                );
+            }
+
+            return CourierConnectionResult::success(
+                'Pathao authentication and store access verified successfully.',
+                $response->status()
+            );
+        } catch (CourierConfigurationException $exception) {
+            throw $exception;
+        } catch (CourierException $exception) {
+            return CourierConnectionResult::failure($exception->getMessage());
+        } catch (\Throwable $exception) {
+            return CourierConnectionResult::failure(
+                "Pathao connection failed: {$exception->getMessage()}"
+            );
+        }
+    }
+
     /**
      * Obtain and cache an OAuth2 bearer token from Pathao.
      *
      * @throws CourierException
      */
-    public function getAccessToken(): string
+    public function getAccessToken(bool $forceRefresh = false): string
     {
         $this->ensureConfigured();
 
         $cacheKey = 'courier_pathao_token_'.md5((string) $this->config['client_id'].(string) $this->config['username']);
 
-        $token = Cache::get($cacheKey);
-        if (is_string($token) && ! empty($token)) {
-            return $token;
+        if (! $forceRefresh) {
+            $token = Cache::get($cacheKey);
+            if (is_string($token) && ! empty($token)) {
+                return $token;
+            }
         }
 
         try {

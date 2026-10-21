@@ -34,6 +34,7 @@ class UpdateSettingsRequest extends FormRequest
             'pathao_client_secret' => ['nullable', 'string', 'max:255'],
             'pathao_username' => ['nullable', 'string', 'max:255'],
             'pathao_password' => ['nullable', 'string', 'max:255'],
+            'pathao_store_id' => ['nullable', 'string', 'max:100'],
             'pathao_base_url' => ['nullable', 'string', 'url', 'max:255'],
 
             'redx_api_token' => ['nullable', 'string', 'max:255'],

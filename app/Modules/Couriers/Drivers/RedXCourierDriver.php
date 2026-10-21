@@ -6,6 +6,7 @@ namespace App\Modules\Couriers\Drivers;
 
 use App\Modules\Couriers\Contracts\CourierDriverInterface;
 use App\Modules\Couriers\DTOs\CourierBookingResult;
+use App\Modules\Couriers\DTOs\CourierConnectionResult;
 use App\Modules\Couriers\DTOs\CourierTrackingResult;
 use App\Modules\Couriers\Exceptions\CourierConfigurationException;
 use App\Modules\Couriers\Exceptions\CourierException;
@@ -33,6 +34,39 @@ class RedXCourierDriver implements CourierDriverInterface
     public function isConfigured(): bool
     {
         return ! empty($this->config['api_token']);
+    }
+
+    public function testConnection(): CourierConnectionResult
+    {
+        $this->ensureConfigured();
+
+        try {
+            $response = Http::withHeaders($this->getHeaders())
+                ->timeout(10)
+                ->get("{$this->getBaseUrl()}/areas");
+
+            if ($response->successful()) {
+                return CourierConnectionResult::success(
+                    'RedX connection verified successfully.',
+                    $response->status()
+                );
+            }
+
+            $body = $response->json();
+            $body = is_array($body) ? $body : [];
+            $message = (string) ($body['message'] ?? $body['error'] ?? 'RedX rejected the API token.');
+
+            return CourierConnectionResult::failure(
+                "RedX connection failed: {$message}",
+                $response->status()
+            );
+        } catch (CourierConfigurationException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            return CourierConnectionResult::failure(
+                "RedX connection failed: {$exception->getMessage()}"
+            );
+        }
     }
 
     /**
