@@ -340,11 +340,35 @@ export interface ReviewsBlockProps {
     title?: string;
     layout?: 'grid' | 'carousel' | 'list';
     items: ReviewItem[];
+    starColor?: string;
+    starEmptyColor?: string;
+    starSize?: string;
+    starStyle?: 'filled' | 'outline';
+    showStars?: boolean;
+    showRatingSummary?: boolean;
+    ratingSummaryText?: string;
+    ratingSummaryColor?: string;
+}
+
+export interface TestimonialItem {
+    id: string;
+    quote: string;
+    authorName: string;
+    authorRole?: string;
+    location?: string;
+    rating?: number;
+    avatarUrl?: string;
+    verifiedPurchase?: boolean;
 }
 
 export interface TestimonialBlockProps {
-    quote: string;
-    authorName: string;
+    /**
+     * Multi-testimonial carousel items. Legacy single-testimonial props below
+     * remain supported so previously published AST revisions keep rendering.
+     */
+    items?: TestimonialItem[];
+    quote?: string;
+    authorName?: string;
     authorRole?: string;
     location?: string;
     rating?: number;
@@ -361,6 +385,14 @@ export interface TestimonialBlockProps {
     avatarSize?: string;
     cardRadius?: string;
     cardPadding?: string;
+    autoplay?: boolean;
+    autoplayInterval?: number;
+    showArrows?: boolean;
+    showDots?: boolean;
+    loop?: boolean;
+    starColor?: string;
+    starSize?: string;
+    starStyle?: 'filled' | 'outline';
 }
 
 export interface VideoBlockProps {
@@ -410,7 +442,8 @@ export interface StickyBarBlockProps {
 export interface ContainerBlockProps {
     direction?: 'column' | 'row';
     wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
-    justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
+    justifyContent?:
+        'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
     alignItems?: 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'baseline';
     gap?: string;
 }

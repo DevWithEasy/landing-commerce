@@ -10,7 +10,9 @@ use App\Modules\Media\Actions\UploadMediaAction;
 use App\Modules\Media\Requests\DeleteMediaRequest;
 use App\Modules\Media\Requests\UploadMediaRequest;
 use App\Modules\Media\Services\MediaLibraryService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,6 +30,20 @@ class MediaController extends Controller
             'media' => $mediaLibraryService->paginate(24),
             'stats' => $mediaLibraryService->stats(),
         ]);
+    }
+
+    /**
+     * Return a searchable, paginated media list for the page builder picker.
+     */
+    public function picker(Request $request, MediaLibraryService $mediaLibraryService): JsonResponse
+    {
+        Gate::authorize('manage-media');
+
+        $search = trim((string) $request->query('search', ''));
+        $perPage = (int) $request->query('per_page', 24);
+        $perPage = max(12, min(60, $perPage));
+
+        return response()->json($mediaLibraryService->paginate($perPage, $search));
     }
 
     /**

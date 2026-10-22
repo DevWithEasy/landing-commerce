@@ -15,7 +15,7 @@ class MediaLibraryService
     /**
      * Get a paginated, unified list of product images and standalone media uploads.
      */
-    public function paginate(int $perPage = 24): LengthAwarePaginator
+    public function paginate(int $perPage = 24, string $search = ''): LengthAwarePaginator
     {
         $productImages = DB::table('product_images')
             ->join('products', 'products.id', '=', 'product_images.product_id')
@@ -39,6 +39,24 @@ class MediaLibraryService
                 DB::raw("'Media Library' as source_label"),
                 DB::raw('0 as is_primary'),
             ]);
+
+        $search = trim($search);
+
+        if ($search !== '') {
+            $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search).'%';
+
+            $productImages->where(function ($query) use ($like): void {
+                $query->where('product_images.file_path', 'like', $like)
+                    ->orWhere('product_images.alt_text', 'like', $like)
+                    ->orWhere('products.title', 'like', $like);
+            });
+
+            $mediaAssets->where(function ($query) use ($like): void {
+                $query->where('media_assets.file_path', 'like', $like)
+                    ->orWhere('media_assets.alt_text', 'like', $like)
+                    ->orWhere('media_assets.original_name', 'like', $like);
+            });
+        }
 
         $paginator = DB::query()
             ->fromSub($productImages->unionAll($mediaAssets), 'media_items')

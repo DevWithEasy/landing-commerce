@@ -228,3 +228,126 @@ test('fulfillment agents cannot upload or delete media library images', function
         ])
         ->assertForbidden();
 });
+
+test('media picker endpoint is restricted to catalog managers', function () {
+    $superAdmin = makeMediaLibraryUser('super_admin');
+    $storeManager = makeMediaLibraryUser('store_manager');
+    $agent = makeMediaLibraryUser('fulfillment_agent');
+
+    $this->actingAs($superAdmin)
+        ->getJson(route('admin.media.picker'))
+        ->assertOk();
+
+    $this->actingAs($storeManager)
+        ->getJson(route('admin.media.picker'))
+        ->assertOk();
+
+    $this->actingAs($agent)
+        ->getJson(route('admin.media.picker'))
+        ->assertForbidden();
+});
+
+test('media picker returns a paginated unified media payload', function () {
+    $admin = makeMediaLibraryUser('super_admin');
+    $product = makeMediaLibraryProduct();
+
+    Storage::disk('public')->put('products/picker-product.webp', 'product');
+    Storage::disk('public')->put('media/picker-banner.webp', 'banner');
+    Storage::disk('public')->put('media/picker-banner-thumb.webp', 'thumb');
+
+    $productImage = ProductImage::create([
+        'product_id' => $product->id,
+        'file_path' => 'products/picker-product.webp',
+        'sort_order' => 0,
+        'is_primary' => true,
+        'alt_text' => 'Picker product image',
+    ]);
+    $productImage->forceFill([
+        'created_at' => now()->subMinute(),
+        'updated_at' => now()->subMinute(),
+    ])->save();
+
+    $asset = MediaAsset::create([
+        'file_path' => 'media/picker-banner.webp',
+        'original_name' => 'picker-banner.webp',
+        'mime_type' => 'image/webp',
+        'size_bytes' => 12,
+        'width' => 800,
+        'height' => 600,
+        'alt_text' => 'Picker banner',
+        'uploaded_by' => $admin->id,
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->getJson(route('admin.media.picker', ['per_page' => 500]));
+
+    $response->assertOk()
+        ->assertJsonPath('total', 2)
+        ->assertJsonPath('per_page', 60)
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.key', "library:{$asset->id}")
+        ->assertJsonPath('data.0.url', Storage::disk('public')->url('media/picker-banner.webp'))
+        ->assertJsonPath('data.0.thumb_url', Storage::disk('public')->url('media/picker-banner-thumb.webp'))
+        ->assertJsonPath('data.0.source', 'library')
+        ->assertJsonPath('data.1.key', "product:{$productImage->id}")
+        ->assertJsonPath('data.1.source', 'product')
+        ->assertJsonPath('data.1.source_label', $product->title);
+});
+
+test('media picker searches across product titles, alt text and original filenames', function () {
+    $admin = makeMediaLibraryUser('super_admin');
+    $product = makeMediaLibraryProduct();
+    $product->update(['title' => 'Searchable Summer Collection']);
+
+    Storage::disk('public')->put('products/search-target.webp', 'product');
+    Storage::disk('public')->put('media/searchable-banner.webp', 'banner');
+    Storage::disk('public')->put('media/unrelated.webp', 'unrelated');
+
+    ProductImage::create([
+        'product_id' => $product->id,
+        'file_path' => 'products/search-target.webp',
+        'sort_order' => 0,
+        'is_primary' => true,
+        'alt_text' => 'A different alt label',
+    ]);
+
+    MediaAsset::create([
+        'file_path' => 'media/searchable-banner.webp',
+        'original_name' => 'searchable-banner.webp',
+        'mime_type' => 'image/webp',
+        'size_bytes' => 12,
+        'width' => 800,
+        'height' => 600,
+        'alt_text' => 'Campaign artwork',
+        'uploaded_by' => $admin->id,
+    ]);
+
+    MediaAsset::create([
+        'file_path' => 'media/unrelated.webp',
+        'original_name' => 'unrelated.webp',
+        'mime_type' => 'image/webp',
+        'size_bytes' => 12,
+        'width' => 800,
+        'height' => 600,
+        'alt_text' => 'Something else',
+        'uploaded_by' => $admin->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.media.picker', ['search' => 'searchable']))
+        ->assertOk()
+        ->assertJsonPath('total', 2)
+        ->assertJsonCount(2, 'data');
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.media.picker', ['search' => 'Campaign']))
+        ->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('data.0.alt_text', 'Campaign artwork');
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.media.picker', ['search' => 'does-not-exist']))
+        ->assertOk()
+        ->assertJsonPath('total', 0)
+        ->assertJsonCount(0, 'data');
+});

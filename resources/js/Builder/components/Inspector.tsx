@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { PageSettingsInspector } from './PageSettingsInspector';
 import { CodeEditor } from './CodeEditor';
 import { CodCheckoutDesignSettings } from './CodCheckoutDesignSettings';
+import { MediaField, MediaLibraryAddButton } from './MediaPickerModal';
 import {
     AlignmentControl,
     ColorControl,
@@ -62,9 +63,11 @@ import type {
     ReviewsBlockProps,
     StickyBarBlockProps,
     TestimonialBlockProps,
+    TestimonialItem,
     TextBlockProps,
     VideoBlockProps,
 } from '@/types';
+import { createTestimonialItem, resolveTestimonialItems } from '../blocks/testimonialItems';
 
 export interface InspectorProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
@@ -104,10 +107,7 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
         updateBlockProps(selectedBlock.id, { [key]: value });
     };
 
-    const handleStyleChange = (
-        key: keyof BlockStyles,
-        value: BlockStyles[keyof BlockStyles]
-    ) => {
+    const handleStyleChange = (key: keyof BlockStyles, value: BlockStyles[keyof BlockStyles]) => {
         updateBlockStyles(selectedBlock.id, { [key]: value } as Partial<BlockStyles>);
     };
 
@@ -349,13 +349,17 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     <input
                                         type="color"
                                         value={p.subheadlineColor || '#475569'}
-                                        onChange={(e) => onChange('subheadlineColor', e.target.value)}
+                                        onChange={(e) =>
+                                            onChange('subheadlineColor', e.target.value)
+                                        }
                                         className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
                                     />
                                     <input
                                         type="text"
                                         value={p.subheadlineColor || ''}
-                                        onChange={(e) => onChange('subheadlineColor', e.target.value)}
+                                        onChange={(e) =>
+                                            onChange('subheadlineColor', e.target.value)
+                                        }
                                         placeholder="#475569"
                                         className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
                                     />
@@ -367,7 +371,9 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 </label>
                                 <select
                                     value={p.subheadlineFontSize || ''}
-                                    onChange={(e) => onChange('subheadlineFontSize', e.target.value)}
+                                    onChange={(e) =>
+                                        onChange('subheadlineFontSize', e.target.value)
+                                    }
                                     className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
                                 >
                                     <option value="">Default (16-18px)</option>
@@ -540,13 +546,17 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     <input
                                         type="color"
                                         value={p.buttonTextColor || '#ffffff'}
-                                        onChange={(e) => onChange('buttonTextColor', e.target.value)}
+                                        onChange={(e) =>
+                                            onChange('buttonTextColor', e.target.value)
+                                        }
                                         className="w-7 h-7 rounded border border-gray-300 cursor-pointer p-0.5"
                                     />
                                     <input
                                         type="text"
                                         value={p.buttonTextColor || ''}
-                                        onChange={(e) => onChange('buttonTextColor', e.target.value)}
+                                        onChange={(e) =>
+                                            onChange('buttonTextColor', e.target.value)
+                                        }
                                         placeholder="#ffffff"
                                         className="w-full text-[11px] font-mono rounded border-gray-300 p-1"
                                     />
@@ -576,10 +586,15 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     type="checkbox"
                                     id="hero_btn_pulse"
                                     checked={Boolean(p.buttonPulseAnimation)}
-                                    onChange={(e) => onChange('buttonPulseAnimation', e.target.checked)}
+                                    onChange={(e) =>
+                                        onChange('buttonPulseAnimation', e.target.checked)
+                                    }
                                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                 />
-                                <label htmlFor="hero_btn_pulse" className="text-xs text-gray-700 font-semibold cursor-pointer">
+                                <label
+                                    htmlFor="hero_btn_pulse"
+                                    className="text-xs text-gray-700 font-semibold cursor-pointer"
+                                >
                                     Pulse Animation
                                 </label>
                             </div>
@@ -594,18 +609,13 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 Showcase Image
                             </span>
                         </div>
-                        <div>
-                            <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                                Image URL
-                            </label>
-                            <input
-                                type="url"
-                                value={p.imageUrl || ''}
-                                onChange={(e) => onChange('imageUrl', e.target.value)}
-                                placeholder="https://..."
-                                className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
-                            />
-                        </div>
+                        <MediaField
+                            label="Image"
+                            value={p.imageUrl || ''}
+                            onChange={(value) => onChange('imageUrl', value)}
+                            placeholder="https://..."
+                            hint="Choose an uploaded image or paste a URL."
+                        />
                         <div>
                             <label className="block text-[11px] font-semibold text-gray-700 mb-1">
                                 Image Position
@@ -959,6 +969,62 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             className="w-full text-xs rounded-lg border-gray-300 p-2"
                         />
                     </div>
+
+                    <ControlSection title="Star Rating Design" icon={Palette} defaultOpen>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <ColorControl
+                                label="Star Color"
+                                value={p.starColor || ''}
+                                fallback="#f59e0b"
+                                onChange={(value) => onChange('starColor', value)}
+                            />
+                            <ColorControl
+                                label="Empty Star"
+                                value={p.starEmptyColor || ''}
+                                fallback="#d1d5db"
+                                onChange={(value) => onChange('starEmptyColor', value)}
+                            />
+                            <NumberUnitControl
+                                label="Star Size"
+                                value={p.starSize ?? '16px'}
+                                unit="px"
+                                min={8}
+                                max={48}
+                                onChange={(value) => onChange('starSize', value)}
+                            />
+                            <SelectControl
+                                label="Star Style"
+                                value={p.starStyle ?? 'filled'}
+                                options={[
+                                    { label: 'Filled', value: 'filled' },
+                                    { label: 'Outline', value: 'outline' },
+                                ]}
+                                onChange={(value) => onChange('starStyle', value)}
+                            />
+                        </div>
+                        <ToggleControl
+                            label="Show Star Icons"
+                            checked={p.showStars !== false}
+                            onChange={(checked) => onChange('showStars', checked)}
+                        />
+                        <ToggleControl
+                            label="Show Rating Summary"
+                            checked={p.showRatingSummary !== false}
+                            onChange={(checked) => onChange('showRatingSummary', checked)}
+                        />
+                        <TextControl
+                            label="Summary Text"
+                            value={p.ratingSummaryText || ''}
+                            placeholder="4.9/5 from verified buyers"
+                            onChange={(value) => onChange('ratingSummaryText', value)}
+                        />
+                        <ColorControl
+                            label="Summary Color"
+                            value={p.ratingSummaryColor || ''}
+                            fallback="#334155"
+                            onChange={(value) => onChange('ratingSummaryColor', value)}
+                        />
+                    </ControlSection>
 
                     <div className="space-y-2 pt-2 border-t border-gray-200">
                         <div className="flex items-center justify-between">
@@ -1373,8 +1439,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             <span>Custom HTML & CSS Editor</span>
                         </div>
                         <p className="text-[11px] text-emerald-800 leading-relaxed">
-                            Write any valid HTML markup and scoped CSS classes here. The left
-                            canvas previews your changes live as you type.
+                            Write any valid HTML markup and scoped CSS classes here. The left canvas
+                            previews your changes live as you type.
                         </p>
                     </div>
 
@@ -1393,7 +1459,9 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             value={p.html || ''}
                             onChange={(value) => onChange('html', value)}
                             ariaLabel="Custom HTML code"
-                            placeholder={"<div class='my-card'>\n  <h2>Special Title</h2>\n  <p>Your description...</p>\n</div>"}
+                            placeholder={
+                                "<div class='my-card'>\n  <h2>Special Title</h2>\n  <p>Your description...</p>\n</div>"
+                            }
                         />
                     </div>
 
@@ -1412,7 +1480,9 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             value={p.css || ''}
                             onChange={(value) => onChange('css', value)}
                             ariaLabel="Custom scoped CSS"
-                            placeholder={'.my-card {\n  background: #ffffff;\n  border-radius: 12px;\n  padding: 20px;\n}'}
+                            placeholder={
+                                '.my-card {\n  background: #ffffff;\n  border-radius: 12px;\n  padding: 20px;\n}'
+                            }
                         />
                     </div>
 
@@ -1803,18 +1873,12 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
             return (
                 <div className="space-y-4">
                     {/* Image URL */}
-                    <div>
-                        <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Image URL
-                        </label>
-                        <input
-                            type="url"
-                            value={p.imageUrl || ''}
-                            onChange={(e) => onChange('imageUrl', e.target.value)}
-                            placeholder="https://images.unsplash.com/..."
-                            className="w-full text-xs rounded-lg border-gray-300 p-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                        />
-                    </div>
+                    <MediaField
+                        label="Image"
+                        value={p.imageUrl || ''}
+                        onChange={(value) => onChange('imageUrl', value)}
+                        placeholder="https://images.unsplash.com/..."
+                    />
 
                     {/* Alt Text */}
                     <div>
@@ -1941,7 +2005,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             className="w-full text-xs rounded-lg border-gray-300 p-2 font-mono"
                         />
                         <span className="text-[10px] text-gray-400 mt-1 block">
-                            Use #cod-checkout to scroll to the form, or a full URL to open another page.
+                            Use #cod-checkout to scroll to the form, or a full URL to open another
+                            page.
                         </span>
                     </div>
 
@@ -2167,9 +2232,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
 
                     <div className="pt-2 border-t border-gray-200">
                         <div className="mb-1.5 flex items-center justify-between">
-                            <label className="text-xs font-bold text-gray-700">
-                                Item Spacing
-                            </label>
+                            <label className="text-xs font-bold text-gray-700">Item Spacing</label>
                             <span className="text-[11px] font-bold text-primary-600">
                                 {p.itemSpacing ?? 12}px
                             </span>
@@ -2224,9 +2287,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     rows={2}
                                     value={item.text}
                                     placeholder="List item text"
-                                    onChange={(e) =>
-                                        handleUpdateItem(idx, 'text', e.target.value)
-                                    }
+                                    onChange={(e) => handleUpdateItem(idx, 'text', e.target.value)}
                                     className="w-full text-xs rounded border-gray-300 p-1.5"
                                 />
                             </div>
@@ -2427,14 +2488,28 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     <div className="space-y-2 pt-2 border-t border-gray-200">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-gray-700">Images</span>
-                            <button
-                                type="button"
-                                onClick={handleAddImage}
-                                className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center"
-                            >
-                                <Plus className="w-3.5 h-3.5 mr-0.5" />
-                                <span>Add Image</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <MediaLibraryAddButton
+                                    onSelect={(selectedImages) => {
+                                        onChange('images', [
+                                            ...images,
+                                            ...selectedImages.map((item, index) => ({
+                                                id: `${Date.now()}_${index}`,
+                                                imageUrl: item.url,
+                                                altText: item.alt_text || item.name,
+                                            })),
+                                        ]);
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAddImage}
+                                    className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center"
+                                >
+                                    <Plus className="w-3.5 h-3.5 mr-0.5" />
+                                    <span>Add Image</span>
+                                </button>
+                            </div>
                         </div>
 
                         {images.map((image, idx) => (
@@ -2455,14 +2530,12 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                         <Trash2 className="w-3 h-3" />
                                     </button>
                                 </div>
-                                <input
-                                    type="url"
+                                <MediaField
+                                    label="Image"
                                     value={image.imageUrl}
-                                    placeholder="https://example.com/image.jpg"
-                                    onChange={(e) =>
-                                        handleUpdateImage(idx, 'imageUrl', e.target.value)
-                                    }
-                                    className="w-full text-xs rounded border-gray-300 p-1.5"
+                                    onChange={(value) => handleUpdateImage(idx, 'imageUrl', value)}
+                                    compact
+                                    hint="Pick from the media library."
                                 />
                                 <input
                                     type="text"
@@ -2568,8 +2641,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         </div>
                     </ControlSection>
                     <p className="px-1 text-[9px] leading-relaxed text-gray-400">
-                        Grid children flow into responsive columns based on the canvas or
-                        container width. Use the Layers panel to nest blocks inside.
+                        Grid children flow into responsive columns based on the canvas or container
+                        width. Use the Layers panel to nest blocks inside.
                     </p>
                 </div>
             );
@@ -2577,52 +2650,189 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
 
         case 'TestimonialBlock': {
             const p = props as unknown as TestimonialBlockProps;
+            const items = resolveTestimonialItems(p);
+
+            const writeItems = (nextItems: TestimonialItem[]) => {
+                onChange('items', nextItems);
+            };
+
+            const handleUpdateItem = (
+                index: number,
+                key: keyof TestimonialItem,
+                value: unknown
+            ) => {
+                const next = items.map((item, itemIndex) =>
+                    itemIndex === index ? { ...item, [key]: value } : item
+                );
+                writeItems(next);
+            };
+
+            const handleAddItem = () => {
+                writeItems([...items, createTestimonialItem()]);
+            };
+
+            const handleRemoveItem = (index: number) => {
+                if (items.length <= 1) {
+                    return;
+                }
+
+                writeItems(items.filter((_, itemIndex) => itemIndex !== index));
+            };
 
             return (
                 <div className="space-y-2">
-                    <ControlSection title="Testimonial Content" icon={Quote} defaultOpen>
-                        <TextareaControl
-                            label="Quote"
-                            value={p.quote || ''}
-                            placeholder="Share what the customer said..."
-                            rows={3}
-                            onChange={(value) => onChange('quote', value)}
-                        />
+                    <ControlSection title="Testimonials" icon={Quote} defaultOpen>
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-semibold text-gray-500">
+                                {items.length} testimonial{items.length === 1 ? '' : 's'}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={handleAddItem}
+                                className="inline-flex items-center gap-0.5 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                            >
+                                <Plus className="h-3.5 w-3.5" />
+                                <span>Add Testimonial</span>
+                            </button>
+                        </div>
+
+                        {items.map((item, index) => (
+                            <div
+                                key={item.id || index}
+                                className="space-y-2 rounded-xl border border-gray-200 bg-gray-50/60 p-2.5"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-gray-400">
+                                        Testimonial #{index + 1}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveItem(index)}
+                                        disabled={items.length <= 1}
+                                        className="text-gray-400 transition hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-30"
+                                        title={
+                                            items.length <= 1
+                                                ? 'At least one testimonial is required'
+                                                : 'Remove testimonial'
+                                        }
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </button>
+                                </div>
+
+                                <TextareaControl
+                                    label="Quote"
+                                    value={item.quote || ''}
+                                    placeholder="Share what the customer said..."
+                                    rows={3}
+                                    onChange={(value) => handleUpdateItem(index, 'quote', value)}
+                                />
+
+                                <div className="grid grid-cols-2 gap-1.5">
+                                    <TextControl
+                                        label="Author Name"
+                                        value={item.authorName || ''}
+                                        onChange={(value) =>
+                                            handleUpdateItem(index, 'authorName', value)
+                                        }
+                                    />
+                                    <TextControl
+                                        label="Role / Label"
+                                        value={item.authorRole || ''}
+                                        placeholder="Verified Customer"
+                                        onChange={(value) =>
+                                            handleUpdateItem(index, 'authorRole', value)
+                                        }
+                                    />
+                                    <TextControl
+                                        label="Location"
+                                        value={item.location || ''}
+                                        placeholder="Dhaka"
+                                        onChange={(value) =>
+                                            handleUpdateItem(index, 'location', value)
+                                        }
+                                    />
+                                    <SelectControl
+                                        label="Rating"
+                                        value={String(item.rating ?? 5)}
+                                        options={[5, 4, 3, 2, 1].map((value) => ({
+                                            label: `${value} Star${value === 1 ? '' : 's'}`,
+                                            value: String(value),
+                                        }))}
+                                        onChange={(value) =>
+                                            handleUpdateItem(index, 'rating', Number(value))
+                                        }
+                                    />
+                                </div>
+
+                                <MediaField
+                                    label="Avatar"
+                                    value={item.avatarUrl || ''}
+                                    onChange={(value) =>
+                                        handleUpdateItem(index, 'avatarUrl', value)
+                                    }
+                                    placeholder="https://example.com/avatar.jpg"
+                                    compact
+                                />
+
+                                <ToggleControl
+                                    label="Verified Purchase"
+                                    checked={item.verifiedPurchase !== false}
+                                    onChange={(checked) =>
+                                        handleUpdateItem(index, 'verifiedPurchase', checked)
+                                    }
+                                />
+                            </div>
+                        ))}
+                    </ControlSection>
+
+                    <ControlSection title="Carousel Behavior" icon={Plus} defaultOpen>
                         <div className="grid grid-cols-2 gap-1.5">
-                            <TextControl
-                                label="Author Name"
-                                value={p.authorName || ''}
-                                onChange={(value) => onChange('authorName', value)}
+                            <ToggleControl
+                                label="Auto Scroll"
+                                checked={p.autoplay !== false}
+                                onChange={(checked) => onChange('autoplay', checked)}
                             />
-                            <TextControl
-                                label="Role / Label"
-                                value={p.authorRole || ''}
-                                placeholder="Verified Customer"
-                                onChange={(value) => onChange('authorRole', value)}
+                            <ToggleControl
+                                label="Loop"
+                                checked={p.loop !== false}
+                                onChange={(checked) => onChange('loop', checked)}
                             />
-                            <TextControl
-                                label="Location"
-                                value={p.location || ''}
-                                placeholder="Dhaka"
-                                onChange={(value) => onChange('location', value)}
+                            <ToggleControl
+                                label="Arrows"
+                                checked={p.showArrows !== false}
+                                onChange={(checked) => onChange('showArrows', checked)}
                             />
-                            <SelectControl
-                                label="Rating"
-                                value={String(p.rating ?? 5)}
-                                options={[5, 4, 3, 2, 1].map((value) => ({
-                                    label: `${value} Star${value === 1 ? '' : 's'}`,
-                                    value: String(value),
-                                }))}
-                                onChange={(value) => onChange('rating', Number(value))}
+                            <ToggleControl
+                                label="Dots"
+                                checked={p.showDots !== false}
+                                onChange={(checked) => onChange('showDots', checked)}
                             />
                         </div>
-                        <TextControl
-                            label="Avatar URL"
-                            type="url"
-                            value={p.avatarUrl || ''}
-                            placeholder="https://example.com/avatar.jpg"
-                            onChange={(value) => onChange('avatarUrl', value)}
-                        />
+                        <div>
+                            <label className="mb-1 block text-[11px] font-semibold text-gray-700">
+                                Auto Scroll Interval (seconds)
+                            </label>
+                            <input
+                                type="number"
+                                min={2}
+                                max={15}
+                                value={Math.round((p.autoplayInterval ?? 5000) / 1000)}
+                                onChange={(e) =>
+                                    onChange(
+                                        'autoplayInterval',
+                                        Math.min(
+                                            15000,
+                                            Math.max(2000, Number(e.target.value) * 1000)
+                                        )
+                                    )
+                                }
+                                className="w-full rounded-lg border-gray-300 p-2 text-xs"
+                            />
+                        </div>
+                    </ControlSection>
+
+                    <ControlSection title="Testimonial Design" icon={Palette} defaultOpen>
                         <div className="grid grid-cols-2 gap-1.5">
                             <SelectControl
                                 label="Layout"
@@ -2633,37 +2843,26 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 ]}
                                 onChange={(value) => onChange('layout', value)}
                             />
-                            <div className="flex flex-col justify-end">
-                                <ToggleControl
-                                    label="Verified Purchase"
-                                    checked={p.verifiedPurchase !== false}
-                                    onChange={(checked) =>
-                                        onChange('verifiedPurchase', checked)
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5">
-                            <ToggleControl
-                                label="Show Quote Icon"
-                                checked={p.showQuoteIcon !== false}
-                                onChange={(checked) => onChange('showQuoteIcon', checked)}
+                            <SelectControl
+                                label="Star Style"
+                                value={p.starStyle ?? 'filled'}
+                                options={[
+                                    { label: 'Filled', value: 'filled' },
+                                    { label: 'Outline', value: 'outline' },
+                                ]}
+                                onChange={(value) => onChange('starStyle', value)}
                             />
-                            <ToggleControl
-                                label="Show Rating"
-                                checked={p.showRating !== false}
-                                onChange={(checked) => onChange('showRating', checked)}
-                            />
-                        </div>
-                    </ControlSection>
-
-                    <ControlSection title="Testimonial Design" icon={Palette} defaultOpen>
-                        <div className="grid grid-cols-2 gap-1.5">
                             <ColorControl
                                 label="Accent Color"
                                 value={p.accentColor || ''}
                                 fallback="#059669"
                                 onChange={(value) => onChange('accentColor', value)}
+                            />
+                            <ColorControl
+                                label="Star Color"
+                                value={p.starColor || ''}
+                                fallback="#059669"
+                                onChange={(value) => onChange('starColor', value)}
                             />
                             <ColorControl
                                 label="Card Background"
@@ -2682,6 +2881,14 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 value={p.authorColor || ''}
                                 fallback="#0f172a"
                                 onChange={(value) => onChange('authorColor', value)}
+                            />
+                            <NumberUnitControl
+                                label="Star Size"
+                                value={p.starSize ?? '16px'}
+                                unit="px"
+                                min={8}
+                                max={48}
+                                onChange={(value) => onChange('starSize', value)}
                             />
                             <NumberUnitControl
                                 label="Quote Font Size"
@@ -2714,6 +2921,18 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 min={0}
                                 max={120}
                                 onChange={(value) => onChange('cardPadding', value)}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <ToggleControl
+                                label="Show Quote Icon"
+                                checked={p.showQuoteIcon !== false}
+                                onChange={(checked) => onChange('showQuoteIcon', checked)}
+                            />
+                            <ToggleControl
+                                label="Show Rating"
+                                checked={p.showRating !== false}
+                                onChange={(checked) => onChange('showRating', checked)}
                             />
                         </div>
                     </ControlSection>
@@ -2758,7 +2977,15 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
         styles.marginLeft ?? '',
     ];
 
-    const BACKGROUND_SWATCHES = ['#ffffff', '#f8fafc', '#f3f4f6', '#fffbeb', '#ecfdf5', '#fff1f2', '#0f172a'];
+    const BACKGROUND_SWATCHES = [
+        '#ffffff',
+        '#f8fafc',
+        '#f3f4f6',
+        '#fffbeb',
+        '#ecfdf5',
+        '#fff1f2',
+        '#0f172a',
+    ];
     const TEXT_SWATCHES = ['#0f172a', '#475569', '#ffffff', '#059669', '#e11d48', '#d97706'];
     const BUTTON_SWATCHES = ['#059669', '#16a34a', '#2563eb', '#4f46e5', '#dc2626', '#0f172a'];
 
@@ -2809,7 +3036,12 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
 
     return (
         <div className="space-y-2">
-            <ControlSection title="Background & Colors" icon={Palette} description="Solid fill, gradient and text color" defaultOpen>
+            <ControlSection
+                title="Background & Colors"
+                icon={Palette}
+                description="Solid fill, gradient and text color"
+                defaultOpen
+            >
                 <ColorControl
                     label="Solid Background"
                     value={styles.backgroundColor || ''}
@@ -2819,7 +3051,9 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 />
 
                 <div>
-                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">Gradient Presets</span>
+                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">
+                        Gradient Presets
+                    </span>
                     <div className="grid grid-cols-3 gap-1">
                         {GRADIENT_PRESETS.map((preset) => {
                             const active = (styles.background || '') === preset.gradient;
@@ -2830,7 +3064,9 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                                     onClick={() =>
                                         batch({
                                             background: preset.gradient,
-                                            backgroundColor: preset.gradient ? 'transparent' : '#ffffff',
+                                            backgroundColor: preset.gradient
+                                                ? 'transparent'
+                                                : '#ffffff',
                                         })
                                     }
                                     className={`h-7 truncate rounded-md border px-1 text-[9.5px] font-medium transition ${
@@ -2855,7 +3091,12 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 />
             </ControlSection>
 
-            <ControlSection title="Typography & Alignment" icon={Type} description="Alignment, size, weight and spacing" defaultOpen>
+            <ControlSection
+                title="Typography & Alignment"
+                icon={Type}
+                description="Alignment, size, weight and spacing"
+                defaultOpen
+            >
                 <AlignmentControl
                     label="Content Alignment"
                     value={styles.textAlign || 'left'}
@@ -2906,9 +3147,16 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 </div>
             </ControlSection>
 
-            <ControlSection title="Spacing & Dimensions" icon={Maximize2} description="Width, height, padding and margin" defaultOpen>
+            <ControlSection
+                title="Spacing & Dimensions"
+                icon={Maximize2}
+                description="Width, height, padding and margin"
+                defaultOpen
+            >
                 <div>
-                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">Section Width</span>
+                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">
+                        Section Width
+                    </span>
                     <div className="grid grid-cols-4 gap-1">
                         {WIDTH_PRESETS.map((preset) => (
                             <button
@@ -2977,7 +3225,11 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 />
             </ControlSection>
 
-            <ControlSection title="Borders & Corners" icon={Square} description="Width, style, color and radius">
+            <ControlSection
+                title="Borders & Corners"
+                icon={Square}
+                description="Width, style, color and radius"
+            >
                 <div className="grid grid-cols-2 gap-1.5">
                     <NumberUnitControl
                         label="Border Width"
@@ -3020,7 +3272,11 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 </div>
             </ControlSection>
 
-            <ControlSection title="Box Shadow & Depth" icon={Box} description="Elevation presets or a custom shadow">
+            <ControlSection
+                title="Box Shadow & Depth"
+                icon={Box}
+                description="Elevation presets or a custom shadow"
+            >
                 <div className="grid grid-cols-3 gap-1">
                     {SHADOW_PRESETS.map((shadow) => {
                         const active = (styles.boxShadow || 'none') === shadow.val;
@@ -3048,7 +3304,12 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 />
             </ControlSection>
 
-            <ControlSection title="Action Button & CTA" icon={Zap} description="Button colors, radius and pulse effect" defaultOpen>
+            <ControlSection
+                title="Action Button & CTA"
+                icon={Zap}
+                description="Button colors, radius and pulse effect"
+                defaultOpen
+            >
                 <div className="grid grid-cols-2 gap-1.5">
                     <ColorControl
                         label="Button Background"
@@ -3115,8 +3376,8 @@ function ProductPickerSection({
         Array.isArray(productIds) && productIds.length > 0
             ? productIds
             : productId
-            ? [productId]
-            : [];
+              ? [productId]
+              : [];
 
     const handleToggleProduct = (id: number) => {
         let next: number[];
@@ -3140,9 +3401,7 @@ function ProductPickerSection({
         onChange('productId', 0);
     };
 
-    const filtered = products.filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()));
 
     return (
         <div className="space-y-4">
@@ -3266,7 +3525,10 @@ function ProductPickerSection({
                         onChange={(e) => onChange('showDiscountBadge', e.target.checked)}
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-4 h-4"
                     />
-                    <label htmlFor="show_discount_badge" className="text-xs text-gray-700 cursor-pointer">
+                    <label
+                        htmlFor="show_discount_badge"
+                        className="text-xs text-gray-700 cursor-pointer"
+                    >
                         Show Discount % Badge (e.g. SAVE ৳...)
                     </label>
                 </div>
@@ -3296,7 +3558,10 @@ function ProductPickerSection({
                                 const currentBadge = (productBadges || {})[pid] || '';
                                 return (
                                     <div key={pid} className="flex items-center space-x-2 text-xs">
-                                        <span className="w-28 truncate text-[11px] text-gray-600 shrink-0 font-medium" title={prod?.title}>
+                                        <span
+                                            className="w-28 truncate text-[11px] text-gray-600 shrink-0 font-medium"
+                                            title={prod?.title}
+                                        >
                                             {prod?.title || `Product #${pid}`}:
                                         </span>
                                         <input
@@ -3304,7 +3569,10 @@ function ProductPickerSection({
                                             value={currentBadge}
                                             placeholder="e.g. 🔥 Hot Deal"
                                             onChange={(e) => {
-                                                const next = { ...(productBadges || {}), [pid]: e.target.value };
+                                                const next = {
+                                                    ...(productBadges || {}),
+                                                    [pid]: e.target.value,
+                                                };
                                                 onChange('productBadges', next);
                                             }}
                                             className="flex-1 text-xs rounded border-gray-300 bg-white p-1"
@@ -3388,4 +3656,3 @@ function ProductPickerSection({
         </div>
     );
 }
-

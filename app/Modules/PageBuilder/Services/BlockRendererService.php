@@ -78,7 +78,21 @@ class BlockRendererService
         }
 
         $defaultProps = BlockRegistry::getDefaultProps($type);
-        $props = array_merge($defaultProps, $block['props'] ?? []);
+        $blockProps = $block['props'] ?? [];
+
+        // Legacy testimonial ASTs stored a single quote/author on the block
+        // itself. The registry now defaults to a multi-item array, so remove
+        // that default when a legacy block has no explicit items. Without this
+        // guard the defaults would silently replace the saved testimonial.
+        if (
+            $type === 'TestimonialBlock'
+            && ! array_key_exists('items', $blockProps)
+            && (array_key_exists('quote', $blockProps) || array_key_exists('authorName', $blockProps))
+        ) {
+            unset($defaultProps['items']);
+        }
+
+        $props = array_merge($defaultProps, $blockProps);
         $styles = $block['styles'] ?? [];
 
         // For ContainerBlock, merge safe flex layout props into styles

@@ -689,6 +689,90 @@ test('testimonial block renders quote, author, rating and verified badge', funct
         ->toContain('color: #0f766e');
 });
 
+test('testimonial block renders a multi-item carousel with custom stars', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'testimonial-carousel',
+        'type' => 'TestimonialBlock',
+        'props' => [
+            'items' => [
+                [
+                    'id' => 't1',
+                    'quote' => 'First customer quote.',
+                    'authorName' => 'First Customer',
+                    'rating' => 5,
+                    'verifiedPurchase' => true,
+                ],
+                [
+                    'id' => 't2',
+                    'quote' => 'Second customer quote.',
+                    'authorName' => 'Second Customer',
+                    'rating' => 4,
+                    'verifiedPurchase' => false,
+                ],
+            ],
+            'autoplay' => true,
+            'autoplayInterval' => 4000,
+            'loop' => true,
+            'showArrows' => true,
+            'showDots' => true,
+            'starColor' => '#123456',
+            'starSize' => '22px',
+            'starStyle' => 'outline',
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('First customer quote.')
+        ->toContain('Second customer quote.')
+        ->toContain('data-lc-carousel')
+        ->toContain('data-lc-carousel-track')
+        ->toContain('data-autoplay="1"')
+        ->toContain('data-interval="4000"')
+        ->toContain('data-lc-prev')
+        ->toContain('data-lc-next')
+        ->toContain('data-lc-dot')
+        ->toContain('First Customer')
+        ->toContain('Second Customer')
+        ->toContain('width: 22px')
+        ->toContain('color: #123456')
+        ->toContain('fill: transparent');
+});
+
+test('reviews block allows custom star colors, size and summary text', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'reviews-custom',
+        'type' => 'ReviewsBlock',
+        'props' => [
+            'title' => 'Customer Feedback',
+            'items' => [
+                [
+                    'id' => 'r1',
+                    'authorName' => 'Review Author',
+                    'rating' => 3,
+                    'comment' => 'Solid purchase.',
+                    'verifiedPurchase' => true,
+                ],
+            ],
+            'starColor' => '#ff5500',
+            'starEmptyColor' => '#eeeeee',
+            'starSize' => '20px',
+            'starStyle' => 'outline',
+            'showStars' => true,
+            'showRatingSummary' => true,
+            'ratingSummaryText' => 'Rated 4.8 by 500 buyers',
+            'ratingSummaryColor' => '#112233',
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('Rated 4.8 by 500 buyers')
+        ->toContain('color: #ff5500')
+        ->toContain('color: #eeeeee')
+        ->toContain('width: 20px')
+        ->toContain('fill: transparent')
+        ->toContain('color: #112233');
+});
+
 test('testimonial block escapes markup and rejects unsafe avatar urls', function () {
     $html = $this->renderer->renderBlock([
         'id' => 'testimonial-2',

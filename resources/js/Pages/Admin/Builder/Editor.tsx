@@ -1,14 +1,17 @@
 import {
     DndContext,
+    DragOverlay,
     KeyboardSensor,
     PointerSensor,
     closestCenter,
     useSensor,
     useSensors,
     type DragEndEvent,
+    type DragStartEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Head } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { AiGenerateModal } from '@/Builder/components/AiGenerateModal';
 import { Canvas } from '@/Builder/components/Canvas';
@@ -16,7 +19,11 @@ import { Inspector } from '@/Builder/components/Inspector';
 import { LeftSidebar } from '@/Builder/components/LeftSidebar';
 import { RevisionsDrawer } from '@/Builder/components/RevisionsDrawer';
 import { TopBar } from '@/Builder/components/TopBar';
-import { findParentInTree, useBuilderStore } from '@/Builder/stores/useBuilderStore';
+import {
+    findBlockInTree,
+    findParentInTree,
+    useBuilderStore,
+} from '@/Builder/stores/useBuilderStore';
 import type { Block, BlockType, BuilderEditorProps, LandingPageRevisionSummary } from '@/types';
 
 export default function Editor({
@@ -38,6 +45,7 @@ export default function Editor({
         redo,
         canUndo,
         canRedo,
+        selectedBlockId,
         setSelectedBlockId,
     } = useBuilderStore();
 
@@ -47,6 +55,7 @@ export default function Editor({
     const [isRevisionsOpen, setIsRevisionsOpen] = useState(false);
     const [isAiOpen, setIsAiOpen] = useState(false);
     const [targetContainerId, setTargetContainerId] = useState<string | null>(null);
+    const [paletteDragType, setPaletteDragType] = useState<BlockType | null>(null);
 
     // Draggable sidebar widths with localStorage persistence
     const [leftWidth, setLeftWidth] = useState<number>(() => {
@@ -249,40 +258,39 @@ export default function Editor({
         })
     );
 
-    // Handle drag end reordering & cross-container moving
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
+    // Handle drag start so palette drags show a floating preview.
+    const handleDragStart = (event: DragStartEvent) => {
+        const data = event.active.data.current as
+            { source?: string; blockType?: BlockType } | undefined;
 
-        const activeId = String(active.id);
-        const overId = String(over.id);
-
-        // Case 1: Dropped onto empty container drop target
-        if (overId.startsWith('container_drop_')) {
-            const containerId = overId.replace('container_drop_', '');
-            moveBlock(activeId, containerId, 0);
-            return;
-        }
-
-        // Case 2: Dropped over a sibling or nested block
-        const targetInfo = findParentInTree(ast.blocks, overId);
-        if (targetInfo) {
-            const targetParentId = targetInfo.parent ? targetInfo.parent.id : null;
-            moveBlock(activeId, targetParentId, targetInfo.index);
-        } else {
-            // Root-level block fallback
-            const oldIndex = ast.blocks.findIndex((b) => b.id === activeId);
-            const newIndex = ast.blocks.findIndex((b) => b.id === overId);
-            if (oldIndex !== -1 && newIndex !== -1) {
-                reorderBlocks(oldIndex, newIndex);
-            }
+        if (data?.source === 'palette' && data.blockType) {
+            setPaletteDragType(data.blockType);
         }
     };
 
-    // Add block from palette (to root or targeted container)
-    const handleAddBlock = (blockType: BlockType, targetParentId?: string | null) => {
+    const handleDragCancel = () => {
+        setPaletteDragType(null);
+    };
+
+    const isDropAfter = (event: DragEndEvent): boolean => {
+        const translated = event.active.rect.current.translated;
+
+        if (!translated || !event.over) {
+            return false;
+        }
+
+        const activeMiddle = translated.top + translated.height / 2;
+        const overMiddle = event.over.rect.top + event.over.rect.height / 2;
+
+        return activeMiddle > overMiddle;
+    };
+
+    const createBlock = (blockType: BlockType): Block | null => {
         const def = blockDefinitions[blockType];
-        if (!def) return;
+
+        if (!def) {
+            return null;
+        }
 
         const uniqueSuffix = Math.random().toString(36).substring(2, 8);
         const blockPrefix = blockType.toLowerCase().replace('block', '');
@@ -296,18 +304,137 @@ export default function Editor({
             initialProps = { ...initialProps, productId: defaultProdId };
         }
 
-        const isContainer = blockType === 'ContainerBlock';
-        const newBlock: Block = {
+        const isContainer = blockType === 'ContainerBlock' || blockType === 'GridBlock';
+
+        return {
             id: newBlockId,
             type: blockType,
             props: initialProps,
             styles: { ...def.defaultStyles },
             children: isContainer ? [] : undefined,
         };
+    };
 
-        const destinationParentId = targetParentId !== undefined ? targetParentId : targetContainerId;
-        addBlock(newBlock, destinationParentId ?? null);
-        setSelectedBlockId(newBlockId);
+    const insertBlock = (blockType: BlockType, parentId: string | null, index?: number) => {
+        const newBlock = createBlock(blockType);
+
+        if (!newBlock) {
+            return;
+        }
+
+        addBlock(newBlock, parentId, index);
+        setSelectedBlockId(newBlock.id);
+    };
+
+    // Handle drag end reordering, cross-container moving and palette drops.
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        const activeData = active.data.current as
+            { source?: string; blockType?: BlockType } | undefined;
+        const paletteType = activeData?.source === 'palette' ? activeData.blockType : null;
+
+        setPaletteDragType(null);
+
+        if (!over) {
+            return;
+        }
+
+        const overId = String(over.id);
+
+        // Palette block dropped somewhere on the canvas.
+        if (paletteType) {
+            if (overId === 'canvas_end_drop') {
+                insertBlock(paletteType, null, ast.blocks.length);
+                return;
+            }
+
+            if (overId.startsWith('container_drop_')) {
+                const containerId = overId.replace('container_drop_', '');
+                const container = findBlockInTree(ast.blocks, containerId);
+                insertBlock(paletteType, containerId, container?.children?.length ?? 0);
+                return;
+            }
+
+            const targetInfo = findParentInTree(ast.blocks, overId);
+
+            if (targetInfo) {
+                const targetParentId = targetInfo.parent ? targetInfo.parent.id : null;
+                const targetIndex = targetInfo.index + (isDropAfter(event) ? 1 : 0);
+                insertBlock(paletteType, targetParentId, targetIndex);
+            } else {
+                insertBlock(paletteType, null, ast.blocks.length);
+            }
+
+            return;
+        }
+
+        if (active.id === over.id) {
+            return;
+        }
+
+        const activeId = String(active.id);
+
+        // Case 1: Dropped onto the end-of-page drop zone.
+        if (overId === 'canvas_end_drop') {
+            moveBlock(activeId, null, ast.blocks.length);
+            return;
+        }
+
+        // Case 2: Dropped onto a container drop target.
+        if (overId.startsWith('container_drop_')) {
+            const containerId = overId.replace('container_drop_', '');
+            moveBlock(activeId, containerId, 0);
+            return;
+        }
+
+        // Case 3: Dropped over a sibling or nested block.
+        const targetInfo = findParentInTree(ast.blocks, overId);
+
+        if (targetInfo) {
+            const targetParentId = targetInfo.parent ? targetInfo.parent.id : null;
+            moveBlock(activeId, targetParentId, targetInfo.index);
+            return;
+        }
+
+        // Root-level fallback
+        const oldIndex = ast.blocks.findIndex((b) => b.id === activeId);
+        const newIndex = ast.blocks.findIndex((b) => b.id === overId);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+            reorderBlocks(oldIndex, newIndex);
+        }
+    };
+
+    // Add a block from the palette. Clicking inserts relative to the current
+    // selection (or into the selected container) instead of always appending.
+    const handleAddBlock = (blockType: BlockType, targetParentId?: string | null) => {
+        const explicitTarget = targetParentId ?? targetContainerId;
+
+        if (explicitTarget) {
+            insertBlock(blockType, explicitTarget, undefined);
+            return;
+        }
+
+        if (selectedBlockId) {
+            const selectedBlock = findBlockInTree(ast.blocks, selectedBlockId);
+            const selectedInfo = findParentInTree(ast.blocks, selectedBlockId);
+
+            if (selectedBlock && selectedInfo) {
+                if (selectedBlock.type === 'ContainerBlock' || selectedBlock.type === 'GridBlock') {
+                    insertBlock(blockType, selectedBlock.id, undefined);
+                    return;
+                }
+
+                insertBlock(
+                    blockType,
+                    selectedInfo.parent ? selectedInfo.parent.id : null,
+                    selectedInfo.index + 1
+                );
+                return;
+            }
+        }
+
+        insertBlock(blockType, null, undefined);
     };
 
     const handleInsertAiDesign = (generatedBlocks: Block[]) => {
@@ -334,29 +461,31 @@ export default function Editor({
                 />
 
                 {/* Main 3-Column Studio Workspace with Resizable Sidebars */}
-                <div className="flex-1 flex overflow-hidden relative">
-                    <LeftSidebar
-                        width={leftWidth}
-                        blockDefinitions={blockDefinitions}
-                        onAddBlock={handleAddBlock}
-                        targetContainerId={targetContainerId}
-                        onClearTargetContainer={() => setTargetContainerId(null)}
-                    />
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
+                >
+                    <div className="flex-1 flex overflow-hidden relative">
+                        <LeftSidebar
+                            width={leftWidth}
+                            blockDefinitions={blockDefinitions}
+                            onAddBlock={handleAddBlock}
+                            targetContainerId={targetContainerId}
+                            onClearTargetContainer={() => setTargetContainerId(null)}
+                        />
 
-                    {/* Left Sidebar Resize Handle (Mouse Drag) */}
-                    <div
-                        onMouseDown={startResizingLeft}
-                        title="Drag to resize blocks panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
-                        className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
-                    >
-                        <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
-                    </div>
+                        {/* Left Sidebar Resize Handle (Mouse Drag) */}
+                        <div
+                            onMouseDown={startResizingLeft}
+                            title="Drag to resize blocks panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
+                            className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
+                        >
+                            <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
+                        </div>
 
-                    <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                    >
                         <Canvas
                             blockDefinitions={blockDefinitions}
                             onAddBlockToContainer={(containerId) => {
@@ -364,23 +493,34 @@ export default function Editor({
                                 setTargetContainerId(containerId);
                             }}
                         />
-                    </DndContext>
 
-                    {/* Right Inspector Resize Handle (Mouse Drag) */}
-                    <div
-                        onMouseDown={startResizingRight}
-                        title="Drag to resize customizer panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
-                        className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
-                    >
-                        <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
+                        {/* Right Inspector Resize Handle (Mouse Drag) */}
+                        <div
+                            onMouseDown={startResizingRight}
+                            title="Drag to resize customizer panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
+                            className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
+                        >
+                            <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
+                        </div>
+
+                        <Inspector
+                            width={rightWidth}
+                            blockDefinitions={blockDefinitions}
+                            products={products}
+                        />
                     </div>
 
-                    <Inspector
-                        width={rightWidth}
-                        blockDefinitions={blockDefinitions}
-                        products={products}
-                    />
-                </div>
+                    <DragOverlay dropAnimation={null}>
+                        {paletteDragType && blockDefinitions[paletteDragType] ? (
+                            <div className="flex items-center gap-2 rounded-xl border-2 border-primary-400 bg-white px-3 py-2 text-xs font-extrabold text-primary-800 shadow-2xl">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary-50 text-primary-700">
+                                    <Plus className="h-3.5 w-3.5" />
+                                </span>
+                                {blockDefinitions[paletteDragType].name}
+                            </div>
+                        ) : null}
+                    </DragOverlay>
+                </DndContext>
 
                 {/* Slide-over Revisions & Restore Drawer */}
                 <RevisionsDrawer

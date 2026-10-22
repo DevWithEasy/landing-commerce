@@ -1,7 +1,8 @@
-import { useDroppable } from '@dnd-kit/core';
+import { useDndMonitor, useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Box, ChevronDown, ChevronUp, GripVertical, Layers, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { ContainerBlock } from '../blocks/ContainerBlock';
 import { GridBlock } from '../blocks/GridBlock';
@@ -23,6 +24,16 @@ export interface CanvasProps {
 export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps) {
     const { ast, viewport, selectedBlockId, setSelectedBlockId, removeBlock, reorderBlocks } =
         useBuilderStore();
+    const { setNodeRef: setEndDropRef, isOver: isEndDropOver } = useDroppable({
+        id: 'canvas_end_drop',
+    });
+    const [isDragging, setIsDragging] = useState(false);
+
+    useDndMonitor({
+        onDragStart: () => setIsDragging(true),
+        onDragEnd: () => setIsDragging(false),
+        onDragCancel: () => setIsDragging(false),
+    });
 
     const blocks = ast.blocks || [];
     const settings = ast.settings || {};
@@ -51,13 +62,21 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
                 onClick={(e) => e.stopPropagation()}
             >
                 {blocks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-400 p-8 text-center">
+                    <div
+                        ref={setEndDropRef}
+                        className={`flex min-h-[400px] flex-col items-center justify-center p-8 text-center transition-colors ${
+                            isEndDropOver
+                                ? 'bg-primary-50/60 text-primary-700 ring-2 ring-inset ring-primary-400'
+                                : 'text-gray-400'
+                        }`}
+                    >
                         <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
                             <Layers className="w-8 h-8 text-gray-400" />
                         </div>
                         <h3 className="font-bold text-gray-700 text-base">Your canvas is empty</h3>
                         <p className="text-xs text-gray-500 max-w-sm mt-1">
-                            Choose a section or container from the block palette on the left to start building your landing page.
+                            Drag a section or container from the block palette on the left, or click
+                            one to insert it here.
                         </p>
                     </div>
                 ) : (
@@ -79,7 +98,9 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
                                     blockDefinitions={blockDefinitions}
                                     onSelect={(id) => setSelectedBlockId(id)}
                                     onRemove={(id) => removeBlock(id)}
-                                    onMoveUp={(idx, pId) => idx > 0 && reorderBlocks(idx, idx - 1, pId)}
+                                    onMoveUp={(idx, pId) =>
+                                        idx > 0 && reorderBlocks(idx, idx - 1, pId)
+                                    }
                                     onMoveDown={(idx, total, pId) =>
                                         idx < total - 1 && reorderBlocks(idx, idx + 1, pId)
                                     }
@@ -88,6 +109,21 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
                             ))}
                         </div>
                     </SortableContext>
+                )}
+
+                {blocks.length > 0 && (
+                    <div
+                        ref={setEndDropRef}
+                        className={`mx-3 my-2 flex items-center justify-center rounded-xl border-2 border-dashed text-[11px] font-bold transition-all ${
+                            isEndDropOver
+                                ? 'min-h-[52px] border-primary-600 bg-primary-50 text-primary-800'
+                                : isDragging
+                                  ? 'min-h-[44px] border-primary-300 bg-primary-50/40 text-primary-600'
+                                  : 'min-h-[16px] border-transparent text-transparent'
+                        }`}
+                    >
+                        Drop here to add the block at the end of the page
+                    </div>
                 )}
             </div>
         </main>
@@ -183,7 +219,9 @@ function SortableBlockWrapper({
                     {isContainer && onAddBlockToContainer && (
                         <button
                             type="button"
-                            onClick={(e) => handleActionClick(e, () => onAddBlockToContainer(block.id))}
+                            onClick={(e) =>
+                                handleActionClick(e, () => onAddBlockToContainer(block.id))
+                            }
                             className="p-1 rounded text-primary-200 hover:text-white hover:bg-primary-800 flex items-center gap-0.5 text-[10px] font-semibold"
                             title="Add Child Block to Container"
                         >
@@ -206,7 +244,9 @@ function SortableBlockWrapper({
 
                     <button
                         type="button"
-                        onClick={(e) => handleActionClick(e, () => onMoveDown(index, totalBlocks, parentId))}
+                        onClick={(e) =>
+                            handleActionClick(e, () => onMoveDown(index, totalBlocks, parentId))
+                        }
                         disabled={index === totalBlocks - 1}
                         className="p-1 rounded text-primary-200 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         title="Move Down"
@@ -240,9 +280,7 @@ function SortableBlockWrapper({
                     onAddBlockToContainer={onAddBlockToContainer}
                 />
             ) : (
-                <div className="pointer-events-none select-none">
-                    {renderAstBlock(block, true)}
-                </div>
+                <div className="pointer-events-none select-none">{renderAstBlock(block, true)}</div>
             )}
         </div>
     );

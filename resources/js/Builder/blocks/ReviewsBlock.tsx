@@ -1,11 +1,48 @@
 import { CheckCircle, MapPin, Star } from 'lucide-react';
 import type { CSSProperties } from 'react';
+import { safeCheckoutCss } from './codCheckoutDesign';
 import type { BlockStyles, ReviewsBlockProps } from '@/types/builder';
 
 export interface ReviewsBlockComponentProps {
     props: ReviewsBlockProps;
     styles?: BlockStyles;
     isEditor?: boolean;
+}
+
+function RatingStars({
+    rating,
+    color,
+    emptyColor,
+    size,
+    starStyle,
+}: {
+    rating: number;
+    color: string;
+    emptyColor: string;
+    size: string;
+    starStyle: 'filled' | 'outline';
+}) {
+    const safeRating = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
+
+    return (
+        <div className="flex items-center gap-0.5" aria-label={`${safeRating} out of 5 stars`}>
+            {Array.from({ length: 5 }).map((_, index) => {
+                const isFilled = index < safeRating;
+
+                return (
+                    <Star
+                        key={index}
+                        style={{
+                            width: size,
+                            height: size,
+                            color: isFilled ? color : emptyColor,
+                            fill: isFilled && starStyle === 'filled' ? color : 'transparent',
+                        }}
+                    />
+                );
+            })}
+        </div>
+    );
 }
 
 export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps) {
@@ -31,19 +68,42 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
         fontWeight: styles.fontWeight,
     };
 
+    const starColor = safeCheckoutCss(props.starColor) || '#f59e0b';
+    const starEmptyColor = safeCheckoutCss(props.starEmptyColor) || '#d1d5db';
+    const starSize = safeCheckoutCss(props.starSize) || '16px';
+    const starStyle = props.starStyle === 'outline' ? 'outline' : 'filled';
+    const showStars = props.showStars !== false;
+    const showRatingSummary = props.showRatingSummary !== false;
+    const ratingSummaryText = props.ratingSummaryText || '4.9/5 from verified buyers';
+    const ratingSummaryColor = safeCheckoutCss(props.ratingSummaryColor) || '#334155';
+
     return (
         <section style={inlineStyles} className="w-full py-12">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {props.title && (
                     <div className="text-center mb-10">
-                        <div className="flex items-center justify-center space-x-1 text-amber-400 mb-2">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                                <Star key={s} className="w-5 h-5 fill-current" />
-                            ))}
-                        </div>
+                        {showStars && (
+                            <div className="mb-2 flex justify-center">
+                                <RatingStars
+                                    rating={5}
+                                    color={starColor}
+                                    emptyColor={starEmptyColor}
+                                    size={starSize}
+                                    starStyle={starStyle}
+                                />
+                            </div>
+                        )}
                         <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
                             {props.title}
                         </h2>
+                        {showRatingSummary && (
+                            <p
+                                className="mt-2 text-sm font-semibold"
+                                style={{ color: ratingSummaryColor }}
+                            >
+                                {ratingSummaryText}
+                            </p>
+                        )}
                     </div>
                 )}
 
@@ -55,11 +115,17 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                         >
                             <div>
                                 {/* Rating Stars */}
-                                <div className="flex items-center space-x-1 text-amber-400 mb-3">
-                                    {Array.from({ length: review.rating || 5 }).map((_, i) => (
-                                        <Star key={i} className="w-4 h-4 fill-current" />
-                                    ))}
-                                </div>
+                                {showStars && (
+                                    <div className="mb-3">
+                                        <RatingStars
+                                            rating={review.rating || 5}
+                                            color={starColor}
+                                            emptyColor={starEmptyColor}
+                                            size={starSize}
+                                            starStyle={starStyle}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Review Body */}
                                 <p className="text-sm text-gray-700 leading-relaxed italic mb-4">

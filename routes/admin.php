@@ -58,6 +58,7 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
         ->name('products.images.primary');
 
     // Shared Media Library
+    Route::get('media/picker', [MediaController::class, 'picker'])->name('media.picker');
     Route::get('media', [MediaController::class, 'index'])->name('media.index');
     Route::post('media', [MediaController::class, 'store'])->name('media.store');
     Route::delete('media', [MediaController::class, 'destroy'])->name('media.destroy');
