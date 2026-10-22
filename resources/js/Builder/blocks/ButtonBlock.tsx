@@ -38,6 +38,7 @@ export function ButtonBlock({ props, styles = {} }: ButtonBlockComponentProps) {
         <div className={`lc-button-wrapper flex ${containerAlign} my-2 w-full`}>
             <span
                 style={btnStyle}
+                data-lc-el="button"
                 className={`lc-button ${sizeClasses} ${widthClass} items-center justify-center font-bold shadow-md select-none transition-all duration-200 ${
                     props.pulseAnimation ? 'animate-pulse' : ''
                 }`}

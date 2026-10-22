@@ -11,10 +11,10 @@
         : 12;
 @endphp
 
-<section {!! $styleAttribute !!} class="w-full bg-white py-12">
+<section {!! $styleAttribute !!} class="lc-block-root w-full bg-white py-12">
     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         @if(!empty($props['title']))
-            <h2 class="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl">
+            <h2 data-lc-el="title" class="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl">
                 {{ $props['title'] }}
             </h2>
         @endif
@@ -26,14 +26,14 @@
                 <ul class="flex list-none flex-col pl-0" style="row-gap: {{ $itemSpacing }}px">
             @endif
                 @foreach($items as $item)
-                    <li class="rounded-2xl bg-slate-50/80 px-4 py-3.5 sm:px-5 {{ $showDividers ? 'border border-slate-100' : 'border border-transparent' }}">
+                    <li data-lc-el="item" class="rounded-2xl bg-slate-50/80 px-4 py-3.5 sm:px-5 {{ $showDividers ? 'border border-slate-100' : 'border border-transparent' }}">
                         <div class="flex items-start gap-1.5">
                             @if($showMarkers)
-                                <span class="mt-0.5 shrink-0 text-sm font-bold leading-relaxed text-slate-500" aria-hidden="true">
+                                <span data-lc-el="marker" class="mt-0.5 shrink-0 text-sm font-bold leading-relaxed text-slate-500" aria-hidden="true">
                                     {{ $listType === 'ol' ? $loop->iteration . '.' : '•' }}
                                 </span>
                             @endif
-                            <strong class="flex-1 text-sm font-bold leading-relaxed text-slate-800 sm:text-base">
+                            <strong data-lc-el="text" class="flex-1 text-sm font-bold leading-relaxed text-slate-800 sm:text-base">
                                 {{ $item['text'] ?? '' }}
                             </strong>
                         </div>

@@ -29,10 +29,57 @@ export type BlockType =
     | 'ImageCarouselBlock'
     | 'TestimonialBlock';
 
+export type DeviceMode = 'desktop' | 'tablet' | 'mobile';
+
+export type ResponsiveStyleMap = Partial<Record<'tablet' | 'mobile', Partial<BlockStyles>>>;
+
 export interface BlockStyles {
-    color?: string;
-    backgroundColor?: string;
-    background?: string;
+    // ---------------------------------------------------------------------
+    // Layout, sizing and positioning
+    // ---------------------------------------------------------------------
+    display?: string;
+    width?: string;
+    height?: string;
+    minWidth?: string;
+    minHeight?: string;
+    maxWidth?: string;
+    maxHeight?: string;
+    overflow?: string;
+    overflowX?: string;
+    overflowY?: string;
+    position?: 'relative' | 'static' | 'fixed' | 'sticky';
+    top?: string;
+    right?: string;
+    bottom?: string;
+    left?: string;
+    zIndex?: number;
+    boxSizing?: string;
+    aspectRatio?: string;
+    verticalAlign?: string;
+
+    // Flex / grid
+    flexDirection?: string;
+    flexWrap?: string;
+    flexGrow?: string;
+    flexShrink?: string;
+    flexBasis?: string;
+    justifyContent?: string;
+    alignItems?: string;
+    alignContent?: string;
+    alignSelf?: string;
+    justifySelf?: string;
+    gap?: string;
+    rowGap?: string;
+    columnGap?: string;
+    gridColumn?: string;
+    gridRow?: string;
+
+    // Self alignment of the whole block inside its parent
+    selfAlign?: 'left' | 'center' | 'right';
+
+    // ---------------------------------------------------------------------
+    // Spacing
+    // ---------------------------------------------------------------------
     padding?: string;
     paddingTop?: string;
     paddingBottom?: string;
@@ -43,24 +90,77 @@ export interface BlockStyles {
     marginBottom?: string;
     marginLeft?: string;
     marginRight?: string;
-    borderRadius?: string;
+
+    // ---------------------------------------------------------------------
+    // Typography
+    // ---------------------------------------------------------------------
+    color?: string;
+    fontFamily?: string;
     fontSize?: string;
     fontWeight?: string;
+    fontStyle?: string;
     lineHeight?: string;
     letterSpacing?: string;
     textAlign?: 'left' | 'center' | 'right' | 'justify';
-    maxWidth?: string;
-    minHeight?: string;
+    textTransform?: string;
+    textDecoration?: string;
+    textDecorationColor?: string;
+    textUnderlineOffset?: string;
+    textShadow?: string;
+    whiteSpace?: string;
+    wordBreak?: string;
+    overflowWrap?: string;
+    listStyleType?: string;
+
+    // ---------------------------------------------------------------------
+    // Background and effects
+    // ---------------------------------------------------------------------
+    backgroundColor?: string;
+    background?: string;
+    opacity?: string;
+    boxShadow?: string;
+    transform?: string;
+    transformOrigin?: string;
+    transition?: string;
+    filter?: string;
+    backdropFilter?: string;
+    cursor?: string;
+    objectFit?: string;
+    objectPosition?: string;
+
+    // ---------------------------------------------------------------------
+    // Borders
+    // ---------------------------------------------------------------------
+    borderRadius?: string;
     borderColor?: string;
     borderWidth?: string;
     borderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
-    boxShadow?: string;
-    zIndex?: number;
-    position?: 'relative' | 'static' | 'fixed' | 'sticky';
+    borderTopWidth?: string;
+    borderRightWidth?: string;
+    borderBottomWidth?: string;
+    borderLeftWidth?: string;
+    borderTopColor?: string;
+    borderRightColor?: string;
+    borderBottomColor?: string;
+    borderLeftColor?: string;
+
+    // ---------------------------------------------------------------------
+    // Legacy / block-specific shortcuts
+    // ---------------------------------------------------------------------
     buttonBgColor?: string;
     buttonTextColor?: string;
     buttonBorderRadius?: string;
     buttonPulseAnimation?: boolean;
+
+    // ---------------------------------------------------------------------
+    // Responsive overrides and per-inner-element styles.
+    //
+    // Desktop always uses the flat properties above. Tablet/mobile only store
+    // the values the merchant explicitly changed, so untouched properties keep
+    // inheriting from desktop (Elementor-style).
+    // ---------------------------------------------------------------------
+    responsive?: ResponsiveStyleMap;
+    elements?: Record<string, Partial<BlockStyles>>;
 }
 
 export interface HeroBlockProps {
@@ -520,6 +620,7 @@ export interface ImageCarouselBlockProps {
     title?: string;
     images: ImageCarouselItem[];
     desktopItemsPerView?: number;
+    tabletItemsPerView?: number;
     mobileItemsPerView?: number;
     gap?: string;
     aspectRatio?: '1 / 1' | '4 / 3' | '16 / 9' | '3 / 4';

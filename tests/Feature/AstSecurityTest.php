@@ -192,7 +192,7 @@ test('payload containing disallowed CSS property returns HTTP 422', function () 
         'blocks' => [
             validHeroBlock([
                 'styles' => [
-                    'cursor' => 'pointer', // not in allowed styling whitelist
+                    'animation' => 'spin 1s infinite', // not in allowed styling whitelist
                 ],
             ]),
         ],
@@ -204,7 +204,7 @@ test('payload containing disallowed CSS property returns HTTP 422', function () 
     );
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['blocks.0.styles.cursor']);
+        ->assertJsonValidationErrors(['blocks.0.styles.animation']);
 });
 
 test('payload containing position fixed on HeroBlock is rejected with HTTP 422', function () {
@@ -297,6 +297,118 @@ test('payload with CSS expression or import is rejected with HTTP 422', function
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['blocks.0.styles.backgroundColor']);
+});
+
+test('valid responsive and inner element styles pass validation and create a revision', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            validHeroBlock([
+                'styles' => [
+                    'width' => '80%',
+                    'selfAlign' => 'center',
+                    'responsive' => [
+                        'tablet' => ['fontSize' => '36px'],
+                        'mobile' => ['fontSize' => '24px', 'width' => '100%'],
+                    ],
+                    'elements' => [
+                        'title' => [
+                            'color' => '#b91c1c',
+                            'fontSize' => '48px',
+                            'responsive' => [
+                                'mobile' => ['fontSize' => '30px'],
+                            ],
+                        ],
+                        'cta' => [
+                            'backgroundColor' => '#16a34a',
+                            'borderRadius' => '14px',
+                        ],
+                    ],
+                ],
+            ]),
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(201)
+        ->assertJsonPath('success', true);
+});
+
+test('unsafe css inside an inner element style is rejected with an accurate path', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            validHeroBlock([
+                'styles' => [
+                    'elements' => [
+                        'title' => [
+                            'color' => 'url(https://evil.test/payload.css)',
+                        ],
+                    ],
+                ],
+            ]),
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.styles.elements.title.color']);
+});
+
+test('nested element maps inside responsive overrides are rejected', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            validHeroBlock([
+                'styles' => [
+                    'responsive' => [
+                        'mobile' => [
+                            'elements' => [
+                                'title' => ['color' => '#ffffff'],
+                            ],
+                        ],
+                    ],
+                ],
+            ]),
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.styles.responsive.mobile.elements']);
+});
+
+test('invalid self alignment value is rejected with an accurate path', function () {
+    $ast = [
+        'version' => 1,
+        'blocks' => [
+            validHeroBlock([
+                'styles' => [
+                    'selfAlign' => 'absolute',
+                ],
+            ]),
+        ],
+    ];
+
+    $response = $this->actingAs($this->admin)->postJson(
+        "/admin/landing-pages/{$this->landingPage->id}/revisions",
+        ['ast' => $ast]
+    );
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['blocks.0.styles.selfAlign']);
 });
 
 test('valid AST with all 9 approved block types passes validation and creates revision', function () {

@@ -53,17 +53,20 @@ export function BenefitsGridBlock({ props, styles = {} }: BenefitsGridBlockCompo
     const columns = props.columns || 3;
     const gridColsClass =
         columns === 4
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+            ? 'grid-cols-1 @min-[640px]:grid-cols-2 @min-[1024px]:grid-cols-4'
             : columns === 2
-              ? 'grid-cols-1 sm:grid-cols-2'
-              : 'grid-cols-1 md:grid-cols-3';
+              ? 'grid-cols-1 @min-[640px]:grid-cols-2'
+              : 'grid-cols-1 @min-[768px]:grid-cols-3';
 
     return (
         <section style={inlineStyles} className="w-full py-12">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 {props.title && (
                     <div className="text-center mb-10">
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                        <h2
+                            data-lc-el="title"
+                            className="text-2xl @min-[640px]:text-3xl font-extrabold text-gray-900 tracking-tight"
+                        >
                             {props.title}
                         </h2>
                     </div>
@@ -81,15 +84,25 @@ export function BenefitsGridBlock({ props, styles = {} }: BenefitsGridBlockCompo
                         return (
                             <div
                                 key={item.id}
+                                data-lc-el="card"
                                 className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center"
                             >
-                                <div className="p-3.5 bg-primary-50 rounded-2xl mb-4 flex items-center justify-center">
+                                <div
+                                    data-lc-el="icon"
+                                    className="p-3.5 bg-primary-50 rounded-2xl mb-4 flex items-center justify-center"
+                                >
                                     {iconComponent}
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                <h3
+                                    data-lc-el="card-title"
+                                    className="text-lg font-bold text-gray-900 mb-2"
+                                >
                                     {item.title}
                                 </h3>
-                                <p className="text-sm text-gray-600 leading-relaxed">
+                                <p
+                                    data-lc-el="card-text"
+                                    className="text-sm text-gray-600 leading-relaxed"
+                                >
                                     {item.description}
                                 </p>
                             </div>

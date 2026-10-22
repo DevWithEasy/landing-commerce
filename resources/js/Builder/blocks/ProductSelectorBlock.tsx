@@ -112,20 +112,23 @@ export function ProductSelectorBlock({
 
     if (isMultiple) {
         return (
-            <section style={inlineStyles} className="w-full py-8">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <section style={inlineStyles} data-lc-el="section" className="w-full py-8">
+                <div className="max-w-5xl mx-auto px-4 @min-[640px]:px-6">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 mb-2">
                             Featured Products
                         </span>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">
+                        <h2
+                            data-lc-el="title"
+                            className="text-2xl @min-[640px]:text-3xl font-extrabold text-gray-900"
+                        >
                             Select Your Preferred Product
                         </h2>
                     </div>
 
                     {/* Products Grid with Guaranteed Equal Height */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                    <div className="grid grid-cols-1 @min-[640px]:grid-cols-2 @min-[1024px]:grid-cols-3 gap-6 items-stretch">
                         {productIds.map((pid, idx) => {
                             const realProd = availableProducts.find((p) => p.id === pid);
                             const hasVariants = Boolean(realProd?.variants && realProd.variants.length > 1);
@@ -145,6 +148,7 @@ export function ProductSelectorBlock({
                             return (
                                 <div
                                     key={pid}
+                                    data-lc-el="card"
                                     className="group/card relative rounded-2xl border border-gray-200 hover:border-emerald-500 hover:shadow-lg transition-all duration-300 bg-white p-4 flex flex-col justify-between h-full"
                                 >
                                     <div className="flex-1 flex flex-col">
@@ -164,7 +168,10 @@ export function ProductSelectorBlock({
                                         </div>
 
                                         {/* Product Thumbnail with Blur Hover & Eye Quick-View Icon */}
-                                        <div className="relative aspect-square w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden mb-3.5 flex items-center justify-center group/img">
+                                        <div
+                                            data-lc-el="image"
+                                            className="relative aspect-square w-full rounded-xl bg-gray-50 border border-gray-100 overflow-hidden mb-3.5 flex items-center justify-center group/img"
+                                        >
                                             <SafeImage
                                                 src={imgUrl}
                                                 alt={realProd?.title || `Product #${pid}`}
@@ -202,6 +209,7 @@ export function ProductSelectorBlock({
 
                                         {/* Title (Guaranteed consistent height) */}
                                         <h3
+                                            data-lc-el="product-title"
                                             className="text-sm font-bold text-gray-900 mb-1.5 line-clamp-2 min-h-[2.5rem] leading-snug"
                                             title={realProd?.title || `Product Item #${pid}`}
                                         >
@@ -211,7 +219,10 @@ export function ProductSelectorBlock({
                                         {/* Price */}
                                         {props.showPrice !== false && (
                                             <div className="flex items-baseline space-x-2 mb-2">
-                                                <span className="text-base font-extrabold text-emerald-600">
+                                                <span
+                                                    data-lc-el="price"
+                                                    className="text-base font-extrabold text-emerald-600"
+                                                >
                                                     ৳{effPrice.toLocaleString()}
                                                 </span>
                                                 {hasDiscount && (
@@ -224,7 +235,10 @@ export function ProductSelectorBlock({
 
                                         {/* Optional Description */}
                                         {props.showDescription && realProd?.description && (
-                                            <p className="text-xs text-gray-500 line-clamp-2 mb-2 leading-relaxed">
+                                            <p
+                                                data-lc-el="description"
+                                                className="text-xs text-gray-500 line-clamp-2 mb-2 leading-relaxed"
+                                            >
                                                 {realProd.description}
                                             </p>
                                         )}
@@ -239,6 +253,7 @@ export function ProductSelectorBlock({
                                                 handleOrderClick(realProd);
                                             }}
                                             style={buttonCustomStyle}
+                                            data-lc-el="button"
                                             className={`w-full py-2.5 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer ${buttonPulseClass}`}
                                         >
                                             <ShoppingBag className="w-4 h-4" />
@@ -307,7 +322,10 @@ export function ProductSelectorBlock({
                                                         Selected: {activeVar?.name}
                                                     </span>
                                                     <div className="flex items-baseline space-x-2 mt-0.5">
-                                                        <span className="text-base font-extrabold text-emerald-600">
+                                                        <span
+                                                    data-lc-el="price"
+                                                    className="text-base font-extrabold text-emerald-600"
+                                                >
                                                             ৳{effP.toLocaleString()}
                                                         </span>
                                                         {hasDisc && (
@@ -401,7 +419,7 @@ export function ProductSelectorBlock({
                                 const currentMainImg = quickViewSelectedImage || activeVar?.images?.[0]?.url || galleryImages[0];
 
                                 return (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                    <div className="grid grid-cols-1 @min-[768px]:grid-cols-2 gap-6 items-start">
                                         {/* Gallery View */}
                                         <div>
                                             <div className="aspect-square rounded-xl bg-gray-50 border border-gray-200 overflow-hidden flex items-center justify-center mb-3">
@@ -547,12 +565,18 @@ export function ProductSelectorBlock({
     const singleImg = singleFirstVar?.images?.[0]?.url || singleProd?.primaryImage?.url || singleProd?.images?.[0]?.url;
 
     return (
-        <section style={inlineStyles} className="w-full py-8">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                <div className="bg-white rounded-2xl border-2 border-emerald-500 shadow-xl overflow-hidden p-6 sm:p-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-center">
+        <section style={inlineStyles} data-lc-el="section" className="w-full py-8">
+            <div className="max-w-4xl mx-auto px-4 @min-[640px]:px-6">
+                <div
+                    data-lc-el="card"
+                    className="bg-white rounded-2xl border-2 border-emerald-500 shadow-xl overflow-hidden p-6 @min-[640px]:p-8"
+                >
+                    <div className="flex flex-col @min-[768px]:flex-row gap-8 items-center">
                         {/* Product Visual Container with Hover Quick View */}
-                        <div className="w-full md:w-1/2 aspect-square bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center p-4 text-center overflow-hidden relative group/single">
+                        <div
+                            data-lc-el="image"
+                            className="w-full @min-[768px]:w-1/2 aspect-square bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center p-4 text-center overflow-hidden relative group/single"
+                        >
                             <SafeImage
                                 src={singleImg}
                                 alt={singleProd?.title || 'Product'}
@@ -580,25 +604,34 @@ export function ProductSelectorBlock({
                         </div>
 
                         {/* Product Meta */}
-                        <div className="w-full md:w-1/2 space-y-4">
+                        <div className="w-full @min-[768px]:w-1/2 space-y-4">
                             <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-medium">
                                 <Tag className="w-3.5 h-3.5" />
                                 <span>Verified Authentic - In Stock</span>
                             </div>
 
-                            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+                            <h2
+                                data-lc-el="title"
+                                className="text-2xl @min-[640px]:text-3xl font-extrabold text-gray-900 leading-tight"
+                            >
                                 {singleProd?.title || 'Premium Product Selection'}
                             </h2>
 
                             {props.showDescription !== false && (
-                                <p className="text-sm text-gray-600 leading-relaxed">
+                                <p
+                                    data-lc-el="description"
+                                    className="text-sm text-gray-600 leading-relaxed"
+                                >
                                     {singleProd?.description || 'Select your preferred variants and proceed to our fast, 1-step Cash on Delivery checkout.'}
                                 </p>
                             )}
 
                             {props.showPrice !== false && (
                                 <div className="flex items-baseline space-x-3 pt-2">
-                                    <span className="text-3xl font-extrabold text-emerald-600">
+                                    <span
+                                        data-lc-el="price"
+                                        className="text-3xl font-extrabold text-emerald-600"
+                                    >
                                         ৳{singleEff.toLocaleString()}
                                     </span>
                                     <span className="text-lg text-gray-400 line-through">
@@ -631,6 +664,7 @@ export function ProductSelectorBlock({
                                     type="button"
                                     onClick={() => handleOrderClick(singleProd)}
                                     style={buttonCustomStyle}
+                                    data-lc-el="button"
                                     className={`w-full inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all text-center cursor-pointer ${buttonPulseClass}`}
                                 >
                                     <ShoppingBag className="w-4 h-4 mr-2" />

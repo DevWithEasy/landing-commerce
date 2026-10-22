@@ -74,10 +74,10 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
             style={inlineStyles}
             className="w-full relative overflow-hidden transition-all duration-150"
         >
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 <div
                     className={`flex flex-col ${
-                        hasImage ? 'lg:flex-row items-center gap-12' : 'items-center text-center'
+                        hasImage ? '@min-[1024px]:flex-row items-center gap-12' : 'items-center text-center'
                     }`}
                 >
                     {/* Content Column */}
@@ -85,6 +85,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                         {props.badgeText && (
                             <div
                                 style={badgeStyle}
+                                data-lc-el="badge"
                                 className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 shadow-xs ${
                                     !props.badgeBgColor ? 'bg-primary-100 text-primary-800' : ''
                                 }`}
@@ -96,7 +97,8 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
 
                         <h1
                             style={headlineStyle}
-                            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight"
+                            data-lc-el="title"
+                            className="text-3xl @min-[640px]:text-4xl @min-[1024px]:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight"
                         >
                             {props.headline || 'Your Compelling Headline Here'}
                         </h1>
@@ -104,7 +106,8 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                         {props.subheadline && (
                             <p
                                 style={subheadlineStyle}
-                                className="mt-4 text-base sm:text-lg text-gray-600 leading-relaxed max-w-2xl"
+                                data-lc-el="subtitle"
+                                className="mt-4 text-base @min-[640px]:text-lg text-gray-600 leading-relaxed max-w-2xl"
                             >
                                 {props.subheadline}
                             </p>
@@ -115,6 +118,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                                 <button
                                     type="button"
                                     style={buttonCustomStyle}
+                                    data-lc-el="cta"
                                     className={`inline-flex items-center justify-center rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 cursor-pointer ${buttonSizeClasses} ${buttonWidthClass} ${buttonPulseClass}`}
                                 >
                                     <span>{props.ctaText || 'Order Now'}</span>
@@ -124,6 +128,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                                 <a
                                     href={props.ctaTarget || '#cod-checkout'}
                                     style={buttonCustomStyle}
+                                    data-lc-el="cta"
                                     className={`inline-flex items-center justify-center rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-600/25 transition-all transform hover:-translate-y-0.5 ${buttonSizeClasses} ${buttonWidthClass} ${buttonPulseClass}`}
                                 >
                                     <span>{props.ctaText || 'Order Now'}</span>
@@ -135,7 +140,10 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
 
                     {/* Image Column if present */}
                     {hasImage && (
-                        <div className="flex-1 w-full max-w-md lg:max-w-none">
+                        <div
+                            data-lc-el="image"
+                            className="flex-1 w-full max-w-md @min-[1024px]:max-w-none"
+                        >
                             <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white border border-gray-100 aspect-4/3">
                                 <img
                                     src={props.imageUrl}

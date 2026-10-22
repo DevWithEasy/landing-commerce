@@ -27,6 +27,15 @@
     };
 @endphp
 
-<{{ $tag }} id="{{ $id }}" {!! $styleAttribute !!} style="{{ $customStyle }}" class="lc-heading font-bold tracking-tight {{ $alignClasses }} break-words">
+@php
+    $baseStyle = '';
+    if (preg_match('/style="([^"]*)"/', $styleAttribute, $styleMatch)) {
+        $baseStyle = $styleMatch[1];
+    }
+    $mergedStyle = trim($customStyle.' '.$baseStyle);
+    $finalStyleAttribute = $mergedStyle !== '' ? 'style="'.$mergedStyle.'"' : '';
+@endphp
+
+<{{ $tag }} id="{{ $id }}" {!! $finalStyleAttribute !!} data-lc-el="title" class="lc-block-root lc-heading font-bold tracking-tight {{ $alignClasses }} break-words">
     {{ $text }}
 </{{ $tag }}>

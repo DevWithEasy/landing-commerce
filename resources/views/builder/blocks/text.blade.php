@@ -24,6 +24,15 @@
     };
 @endphp
 
-<div id="{{ $id }}" {!! $styleAttribute !!} style="{{ $customStyle }}" class="lc-text text-base leading-relaxed {{ $alignClasses }} break-words">
+@php
+    $baseStyle = '';
+    if (preg_match('/style="([^"]*)"/', $styleAttribute, $styleMatch)) {
+        $baseStyle = $styleMatch[1];
+    }
+    $mergedStyle = trim($customStyle.' '.$baseStyle);
+    $finalStyleAttribute = $mergedStyle !== '' ? 'style="'.$mergedStyle.'"' : '';
+@endphp
+
+<div id="{{ $id }}" {!! $finalStyleAttribute !!} data-lc-el="text" class="lc-block-root lc-text text-base leading-relaxed {{ $alignClasses }} break-words">
     {!! nl2br(e($content)) !!}
 </div>

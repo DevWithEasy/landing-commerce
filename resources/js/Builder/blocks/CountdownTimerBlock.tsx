@@ -81,25 +81,31 @@ export function CountdownTimerBlock({ props, styles = {} }: CountdownTimerBlockC
             style={inlineStyles}
             className="w-full py-8 text-rose-900 border-y border-rose-200"
         >
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+            <div className="max-w-4xl mx-auto px-4 @min-[640px]:px-6 text-center">
                 {timeLeft.isExpired ? (
                     <div className="font-bold text-lg">
                         {props.expiryMessage || 'This limited time promotion has concluded.'}
                     </div>
                 ) : (
                     <div>
-                        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-rose-200/80 text-rose-800 text-xs font-bold uppercase tracking-wider mb-3">
+                        <div
+                            data-lc-el="headline"
+                            className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-rose-200/80 text-rose-800 text-xs font-bold uppercase tracking-wider mb-3"
+                        >
                             <Flame className="w-4 h-4 text-rose-600 animate-pulse" />
                             <span>{props.headline || 'Urgent Limited Deal'}</span>
                         </div>
 
                         {props.urgencyText && (
-                            <p className="text-sm font-semibold mb-4 text-rose-800">
+                            <p
+                                data-lc-el="urgency"
+                                className="text-sm font-semibold mb-4 text-rose-800"
+                            >
                                 {props.urgencyText}
                             </p>
                         )}
 
-                        <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+                        <div className="flex items-center justify-center space-x-2 @min-[640px]:space-x-4">
                             <TimeBox label="Days" value={timeLeft.days} />
                             <span className="text-2xl font-bold text-rose-400">:</span>
                             <TimeBox label="Hours" value={timeLeft.hours} />
@@ -118,10 +124,16 @@ export function CountdownTimerBlock({ props, styles = {} }: CountdownTimerBlockC
 function TimeBox({ label, value }: { label: string; value: number }) {
     return (
         <div className="flex flex-col items-center">
-            <div className="w-14 sm:w-16 h-14 sm:h-16 bg-white rounded-xl shadow-md border border-rose-200 flex items-center justify-center font-extrabold text-2xl sm:text-3xl text-rose-600 font-mono">
+            <div
+                data-lc-el="timebox"
+                className="w-14 @min-[640px]:w-16 h-14 @min-[640px]:h-16 bg-white rounded-xl shadow-md border border-rose-200 flex items-center justify-center font-extrabold text-2xl @min-[640px]:text-3xl text-rose-600 font-mono"
+            >
                 {String(value).padStart(2, '0')}
             </div>
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-rose-700 mt-1.5">
+            <span
+                data-lc-el="timer-label"
+                className="text-[10px] @min-[640px]:text-xs font-bold uppercase tracking-wider text-rose-700 mt-1.5"
+            >
                 {label}
             </span>
         </div>

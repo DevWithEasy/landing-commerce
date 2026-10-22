@@ -2,12 +2,19 @@ import { useDndMonitor, useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Box, ChevronDown, ChevronUp, GripVertical, Layers, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { ContainerBlock } from '../blocks/ContainerBlock';
 import { GridBlock } from '../blocks/GridBlock';
 import { renderAstBlock } from '../blocks';
 import { useBuilderStore } from '../stores/useBuilderStore';
+import {
+    DEVICE_DESIGN_WIDTHS,
+    buildElementStyleCss,
+    getBlockScopeClass,
+    getBlockWrapperStyle,
+    resolveBlocksForViewport,
+} from '../styleSystem';
 import type {
     Block,
     BlockDefinition,
@@ -28,6 +35,10 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
         id: 'canvas_end_drop',
     });
     const [isDragging, setIsDragging] = useState(false);
+    const [availableWidth, setAvailableWidth] = useState(0);
+    const [surfaceHeight, setSurfaceHeight] = useState(0);
+    const viewportMeasureRef = useRef<HTMLDivElement>(null);
+    const surfaceRef = useRef<HTMLDivElement>(null);
 
     useDndMonitor({
         onDragStart: () => setIsDragging(true),
@@ -35,20 +46,71 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
         onDragCancel: () => setIsDragging(false),
     });
 
-    const blocks = ast.blocks || [];
+    useEffect(() => {
+        const element = viewportMeasureRef.current;
+
+        if (!element || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        const observer = new ResizeObserver((entries) => {
+            const width = entries[0]?.contentRect.width ?? 0;
+            setAvailableWidth(width);
+        });
+
+        observer.observe(element);
+        setAvailableWidth(element.clientWidth);
+
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        const element = surfaceRef.current;
+
+        if (!element || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        const syncHeight = () => setSurfaceHeight(element.offsetHeight);
+        const observer = new ResizeObserver(syncHeight);
+
+        observer.observe(element);
+        syncHeight();
+
+        return () => observer.disconnect();
+    }, [viewport]);
+
+    const blocks = useMemo(
+        () => resolveBlocksForViewport(ast.blocks || [], viewport),
+        [ast.blocks, viewport]
+    );
     const settings = ast.settings || {};
     const pageFontFamily = settings.fontFamily || "'Inter', sans-serif";
     const pageBgColor = settings.backgroundColor || '#ffffff';
 
+    const designWidth = DEVICE_DESIGN_WIDTHS[viewport];
+    const scale =
+        availableWidth > 0 ? Math.min(1, Math.max(0.2, availableWidth / designWidth)) : 1;
+    const scaledHeight = surfaceHeight > 0 ? surfaceHeight * scale : 0;
+
     const viewportClasses = {
-        desktop: 'w-full max-w-full my-0 shadow-xs border border-gray-200/60',
-        tablet: 'w-full max-w-[768px] mx-auto my-6 rounded-2xl shadow-2xl border-4 border-slate-700',
-        mobile: 'w-full max-w-[390px] mx-auto my-6 rounded-3xl shadow-2xl border-8 border-slate-800',
+        desktop: 'shadow-xs border border-gray-200/60',
+        tablet: 'rounded-2xl shadow-2xl border-4 border-slate-700',
+        mobile: 'rounded-3xl shadow-2xl border-8 border-slate-800',
     }[viewport];
 
     const canvasStyle: CSSProperties = {
         fontFamily: pageFontFamily,
         backgroundColor: pageBgColor,
+        containerType: 'inline-size',
+        width: `${designWidth}px`,
+        position: 'absolute',
+        top: 0,
+        left: '50%',
+        marginLeft: `-${designWidth / 2}px`,
+        transform: `scale(${scale})`,
+        transformOrigin: 'top center',
+        minHeight: viewport === 'desktop' ? 'calc(100vh - 8rem)' : undefined,
     };
 
     return (
@@ -57,75 +119,95 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
             onClick={() => setSelectedBlockId(null)}
         >
             <div
-                style={canvasStyle}
-                className={`min-h-[calc(100vh-8rem)] transition-all duration-300 relative ${viewportClasses}`}
-                onClick={(e) => e.stopPropagation()}
+                ref={viewportMeasureRef}
+                className="relative w-full"
+                style={{
+                    height: scaledHeight > 0 ? `${scaledHeight}px` : undefined,
+                    minHeight: scaledHeight > 0 ? undefined : 'calc(100vh - 8rem)',
+                }}
             >
-                {blocks.length === 0 ? (
-                    <div
-                        ref={setEndDropRef}
-                        className={`flex min-h-[400px] flex-col items-center justify-center p-8 text-center transition-colors ${
-                            isEndDropOver
-                                ? 'bg-primary-50/60 text-primary-700 ring-2 ring-inset ring-primary-400'
-                                : 'text-gray-400'
-                        }`}
-                    >
-                        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                            <Layers className="w-8 h-8 text-gray-400" />
+                <div
+                    ref={surfaceRef}
+                    style={canvasStyle}
+                    className={`transition-transform duration-200 relative ${viewportClasses}`}
+                    onClick={(e) => e.stopPropagation()}
+                    data-lc-device={viewport}
+                    data-lc-scale={scale.toFixed(3)}
+                >
+                    {blocks.length === 0 ? (
+                        <div
+                            ref={setEndDropRef}
+                            className={`flex min-h-[400px] flex-col items-center justify-center p-8 text-center transition-colors ${
+                                isEndDropOver
+                                    ? 'bg-primary-50/60 text-primary-700 ring-2 ring-inset ring-primary-400'
+                                    : 'text-gray-400'
+                            }`}
+                        >
+                            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                                <Layers className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="font-bold text-gray-700 text-base">
+                                Your canvas is empty
+                            </h3>
+                            <p className="text-xs text-gray-500 max-w-sm mt-1">
+                                Drag a section or container from the block palette on the left, or
+                                click one to insert it here.
+                            </p>
                         </div>
-                        <h3 className="font-bold text-gray-700 text-base">Your canvas is empty</h3>
-                        <p className="text-xs text-gray-500 max-w-sm mt-1">
-                            Drag a section or container from the block palette on the left, or click
-                            one to insert it here.
-                        </p>
-                    </div>
-                ) : (
-                    <SortableContext
-                        items={blocks.map((b) => b.id)}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        <div className="divide-y divide-gray-100">
-                            {blocks.map((block, index) => (
-                                <SortableBlockWrapper
-                                    key={block.id}
-                                    block={block}
-                                    parentId={null}
-                                    index={index}
-                                    totalBlocks={blocks.length}
-                                    depth={0}
-                                    isSelected={selectedBlockId === block.id}
-                                    selectedBlockId={selectedBlockId}
-                                    blockDefinitions={blockDefinitions}
-                                    onSelect={(id) => setSelectedBlockId(id)}
-                                    onRemove={(id) => removeBlock(id)}
-                                    onMoveUp={(idx, pId) =>
-                                        idx > 0 && reorderBlocks(idx, idx - 1, pId)
-                                    }
-                                    onMoveDown={(idx, total, pId) =>
-                                        idx < total - 1 && reorderBlocks(idx, idx + 1, pId)
-                                    }
-                                    onAddBlockToContainer={onAddBlockToContainer}
-                                />
-                            ))}
-                        </div>
-                    </SortableContext>
-                )}
+                    ) : (
+                        <SortableContext
+                            items={blocks.map((b) => b.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="divide-y divide-gray-100">
+                                {blocks.map((block, index) => (
+                                    <SortableBlockWrapper
+                                        key={block.id}
+                                        block={block}
+                                        parentId={null}
+                                        index={index}
+                                        totalBlocks={blocks.length}
+                                        depth={0}
+                                        viewport={viewport}
+                                        isSelected={selectedBlockId === block.id}
+                                        selectedBlockId={selectedBlockId}
+                                        blockDefinitions={blockDefinitions}
+                                        onSelect={(id) => setSelectedBlockId(id)}
+                                        onRemove={(id) => removeBlock(id)}
+                                        onMoveUp={(idx, pId) =>
+                                            idx > 0 && reorderBlocks(idx, idx - 1, pId)
+                                        }
+                                        onMoveDown={(idx, total, pId) =>
+                                            idx < total - 1 && reorderBlocks(idx, idx + 1, pId)
+                                        }
+                                        onAddBlockToContainer={onAddBlockToContainer}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    )}
 
-                {blocks.length > 0 && (
-                    <div
-                        ref={setEndDropRef}
-                        className={`mx-3 my-2 flex items-center justify-center rounded-xl border-2 border-dashed text-[11px] font-bold transition-all ${
-                            isEndDropOver
-                                ? 'min-h-[52px] border-primary-600 bg-primary-50 text-primary-800'
-                                : isDragging
-                                  ? 'min-h-[44px] border-primary-300 bg-primary-50/40 text-primary-600'
-                                  : 'min-h-[16px] border-transparent text-transparent'
-                        }`}
-                    >
-                        Drop here to add the block at the end of the page
-                    </div>
-                )}
+                    {blocks.length > 0 && (
+                        <div
+                            ref={setEndDropRef}
+                            className={`mx-3 my-2 flex items-center justify-center rounded-xl border-2 border-dashed text-[11px] font-bold transition-all ${
+                                isEndDropOver
+                                    ? 'min-h-[52px] border-primary-600 bg-primary-50 text-primary-800'
+                                    : isDragging
+                                      ? 'min-h-[44px] border-primary-300 bg-primary-50/40 text-primary-600'
+                                      : 'min-h-[16px] border-transparent text-transparent'
+                            }`}
+                        >
+                            Drop here to add the block at the end of the page
+                        </div>
+                    )}
+                </div>
             </div>
+            {scale < 1 && (
+                <div className="pointer-events-none sticky bottom-3 z-30 mx-auto mt-3 w-fit rounded-full border border-gray-300 bg-white/95 px-3 py-1 text-[10px] font-bold text-gray-500 shadow-md">
+                    {Math.round(scale * 100)}% preview scale · {designWidth}px canvas
+                </div>
+            )}
         </main>
     );
 }
@@ -136,6 +218,7 @@ interface SortableBlockWrapperProps {
     index: number;
     totalBlocks: number;
     depth?: number;
+    viewport: import('@/types/builder').ViewportMode;
     isSelected: boolean;
     selectedBlockId: string | null;
     blockDefinitions: Record<BlockType, BlockDefinition>;
@@ -152,6 +235,7 @@ function SortableBlockWrapper({
     index,
     totalBlocks,
     depth = 0,
+    viewport,
     isSelected,
     selectedBlockId,
     blockDefinitions,
@@ -169,11 +253,14 @@ function SortableBlockWrapper({
     const isContainer = block.type === 'ContainerBlock' || block.type === 'GridBlock';
     const children = block.children || [];
     const blockDefinition = blockDefinitions[block.type];
+    const scopeClass = getBlockScopeClass(block.id);
+    const elementStyleCss = buildElementStyleCss(block.id, block.styles, viewport);
 
     const style: CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.35 : 1,
+        ...getBlockWrapperStyle(block.styles),
     };
 
     const handleActionClick = (e: MouseEvent, action: () => void) => {
@@ -185,6 +272,8 @@ function SortableBlockWrapper({
         <div
             ref={setNodeRef}
             style={style}
+            data-lc-block-scope={scopeClass}
+            data-lc-block-id={block.id}
             onClick={(e) => {
                 e.stopPropagation();
                 onSelect(block.id);
@@ -195,6 +284,7 @@ function SortableBlockWrapper({
                     : 'hover:ring-1 hover:ring-primary-300'
             } ${isContainer ? 'p-1.5 rounded-xl border border-dashed border-gray-200 hover:border-primary-400' : ''}`}
         >
+            {elementStyleCss && <style>{elementStyleCss}</style>}
             {/* Quick Action Floating Toolbar for Selected Block */}
             {isSelected && (
                 <div
@@ -272,6 +362,7 @@ function SortableBlockWrapper({
                     childrenBlocks={children}
                     selectedBlockId={selectedBlockId}
                     depth={depth}
+                    viewport={viewport}
                     blockDefinitions={blockDefinitions}
                     onSelect={onSelect}
                     onRemove={onRemove}
@@ -291,6 +382,7 @@ interface ContainerWrapperProps {
     childrenBlocks: Block[];
     selectedBlockId: string | null;
     depth: number;
+    viewport: import('@/types/builder').ViewportMode;
     blockDefinitions: Record<BlockType, BlockDefinition>;
     onSelect: (id: string) => void;
     onRemove: (id: string) => void;
@@ -304,6 +396,7 @@ function ContainerWrapper({
     childrenBlocks,
     selectedBlockId,
     depth,
+    viewport,
     blockDefinitions,
     onSelect,
     onRemove,
@@ -327,6 +420,7 @@ function ContainerWrapper({
             index={childIdx}
             totalBlocks={childrenBlocks.length}
             depth={depth + 1}
+            viewport={viewport}
             isSelected={selectedBlockId === child.id}
             selectedBlockId={selectedBlockId}
             blockDefinitions={blockDefinitions}

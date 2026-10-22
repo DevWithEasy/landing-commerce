@@ -17,7 +17,7 @@
     if ($buttonText) $btnCustomStyle .= 'color: ' . e($buttonText) . ';';
 @endphp
 
-<section {!! $styleAttribute !!} class="w-full py-12 bg-white border-b border-gray-100" id="product-selection-section" data-selection-mode="{{ $mode }}">
+<section {!! $styleAttribute !!} data-lc-el="section" class="lc-block-root w-full py-12 bg-white border-b border-gray-100" id="product-selection-section" data-selection-mode="{{ $mode }}">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
         @if($hasMultiple)
             {{-- Multi-Product Selector Mode --}}
@@ -25,7 +25,7 @@
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-primary-50 text-primary-700 mb-2">
                     Featured Collection
                 </span>
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900">
+                <h2 data-lc-el="title" class="text-2xl sm:text-3xl font-extrabold text-gray-900">
                     Select Your Preferred Product
                 </h2>
                 <p class="text-sm text-gray-500 mt-1 max-w-xl mx-auto">
@@ -96,7 +96,7 @@
                     @endphp
 
                     {{-- Traditional E-commerce Product Card (No Radio/Checkbox, Equal Height) --}}
-                    <div class="product-selection-card group/card relative flex flex-col justify-between rounded-2xl border border-gray-200 transition-all p-4 bg-white shadow-xs hover:shadow-lg hover:border-primary-500 h-full"
+                    <div data-lc-el="card" class="product-selection-card group/card relative flex flex-col justify-between rounded-2xl border border-gray-200 transition-all p-4 bg-white shadow-xs hover:shadow-lg hover:border-primary-500 h-full"
                         data-product-id="{{ $item->id }}"
                         data-variant-id="{{ $firstVariantId }}"
                         data-price="{{ $itemEffectivePrice }}"
@@ -126,7 +126,7 @@
                             </div>
 
                             {{-- Product Image Thumbnail with Hover Blur & Quick View Eye Icon --}}
-                            <div class="relative aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-3 flex items-center justify-center group/img">
+                            <div data-lc-el="image" class="relative aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-100 mb-3 flex items-center justify-center group/img">
                                 @if($imgUrl)
                                     <img src="{{ e($imgUrl) }}" alt="{{ e($item->title) }}" class="selector-card-img w-full h-full object-cover transition duration-500 group-hover/img:scale-105" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');" />
                                     <div class="text-gray-400 text-xs flex flex-col items-center justify-center p-2 hidden">
@@ -158,13 +158,13 @@
 
                             {{-- Title & Pricing --}}
                             <div>
-                                <h3 class="text-sm font-bold text-gray-900 line-clamp-2 min-h-[2.5rem] mb-1.5 leading-snug" title="{{ e($item->title) }}">
+                                <h3 data-lc-el="product-title" class="text-sm font-bold text-gray-900 line-clamp-2 min-h-[2.5rem] mb-1.5 leading-snug" title="{{ e($item->title) }}">
                                     {{ $item->title }}
                                 </h3>
 
                                 @if($showPrice)
                                     <div class="flex items-baseline space-x-2 mb-2">
-                                        <span class="selector-card-price text-base font-extrabold text-primary-600">
+                                        <span data-lc-el="price" class="selector-card-price text-base font-extrabold text-primary-600">
                                             ৳{{ number_format($itemEffectivePrice, 0) }}
                                         </span>
                                         @if($hasDiscount)
@@ -176,7 +176,7 @@
                                 @endif
 
                                 @if($showDescription && $item->description)
-                                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-2">
+                                    <p data-lc-el="description" class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-2">
                                         {{ $item->description }}
                                     </p>
                                 @endif
@@ -187,6 +187,7 @@
                         <div class="mt-auto pt-3 border-t border-gray-100">
                             <button type="button"
                                 style="{{ $btnCustomStyle }}"
+                                data-lc-el="button"
                                 class="card-order-btn w-full py-2.5 px-4 text-xs font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer {{ $buttonPulse ? 'animate-pulse' : '' }}"
                                 data-product-id="{{ $item->id }}"
                                 data-has-variants="{{ $hasVariants ? '1' : '0' }}">
@@ -254,13 +255,13 @@
                     })->values()->all(),
                 ];
             @endphp
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-6 sm:p-8" id="single-product-showcase" data-product-id="{{ $product->id }}" data-variant-id="{{ $firstVarId }}" data-price="{{ $effPrice }}" data-title="{{ e($product->title) }}">
+            <div data-lc-el="card" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-6 sm:p-8" id="single-product-showcase" data-product-id="{{ $product->id }}" data-variant-id="{{ $firstVarId }}" data-price="{{ $effPrice }}" data-title="{{ e($product->title) }}">
                 <script type="application/json" class="product-json-data">
                     {!! json_encode($singleJsonData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
                 </script>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     <div>
-                        <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100 flex items-center justify-center relative group/single">
+                        <div data-lc-el="image" class="aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-100 flex items-center justify-center relative group/single">
                             @if($singleImg)
                                 <img src="{{ e($singleImg) }}" alt="{{ e($product->title) }}" id="single-product-main-img" class="w-full h-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');" />
                                 <div class="text-gray-400 text-xs flex flex-col items-center justify-center p-4 hidden">
@@ -297,13 +298,13 @@
                             @endif
                         </div>
 
-                        <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
+                        <h2 data-lc-el="title" class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
                             {{ $product->title }}
                         </h2>
 
                         @if($showPrice)
                             <div class="flex items-baseline space-x-3 mb-4">
-                                <span id="single-product-price" class="text-3xl font-black text-primary-600">
+                                <span id="single-product-price" data-lc-el="price" class="text-3xl font-black text-primary-600">
                                     ৳{{ number_format($effPrice, 0) }}
                                 </span>
                                 @if($hasDisc)
@@ -315,7 +316,7 @@
                         @endif
 
                         @if($showDescription && $product->description)
-                            <p class="text-sm text-gray-600 leading-relaxed mb-6">
+                            <p data-lc-el="description" class="text-sm text-gray-600 leading-relaxed mb-6">
                                 {{ $product->description }}
                             </p>
                         @endif
@@ -345,6 +346,7 @@
                         <button type="button"
                             id="single-product-order-btn"
                             style="{{ $btnCustomStyle }}"
+                            data-lc-el="button"
                             class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 text-base font-bold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-md shadow-primary-600/20 transition cursor-pointer {{ $buttonPulse ? 'animate-pulse' : '' }}">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                             <span>{{ $orderButtonText }}</span>

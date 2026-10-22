@@ -34,6 +34,12 @@ import {
     ToggleControl,
 } from './controls';
 import { findBlockInTree, useBuilderStore } from '../stores/useBuilderStore';
+import {
+    BLOCK_ELEMENT_STYLE_OPTIONS,
+    DEVICE_LABELS,
+    resolveBlockStyles,
+    resolveElementStyles,
+} from '../styleSystem';
 import type {
     AccordionBlockProps,
     AccordionItem,
@@ -66,8 +72,25 @@ import type {
     TestimonialItem,
     TextBlockProps,
     VideoBlockProps,
+    ViewportMode,
 } from '@/types';
 import { createTestimonialItem, resolveTestimonialItems } from '../blocks/testimonialItems';
+
+function applyStylePatch(
+    target: Partial<BlockStyles>,
+    updates: Partial<BlockStyles>
+): void {
+    const writable = target as Record<string, unknown>;
+
+    Object.entries(updates).forEach(([key, value]) => {
+        if (value === '' || value === null || value === undefined) {
+            delete writable[key];
+            return;
+        }
+
+        writable[key] = value;
+    });
+}
 
 export interface InspectorProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
@@ -82,8 +105,14 @@ export interface InspectorProps {
 }
 
 export function Inspector({ blockDefinitions, products, width }: InspectorProps) {
-    const { ast, selectedBlockId, setSelectedBlockId, updateBlockProps, updateBlockStyles } =
-        useBuilderStore();
+    const {
+        ast,
+        viewport,
+        selectedBlockId,
+        setSelectedBlockId,
+        updateBlockProps,
+        setBlockStyles,
+    } = useBuilderStore();
 
     const [activeTab, setActiveTab] = useState<'content' | 'styles'>('content');
     const [showPageSettings, setShowPageSettings] = useState(false);
@@ -101,18 +130,108 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
     }
 
     const def = blockDefinitions[selectedBlock.type];
-    const styles = selectedBlock.styles || {};
+    const rawStyles = selectedBlock.styles || {};
+    const styles = resolveBlockStyles(rawStyles, viewport);
 
     const handlePropChange = (key: string, value: unknown) => {
         updateBlockProps(selectedBlock.id, { [key]: value });
     };
 
+    const writeStylePatch = (updates: Partial<BlockStyles>, element?: string) => {
+        if (element) {
+            const baseElement = rawStyles.elements?.[element] || {};
+            const nextElement: Partial<BlockStyles> = { ...baseElement };
+
+            if (viewport === 'desktop') {
+                applyStylePatch(nextElement, updates);
+            } else {
+                const currentOverride = baseElement.responsive?.[viewport] ?? {};
+                const nextOverride: Partial<BlockStyles> = { ...currentOverride };
+                applyStylePatch(nextOverride, updates);
+
+                const nextResponsive = { ...(baseElement.responsive || {}) };
+
+                if (Object.keys(nextOverride).length > 0) {
+                    nextResponsive[viewport] = nextOverride;
+                } else {
+                    delete nextResponsive[viewport];
+                }
+
+                nextElement.responsive = nextResponsive;
+            }
+
+            const nextElements = { ...(rawStyles.elements || {}) };
+
+            if (Object.keys(nextElement).length > 0) {
+                nextElements[element] = nextElement;
+            } else {
+                delete nextElements[element];
+            }
+
+            setBlockStyles(selectedBlock.id, {
+                ...rawStyles,
+                elements: nextElements,
+            });
+            return;
+        }
+
+        if (viewport === 'desktop') {
+            const nextStyles: BlockStyles = { ...rawStyles };
+            applyStylePatch(nextStyles, updates);
+            setBlockStyles(selectedBlock.id, nextStyles);
+            return;
+        }
+
+        const currentOverride = rawStyles.responsive?.[viewport] ?? {};
+        const nextOverride: Partial<BlockStyles> = { ...currentOverride };
+        applyStylePatch(nextOverride, updates);
+
+        const nextResponsive = { ...(rawStyles.responsive || {}) };
+
+        if (Object.keys(nextOverride).length > 0) {
+            nextResponsive[viewport] = nextOverride;
+        } else {
+            delete nextResponsive[viewport];
+        }
+
+        setBlockStyles(selectedBlock.id, {
+            ...rawStyles,
+            responsive: nextResponsive,
+        });
+    };
+
     const handleStyleChange = (key: keyof BlockStyles, value: BlockStyles[keyof BlockStyles]) => {
-        updateBlockStyles(selectedBlock.id, { [key]: value } as Partial<BlockStyles>);
+        writeStylePatch({ [key]: value } as Partial<BlockStyles>);
     };
 
     const handleBatchStyleChange = (updates: Partial<BlockStyles>) => {
-        updateBlockStyles(selectedBlock.id, updates);
+        writeStylePatch(updates);
+    };
+
+    const handleElementStyleChange = (
+        element: string,
+        key: keyof BlockStyles,
+        value: BlockStyles[keyof BlockStyles]
+    ) => {
+        writeStylePatch({ [key]: value } as Partial<BlockStyles>, element);
+    };
+
+    const handleElementBatchStyleChange = (element: string, updates: Partial<BlockStyles>) => {
+        writeStylePatch(updates, element);
+    };
+
+    const resetActiveDevice = () => {
+        if (viewport === 'desktop') {
+            return;
+        }
+
+        const nextResponsive = { ...(rawStyles.responsive || {}) };
+        delete nextResponsive[viewport];
+
+        setBlockStyles(selectedBlock.id, {
+            ...rawStyles,
+            responsive: nextResponsive,
+        });
     };
 
     return (
@@ -191,10 +310,33 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
                     <BlockPropsForm
                         block={selectedBlock}
                         products={products}
+                        viewport={viewport}
                         onChange={handlePropChange}
                     />
                 ) : (
                     <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2 rounded-lg border border-indigo-200 bg-indigo-50/70 px-2.5 py-2">
+                            <div className="min-w-0">
+                                <span className="block text-[10.5px] font-bold text-indigo-900">
+                                    Editing {DEVICE_LABELS[viewport]} styles
+                                </span>
+                                <span className="block truncate text-[9px] text-indigo-600">
+                                    {viewport === 'desktop'
+                                        ? 'Desktop is the base style inherited by every device.'
+                                        : `Only ${DEVICE_LABELS[viewport].toLowerCase()} overrides are saved. Empty fields inherit desktop.`}
+                                </span>
+                            </div>
+                            {viewport !== 'desktop' && (
+                                <button
+                                    type="button"
+                                    onClick={resetActiveDevice}
+                                    className="shrink-0 rounded-md border border-indigo-200 bg-white px-2 py-1 text-[9.5px] font-bold text-indigo-700 transition hover:bg-indigo-100"
+                                    title="Remove all tablet/mobile overrides for this block"
+                                >
+                                    Reset device
+                                </button>
+                            )}
+                        </div>
                         {selectedBlock.type === 'CodCheckoutBlock' && (
                             <CodCheckoutDesignSettings
                                 mode="styles"
@@ -207,6 +349,14 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
                             onChange={handleStyleChange}
                             onBatchChange={handleBatchStyleChange}
                         />
+                        <ElementStylesPanel
+                            key={`${selectedBlock.id}-${selectedBlock.type}`}
+                            blockType={selectedBlock.type}
+                            styles={rawStyles}
+                            viewport={viewport}
+                            onChange={handleElementStyleChange}
+                            onBatchChange={handleElementBatchStyleChange}
+                        />
                     </div>
                 )}
             </div>
@@ -217,10 +367,11 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
 interface BlockPropsFormProps {
     block: Block;
     products: Array<{ id: number; title: string }>;
+    viewport: ViewportMode;
     onChange: (key: string, value: unknown) => void;
 }
 
-function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
+function BlockPropsForm({ block, products, viewport, onChange }: BlockPropsFormProps) {
     const props = block.props as Record<string, unknown>;
 
     switch (block.type) {
@@ -2300,6 +2451,18 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
         case 'ImageCarouselBlock': {
             const p = props as unknown as ImageCarouselBlockProps;
             const images = p.images || [];
+            const activeItemsKey =
+                viewport === 'mobile'
+                    ? 'mobileItemsPerView'
+                    : viewport === 'tablet'
+                      ? 'tabletItemsPerView'
+                      : 'desktopItemsPerView';
+            const activeItemsValue =
+                viewport === 'mobile'
+                    ? (p.mobileItemsPerView ?? 1)
+                    : viewport === 'tablet'
+                      ? (p.tabletItemsPerView ?? p.desktopItemsPerView ?? 3)
+                      : (p.desktopItemsPerView ?? 3);
 
             const handleUpdateImage = (
                 index: number,
@@ -2344,43 +2507,25 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                                Desktop Items
-                            </label>
-                            <select
-                                value={p.desktopItemsPerView ?? 3}
-                                onChange={(e) =>
-                                    onChange('desktopItemsPerView', Number(e.target.value))
-                                }
-                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
-                            >
-                                {[1, 2, 3, 4, 5, 6].map((count) => (
-                                    <option key={count} value={count}>
-                                        {count} per row
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                                Mobile Items
-                            </label>
-                            <select
-                                value={p.mobileItemsPerView ?? 1}
-                                onChange={(e) =>
-                                    onChange('mobileItemsPerView', Number(e.target.value))
-                                }
-                                className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
-                            >
-                                {[1, 2, 3, 4].map((count) => (
-                                    <option key={count} value={count}>
-                                        {count} per row
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">
+                            Items Per View ({DEVICE_LABELS[viewport]})
+                        </label>
+                        <select
+                            value={activeItemsValue}
+                            onChange={(e) => onChange(activeItemsKey, Number(e.target.value))}
+                            className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
+                        >
+                            {[1, 2, 3, 4, 5, 6].map((count) => (
+                                <option key={count} value={count}>
+                                    {count} per row
+                                </option>
+                            ))}
+                        </select>
+                        <p className="mt-1 text-[10px] text-gray-400">
+                            One control switches with the active device. Inactive devices keep
+                            their own saved value.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
@@ -2565,48 +2710,32 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                 { label: 'Center', value: 'center' },
                 { label: 'End', value: 'end' },
             ];
+            const activeColumnsKey =
+                viewport === 'mobile'
+                    ? 'mobileColumns'
+                    : viewport === 'tablet'
+                      ? 'tabletColumns'
+                      : 'columns';
+            const activeColumnsValue =
+                viewport === 'mobile'
+                    ? (p.mobileColumns ?? 1)
+                    : viewport === 'tablet'
+                      ? (p.tabletColumns ?? Math.min(p.columns ?? 3, 2))
+                      : (p.columns ?? 3);
 
             return (
                 <div className="space-y-2">
                     <ControlSection title="Grid Layout" icon={LayoutGrid} defaultOpen>
                         <div className="grid grid-cols-2 gap-1.5">
                             <NumberUnitControl
-                                label="Desktop Columns"
-                                value={String(p.columns ?? 3)}
+                                label={`Columns (${DEVICE_LABELS[viewport]})`}
+                                value={String(activeColumnsValue)}
                                 unit={null}
                                 min={1}
                                 max={6}
                                 step={1}
                                 onChange={(value) =>
-                                    onChange('columns', numberValue(value, p.columns ?? 3))
-                                }
-                            />
-                            <NumberUnitControl
-                                label="Tablet Columns"
-                                value={String(p.tabletColumns ?? 2)}
-                                unit={null}
-                                min={1}
-                                max={6}
-                                step={1}
-                                onChange={(value) =>
-                                    onChange(
-                                        'tabletColumns',
-                                        numberValue(value, p.tabletColumns ?? 2)
-                                    )
-                                }
-                            />
-                            <NumberUnitControl
-                                label="Mobile Columns"
-                                value={String(p.mobileColumns ?? 1)}
-                                unit={null}
-                                min={1}
-                                max={6}
-                                step={1}
-                                onChange={(value) =>
-                                    onChange(
-                                        'mobileColumns',
-                                        numberValue(value, p.mobileColumns ?? 1)
-                                    )
+                                    onChange(activeColumnsKey, numberValue(value, activeColumnsValue))
                                 }
                             />
                             <div />
@@ -3155,7 +3284,82 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
             >
                 <div>
                     <span className="mb-1 block text-[10px] font-semibold text-gray-600">
-                        Section Width
+                        Block Width
+                    </span>
+                    <div className="grid grid-cols-4 gap-1">
+                        {[
+                            { label: 'Full', val: '100%' },
+                            { label: '3/4', val: '75%' },
+                            { label: '1/2', val: '50%' },
+                            { label: '1/3', val: '33.333%' },
+                        ].map((preset) => (
+                            <button
+                                key={preset.val}
+                                type="button"
+                                onClick={() => onChange('width', preset.val)}
+                                className={`h-6 rounded-md border text-[10px] font-medium transition ${
+                                    (styles.width || '100%') === preset.val
+                                        ? 'border-primary-600 bg-primary-50 font-bold text-primary-950'
+                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                }`}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5">
+                    <NumberUnitControl
+                        label="Custom Width"
+                        value={styles.width || ''}
+                        units={['px', '%']}
+                        min={0}
+                        max={2400}
+                        placeholder="100%"
+                        onChange={(value) => onChange('width', value)}
+                    />
+                    <div>
+                        <span className="mb-1 block text-[10px] font-semibold text-gray-600">
+                            Self Alignment
+                        </span>
+                        <div className="grid grid-cols-3 gap-1">
+                            {[
+                                { mode: 'left', icon: AlignLeft, label: 'Left' },
+                                { mode: 'center', icon: AlignCenter, label: 'Center' },
+                                { mode: 'right', icon: AlignRight, label: 'Right' },
+                            ].map((item) => {
+                                const Icon = item.icon;
+                                const selected = (styles.selfAlign || 'left') === item.mode;
+
+                                return (
+                                    <button
+                                        key={item.mode}
+                                        type="button"
+                                        title={item.label}
+                                        onClick={() =>
+                                            onChange(
+                                                'selfAlign',
+                                                item.mode as BlockStyles['selfAlign']
+                                            )
+                                        }
+                                        className={`flex h-7 items-center justify-center rounded-md border transition ${
+                                            selected
+                                                ? 'border-primary-600 bg-primary-50 text-primary-700'
+                                                : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <Icon className="h-3.5 w-3.5" />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">
+                        Content Max Width
                     </span>
                     <div className="grid grid-cols-4 gap-1">
                         {WIDTH_PRESETS.map((preset) => (
@@ -3342,6 +3546,521 @@ function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormPro
                 />
             </ControlSection>
         </div>
+    );
+}
+
+interface ElementStylesPanelProps {
+    blockType: BlockType;
+    styles: BlockStyles;
+    viewport: ViewportMode;
+    onChange: (element: string, key: keyof BlockStyles, value: BlockStyles[keyof BlockStyles]) => void;
+    onBatchChange: (element: string, updates: Partial<BlockStyles>) => void;
+}
+
+const ADVANCED_CSS_PROPERTIES: Array<{ label: string; value: keyof BlockStyles }> = [
+    { label: 'Width', value: 'width' },
+    { label: 'Height', value: 'height' },
+    { label: 'Min Width', value: 'minWidth' },
+    { label: 'Max Width', value: 'maxWidth' },
+    { label: 'Min Height', value: 'minHeight' },
+    { label: 'Max Height', value: 'maxHeight' },
+    { label: 'Display', value: 'display' },
+    { label: 'Position', value: 'position' },
+    { label: 'Overflow', value: 'overflow' },
+    { label: 'Font Family', value: 'fontFamily' },
+    { label: 'Font Size', value: 'fontSize' },
+    { label: 'Font Weight', value: 'fontWeight' },
+    { label: 'Font Style', value: 'fontStyle' },
+    { label: 'Line Height', value: 'lineHeight' },
+    { label: 'Letter Spacing', value: 'letterSpacing' },
+    { label: 'Text Align', value: 'textAlign' },
+    { label: 'Text Transform', value: 'textTransform' },
+    { label: 'Text Decoration', value: 'textDecoration' },
+    { label: 'Text Shadow', value: 'textShadow' },
+    { label: 'Color', value: 'color' },
+    { label: 'Background Color', value: 'backgroundColor' },
+    { label: 'Background', value: 'background' },
+    { label: 'Opacity', value: 'opacity' },
+    { label: 'Box Shadow', value: 'boxShadow' },
+    { label: 'Transform', value: 'transform' },
+    { label: 'Filter', value: 'filter' },
+    { label: 'Backdrop Filter', value: 'backdropFilter' },
+    { label: 'Gap', value: 'gap' },
+    { label: 'Row Gap', value: 'rowGap' },
+    { label: 'Column Gap', value: 'columnGap' },
+    { label: 'Flex Direction', value: 'flexDirection' },
+    { label: 'Justify Content', value: 'justifyContent' },
+    { label: 'Align Items', value: 'alignItems' },
+    { label: 'Align Self', value: 'alignSelf' },
+    { label: 'Justify Self', value: 'justifySelf' },
+    { label: 'Border Width', value: 'borderWidth' },
+    { label: 'Border Style', value: 'borderStyle' },
+    { label: 'Border Color', value: 'borderColor' },
+    { label: 'Border Radius', value: 'borderRadius' },
+    { label: 'Padding Top', value: 'paddingTop' },
+    { label: 'Padding Right', value: 'paddingRight' },
+    { label: 'Padding Bottom', value: 'paddingBottom' },
+    { label: 'Padding Left', value: 'paddingLeft' },
+    { label: 'Margin Top', value: 'marginTop' },
+    { label: 'Margin Right', value: 'marginRight' },
+    { label: 'Margin Bottom', value: 'marginBottom' },
+    { label: 'Margin Left', value: 'marginLeft' },
+    { label: 'Object Fit', value: 'objectFit' },
+    { label: 'Object Position', value: 'objectPosition' },
+    { label: 'Aspect Ratio', value: 'aspectRatio' },
+    { label: 'Cursor', value: 'cursor' },
+    { label: 'List Style', value: 'listStyleType' },
+];
+
+function ElementStylesPanel({
+    blockType,
+    styles,
+    viewport,
+    onChange,
+    onBatchChange,
+}: ElementStylesPanelProps) {
+    const options = BLOCK_ELEMENT_STYLE_OPTIONS[blockType] || [];
+    const [selectedElement, setSelectedElement] = useState(options[0]?.key || '');
+    const [customProperty, setCustomProperty] = useState<keyof BlockStyles>('fontSize');
+
+    if (options.length === 0 || !selectedElement) {
+        return null;
+    }
+
+    const elementStyles = resolveElementStyles(styles, selectedElement, viewport);
+    const set = (key: keyof BlockStyles, value: BlockStyles[keyof BlockStyles]) =>
+        onChange(selectedElement, key, value);
+    const batch = (updates: Partial<BlockStyles>) => onBatchChange(selectedElement, updates);
+    const padding: [string, string, string, string] = [
+        elementStyles.paddingTop ?? '',
+        elementStyles.paddingRight ?? '',
+        elementStyles.paddingBottom ?? '',
+        elementStyles.paddingLeft ?? '',
+    ];
+    const margin: [string, string, string, string] = [
+        elementStyles.marginTop ?? '',
+        elementStyles.marginRight ?? '',
+        elementStyles.marginBottom ?? '',
+        elementStyles.marginLeft ?? '',
+    ];
+    const customValue =
+        customProperty === 'responsive' || customProperty === 'elements'
+            ? ''
+            : String(elementStyles[customProperty] ?? '');
+
+    return (
+        <ControlSection
+            title="Inner Element Styles"
+            icon={Type}
+            description="Style each element inside this block"
+            defaultOpen
+        >
+            <SelectControl
+                label="Element"
+                value={selectedElement}
+                options={options.map((option) => ({
+                    label: option.label,
+                    value: option.key,
+                }))}
+                onChange={setSelectedElement}
+                hint={`Editing ${DEVICE_LABELS[viewport].toLowerCase()} values.`}
+            />
+
+            <ControlSection title="Typography" icon={Type} defaultOpen>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <ColorControl
+                        label="Text Color"
+                        value={elementStyles.color || ''}
+                        fallback="#0f172a"
+                        onChange={(value) => set('color', value)}
+                    />
+                    <NumberUnitControl
+                        label="Font Size"
+                        value={elementStyles.fontSize || ''}
+                        units={['px', 'rem', 'em']}
+                        placeholder="16"
+                        onChange={(value) => set('fontSize', value)}
+                    />
+                    <NumberUnitControl
+                        label="Font Weight"
+                        value={elementStyles.fontWeight || ''}
+                        unit={null}
+                        min={100}
+                        max={900}
+                        step={100}
+                        placeholder="400"
+                        onChange={(value) => set('fontWeight', value)}
+                    />
+                    <NumberUnitControl
+                        label="Line Height"
+                        value={elementStyles.lineHeight || ''}
+                        units={['', 'px', 'rem']}
+                        step={0.05}
+                        placeholder="1.5"
+                        onChange={(value) => set('lineHeight', value)}
+                    />
+                    <NumberUnitControl
+                        label="Letter Spacing"
+                        value={elementStyles.letterSpacing || ''}
+                        units={['px', 'em']}
+                        step={0.01}
+                        placeholder="0"
+                        onChange={(value) => set('letterSpacing', value)}
+                    />
+                    <TextControl
+                        label="Font Family"
+                        value={elementStyles.fontFamily || ''}
+                        placeholder="Inter, sans-serif"
+                        onChange={(value) => set('fontFamily', value)}
+                    />
+                </div>
+                <AlignmentControl
+                    label="Text Align"
+                    value={elementStyles.textAlign || 'left'}
+                    onChange={(value) =>
+                        set('textAlign', value as BlockStyles['textAlign'])
+                    }
+                />
+                <div className="grid grid-cols-2 gap-1.5">
+                    <SelectControl
+                        label="Text Transform"
+                        value={elementStyles.textTransform || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'None', value: 'none' },
+                            { label: 'Uppercase', value: 'uppercase' },
+                            { label: 'Lowercase', value: 'lowercase' },
+                            { label: 'Capitalize', value: 'capitalize' },
+                        ]}
+                        onChange={(value) => set('textTransform', value)}
+                    />
+                    <SelectControl
+                        label="Font Style"
+                        value={elementStyles.fontStyle || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Normal', value: 'normal' },
+                            { label: 'Italic', value: 'italic' },
+                        ]}
+                        onChange={(value) => set('fontStyle', value)}
+                    />
+                    <SelectControl
+                        label="Decoration"
+                        value={elementStyles.textDecoration || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'None', value: 'none' },
+                            { label: 'Underline', value: 'underline' },
+                            { label: 'Line Through', value: 'line-through' },
+                        ]}
+                        onChange={(value) => set('textDecoration', value)}
+                    />
+                    <ColorControl
+                        label="Decoration Color"
+                        value={elementStyles.textDecorationColor || ''}
+                        fallback="#0f172a"
+                        onChange={(value) => set('textDecorationColor', value)}
+                    />
+                </div>
+            </ControlSection>
+
+            <ControlSection title="Background & Effects" icon={Palette}>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <ColorControl
+                        label="Background Color"
+                        value={elementStyles.backgroundColor || ''}
+                        fallback="#ffffff"
+                        onChange={(value) => set('backgroundColor', value)}
+                    />
+                    <TextControl
+                        label="Background"
+                        value={elementStyles.background || ''}
+                        placeholder="linear-gradient(...)"
+                        onChange={(value) => set('background', value)}
+                    />
+                    <NumberUnitControl
+                        label="Opacity"
+                        value={elementStyles.opacity || ''}
+                        unit={null}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        placeholder="1"
+                        onChange={(value) => set('opacity', value)}
+                    />
+                    <NumberUnitControl
+                        label="Border Radius"
+                        value={elementStyles.borderRadius || ''}
+                        units={['px', '%']}
+                        min={0}
+                        max={999}
+                        placeholder="12"
+                        onChange={(value) => set('borderRadius', value)}
+                    />
+                </div>
+                <TextControl
+                    label="Box Shadow"
+                    value={elementStyles.boxShadow || ''}
+                    placeholder="0 10px 25px rgba(0,0,0,.15)"
+                    onChange={(value) => set('boxShadow', value)}
+                />
+                <div className="grid grid-cols-2 gap-1.5">
+                    <TextControl
+                        label="Transform"
+                        value={elementStyles.transform || ''}
+                        placeholder="translateY(-2px)"
+                        onChange={(value) => set('transform', value)}
+                    />
+                    <TextControl
+                        label="Filter"
+                        value={elementStyles.filter || ''}
+                        placeholder="blur(4px)"
+                        onChange={(value) => set('filter', value)}
+                    />
+                    <SelectControl
+                        label="Object Fit"
+                        value={elementStyles.objectFit || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Cover', value: 'cover' },
+                            { label: 'Contain', value: 'contain' },
+                            { label: 'Fill', value: 'fill' },
+                            { label: 'None', value: 'none' },
+                        ]}
+                        onChange={(value) => set('objectFit', value)}
+                    />
+                    <TextControl
+                        label="Object Position"
+                        value={elementStyles.objectPosition || ''}
+                        placeholder="center center"
+                        onChange={(value) => set('objectPosition', value)}
+                    />
+                </div>
+            </ControlSection>
+
+            <ControlSection title="Spacing" icon={Maximize2}>
+                <SpacingControl
+                    label="Padding"
+                    values={padding}
+                    onChange={(values) =>
+                        batch({
+                            padding: '',
+                            paddingTop: values[0],
+                            paddingRight: values[1],
+                            paddingBottom: values[2],
+                            paddingLeft: values[3],
+                        })
+                    }
+                />
+                <SpacingControl
+                    label="Margin"
+                    values={margin}
+                    onChange={(values) =>
+                        batch({
+                            margin: '',
+                            marginTop: values[0],
+                            marginRight: values[1],
+                            marginBottom: values[2],
+                            marginLeft: values[3],
+                        })
+                    }
+                />
+            </ControlSection>
+
+            <ControlSection title="Size & Layout" icon={LayoutGrid}>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <NumberUnitControl
+                        label="Width"
+                        value={elementStyles.width || ''}
+                        units={['px', '%']}
+                        placeholder="auto"
+                        onChange={(value) => set('width', value)}
+                    />
+                    <NumberUnitControl
+                        label="Height"
+                        value={elementStyles.height || ''}
+                        units={['px', '%']}
+                        placeholder="auto"
+                        onChange={(value) => set('height', value)}
+                    />
+                    <NumberUnitControl
+                        label="Min Width"
+                        value={elementStyles.minWidth || ''}
+                        units={['px', '%']}
+                        placeholder="0"
+                        onChange={(value) => set('minWidth', value)}
+                    />
+                    <NumberUnitControl
+                        label="Max Width"
+                        value={elementStyles.maxWidth || ''}
+                        units={['px', '%']}
+                        placeholder="none"
+                        onChange={(value) => set('maxWidth', value)}
+                    />
+                    <NumberUnitControl
+                        label="Min Height"
+                        value={elementStyles.minHeight || ''}
+                        units={['px', '%']}
+                        placeholder="0"
+                        onChange={(value) => set('minHeight', value)}
+                    />
+                    <NumberUnitControl
+                        label="Max Height"
+                        value={elementStyles.maxHeight || ''}
+                        units={['px', '%']}
+                        placeholder="none"
+                        onChange={(value) => set('maxHeight', value)}
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <SelectControl
+                        label="Display"
+                        value={elementStyles.display || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Block', value: 'block' },
+                            { label: 'Inline Block', value: 'inline-block' },
+                            { label: 'Flex', value: 'flex' },
+                            { label: 'Inline Flex', value: 'inline-flex' },
+                            { label: 'Grid', value: 'grid' },
+                            { label: 'None', value: 'none' },
+                        ]}
+                        onChange={(value) => set('display', value)}
+                    />
+                    <SelectControl
+                        label="Flex Direction"
+                        value={elementStyles.flexDirection || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Row', value: 'row' },
+                            { label: 'Column', value: 'column' },
+                        ]}
+                        onChange={(value) => set('flexDirection', value)}
+                    />
+                    <SelectControl
+                        label="Justify Content"
+                        value={elementStyles.justifyContent || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Start', value: 'flex-start' },
+                            { label: 'Center', value: 'center' },
+                            { label: 'End', value: 'flex-end' },
+                            { label: 'Space Between', value: 'space-between' },
+                        ]}
+                        onChange={(value) => set('justifyContent', value)}
+                    />
+                    <SelectControl
+                        label="Align Items"
+                        value={elementStyles.alignItems || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Stretch', value: 'stretch' },
+                            { label: 'Start', value: 'flex-start' },
+                            { label: 'Center', value: 'center' },
+                            { label: 'End', value: 'flex-end' },
+                        ]}
+                        onChange={(value) => set('alignItems', value)}
+                    />
+                    <SelectControl
+                        label="Align Self"
+                        value={elementStyles.alignSelf || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Auto', value: 'auto' },
+                            { label: 'Start', value: 'flex-start' },
+                            { label: 'Center', value: 'center' },
+                            { label: 'End', value: 'flex-end' },
+                            { label: 'Stretch', value: 'stretch' },
+                        ]}
+                        onChange={(value) => set('alignSelf', value)}
+                    />
+                    <SelectControl
+                        label="Overflow"
+                        value={elementStyles.overflow || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Visible', value: 'visible' },
+                            { label: 'Hidden', value: 'hidden' },
+                            { label: 'Auto', value: 'auto' },
+                            { label: 'Scroll', value: 'scroll' },
+                        ]}
+                        onChange={(value) => set('overflow', value)}
+                    />
+                    <TextControl
+                        label="Gap"
+                        value={elementStyles.gap || ''}
+                        placeholder="16px"
+                        onChange={(value) => set('gap', value)}
+                    />
+                    <TextControl
+                        label="Grid Column"
+                        value={elementStyles.gridColumn || ''}
+                        placeholder="span 2"
+                        onChange={(value) => set('gridColumn', value)}
+                    />
+                </div>
+            </ControlSection>
+
+            <ControlSection title="Borders" icon={Square}>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <NumberUnitControl
+                        label="Border Width"
+                        value={elementStyles.borderWidth || ''}
+                        unit="px"
+                        min={0}
+                        max={40}
+                        step={0.5}
+                        placeholder="0"
+                        onChange={(value) => set('borderWidth', value)}
+                    />
+                    <SelectControl
+                        label="Border Style"
+                        value={elementStyles.borderStyle || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Solid', value: 'solid' },
+                            { label: 'Dashed', value: 'dashed' },
+                            { label: 'Dotted', value: 'dotted' },
+                            { label: 'None', value: 'none' },
+                        ]}
+                        onChange={(value) =>
+                            set('borderStyle', value as BlockStyles['borderStyle'])
+                        }
+                    />
+                    <ColorControl
+                        label="Border Color"
+                        value={elementStyles.borderColor || ''}
+                        fallback="#e5e7eb"
+                        onChange={(value) => set('borderColor', value)}
+                    />
+                </div>
+            </ControlSection>
+
+            <ControlSection
+                title="Any CSS Property"
+                icon={Code}
+                description="Every allowlisted property for this element"
+            >
+                <SelectControl
+                    label="Property"
+                    value={String(customProperty)}
+                    options={ADVANCED_CSS_PROPERTIES.map((property) => ({
+                        label: property.label,
+                        value: property.value,
+                    }))}
+                    onChange={(value) => setCustomProperty(value as keyof BlockStyles)}
+                />
+                <TextControl
+                    label="Value"
+                    value={customValue}
+                    placeholder="e.g. 18px, #16a34a, 0 8px 24px rgba(0,0,0,.12)"
+                    onChange={(value) => set(customProperty, value)}
+                />
+                <p className="text-[9px] leading-relaxed text-gray-400">
+                    Unsafe values (url(), @import, expression(), JavaScript URLs) are rejected.
+                </p>
+            </ControlSection>
+        </ControlSection>
     );
 }
 

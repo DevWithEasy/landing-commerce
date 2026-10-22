@@ -41,9 +41,12 @@ export function AccordionBlock({ props, styles = {} }: AccordionBlockComponentPr
 
     return (
         <section style={inlineStyles} className="w-full bg-white py-12">
-            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 {props.title && (
-                    <h2 className="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl">
+                    <h2
+                        data-lc-el="title"
+                        className="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 @min-[640px]:text-3xl"
+                    >
                         {props.title}
                     </h2>
                 )}
@@ -56,13 +59,15 @@ export function AccordionBlock({ props, styles = {} }: AccordionBlockComponentPr
                             return (
                                 <div
                                     key={item.id}
+                                    data-lc-el="item"
                                     className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-shadow"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => toggleItem(item.id)}
                                         aria-expanded={isOpen}
-                                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-bold text-slate-900 transition-colors hover:bg-slate-50 sm:text-base"
+                                        data-lc-el="question"
+                                        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-bold text-slate-900 transition-colors hover:bg-slate-50 @min-[640px]:text-base"
                                     >
                                         <span>{item.title}</span>
                                         <ChevronDown
@@ -73,7 +78,10 @@ export function AccordionBlock({ props, styles = {} }: AccordionBlockComponentPr
                                     </button>
 
                                     {isOpen && (
-                                        <div className="border-t border-slate-100 px-5 pb-5 pt-4 text-sm leading-relaxed text-slate-600">
+                                        <div
+                                            data-lc-el="answer"
+                                            className="border-t border-slate-100 px-5 pb-5 pt-4 text-sm leading-relaxed text-slate-600"
+                                        >
                                             {item.content}
                                         </div>
                                     )}

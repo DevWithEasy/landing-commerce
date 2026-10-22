@@ -34,11 +34,15 @@ export function ImageBlock({ props, styles = {} }: ImageBlockComponentProps) {
                     <img
                         src={props.imageUrl}
                         alt={props.altText || 'Showcase image'}
+                        data-lc-el="image"
                         style={inlineStyles}
                         className="max-w-full h-auto object-contain rounded-lg shadow-xs"
                     />
                     {props.caption && (
-                        <figcaption className="mt-1.5 text-xs text-gray-500">
+                        <figcaption
+                            data-lc-el="caption"
+                            className="mt-1.5 text-xs text-gray-500"
+                        >
                             {props.caption}
                         </figcaption>
                     )}

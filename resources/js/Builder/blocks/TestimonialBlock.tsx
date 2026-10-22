@@ -85,7 +85,7 @@ function TestimonialCard({
     };
 
     return (
-        <div style={cardStyle} className="w-full">
+        <div style={cardStyle} data-lc-el="card" className="w-full">
             <div
                 className={`flex items-center ${isMinimal ? 'justify-center' : 'justify-between'}`}
             >
@@ -100,6 +100,7 @@ function TestimonialCard({
 
                 {props.showRating !== false && (
                     <div
+                        data-lc-el="stars"
                         className="flex items-center gap-0.5"
                         aria-label={`${rating} out of 5 stars`}
                     >
@@ -122,11 +123,14 @@ function TestimonialCard({
             </div>
 
             <blockquote style={{ margin: 0 }}>
-                <p style={quoteStyle}>&ldquo;{item.quote}&rdquo;</p>
+                <p style={quoteStyle} data-lc-el="quote">
+                    &ldquo;{item.quote}&rdquo;
+                </p>
             </blockquote>
 
             <div className={`flex items-center gap-3 ${isMinimal ? 'justify-center' : ''}`}>
                 <div
+                    data-lc-el="avatar"
                     className="flex shrink-0 items-center justify-center overflow-hidden text-sm font-extrabold"
                     style={avatarStyle}
                 >
@@ -146,6 +150,7 @@ function TestimonialCard({
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
                         <span
+                            data-lc-el="author"
                             className="text-sm font-bold"
                             style={{ color: safeCheckoutCss(props.authorColor) || '#0f172a' }}
                         >
@@ -307,7 +312,7 @@ export function TestimonialBlock({
 
     return (
         <section style={sectionStyle} className="w-full">
-            <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
+            <div className="mx-auto w-full max-w-4xl px-4 @min-[640px]:px-6">
                 <div
                     className="relative"
                     onMouseEnter={() => setIsPaused(true)}
@@ -358,6 +363,7 @@ export function TestimonialBlock({
                                 type="button"
                                 onClick={() => goTo(activeIndex - 1)}
                                 aria-label="Previous testimonial"
+                                data-lc-el="arrow"
                                 className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white"
                             >
                                 <ChevronLeft className="h-4 w-4" />
@@ -366,6 +372,7 @@ export function TestimonialBlock({
                                 type="button"
                                 onClick={() => goTo(activeIndex + 1)}
                                 aria-label="Next testimonial"
+                                data-lc-el="arrow"
                                 className="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white"
                             >
                                 <ChevronRight className="h-4 w-4" />
@@ -383,6 +390,7 @@ export function TestimonialBlock({
                                 onClick={() => goTo(index)}
                                 aria-label={`Go to testimonial ${index + 1}`}
                                 aria-current={index === activeIndex}
+                                data-lc-el="dot"
                                 className="h-2 rounded-full transition-all"
                                 style={{
                                     width: index === activeIndex ? '24px' : '8px',

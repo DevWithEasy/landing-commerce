@@ -22,6 +22,7 @@
     }
 
     $desktopItems = max(1, min(6, (int) ($props['desktopItemsPerView'] ?? 3)));
+    $tabletItems = max(1, min(6, (int) ($props['tabletItemsPerView'] ?? $desktopItems)));
     $mobileItems = max(1, min(4, (int) ($props['mobileItemsPerView'] ?? 1)));
 
     $gapValue = trim((string) ($props['gap'] ?? '16px'));
@@ -41,10 +42,10 @@
 @endphp
 
 @if(!empty($slides))
-    <section {!! $styleAttribute !!} class="w-full bg-white py-12">
+    <section {!! $styleAttribute !!} class="lc-block-root w-full bg-white py-12">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             @if(!empty($props['title']))
-                <h2 class="mb-8 text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                <h2 data-lc-el="title" class="mb-8 text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
                     {{ $props['title'] }}
                 </h2>
             @endif
@@ -55,7 +56,7 @@
                 data-autoplay="{{ $autoplay ? '1' : '0' }}"
                 data-interval="{{ $autoplayInterval }}"
                 data-loop="{{ $loop ? '1' : '0' }}"
-                style="--lc-desktop: {{ $desktopItems }}; --lc-mobile: {{ $mobileItems }}; --lc-gap: {{ $gap }};"
+                style="--lc-desktop: {{ $desktopItems }}; --lc-tablet: {{ $tabletItems }}; --lc-mobile: {{ $mobileItems }}; --lc-gap: {{ $gap }};"
                 class="relative"
                 role="region"
                 aria-roledescription="carousel"
@@ -63,8 +64,8 @@
             >
                 <div data-lc-carousel-track class="lc-carousel-track">
                     @foreach($slides as $slide)
-                        <div class="lc-carousel-slide" data-lc-slide>
-                            <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm" style="aspect-ratio: {{ $aspectRatio }};">
+                        <div class="lc-carousel-slide" data-lc-slide data-lc-el="slide">
+                            <div data-lc-el="image" class="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm" style="aspect-ratio: {{ $aspectRatio }};">
                                 <img
                                     src="{{ $slide['url'] }}"
                                     alt="{{ $slide['alt'] }}"
@@ -80,6 +81,7 @@
                     <button
                         type="button"
                         data-lc-prev
+                        data-lc-el="arrow"
                         aria-label="Previous images"
                         class="absolute left-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40 sm:left-2"
                     >
@@ -90,6 +92,7 @@
                     <button
                         type="button"
                         data-lc-next
+                        data-lc-el="arrow"
                         aria-label="Next images"
                         class="absolute right-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40 sm:right-2"
                     >
@@ -105,6 +108,7 @@
                             <button
                                 type="button"
                                 data-lc-dot="{{ $dotIndex }}"
+                                data-lc-el="dot"
                                 data-active="{{ $dotIndex === 0 ? 'true' : 'false' }}"
                                 aria-label="Go to image group {{ $dotIndex + 1 }}"
                                 class="lc-carousel-dot"

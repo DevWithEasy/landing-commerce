@@ -135,7 +135,7 @@
     ]);
 @endphp
 
-<section id="{{ $id }}" {!! $styleAttribute !!} class="w-full">
+<section id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root w-full">
     <div class="mx-auto w-full max-w-4xl px-4 sm:px-6">
         <div
             class="relative"
@@ -163,7 +163,7 @@
                     @endphp
 
                     <div @if ($isCarousel) class="lc-carousel-slide" data-lc-slide @endif>
-                        <div {!! $cardStyle !!}>
+                        <div {!! $cardStyle !!} data-lc-el="card">
                             <div class="flex items-center {{ $isMinimal ? 'justify-center' : 'justify-between' }}">
                                 @if ($showQuoteIcon)
                                     <span class="flex h-9 w-9 items-center justify-center rounded-full" {!! $iconBoxStyle !!}>
@@ -174,7 +174,7 @@
                                 @endif
 
                                 @if ($showRating)
-                                    <div class="flex items-center gap-0.5" aria-label="{{ $itemRating }} out of 5 stars">
+                                    <div data-lc-el="stars" class="flex items-center gap-0.5" aria-label="{{ $itemRating }} out of 5 stars">
                                         @for ($i = 1; $i <= 5; $i++)
                                             <svg viewBox="0 0 20 20" aria-hidden="true"
                                                 style="width: {{ e($starSize) }}; height: {{ e($starSize) }}; color: {{ $i <= $itemRating ? e($starColor) : '#e2e8f0' }}; fill: {{ $i <= $itemRating && $starStyle === 'filled' ? e($starColor) : 'transparent' }};">
@@ -186,11 +186,11 @@
                             </div>
 
                             <blockquote style="margin: 0;">
-                                <p {!! $quoteStyle !!}>&ldquo;{{ $item['quote'] }}&rdquo;</p>
+                                <p {!! $quoteStyle !!} data-lc-el="quote">&ldquo;{{ $item['quote'] }}&rdquo;</p>
                             </blockquote>
 
                             <div class="flex items-center gap-3 {{ $isMinimal ? 'justify-center' : '' }}">
-                                <div class="flex shrink-0 items-center justify-center overflow-hidden text-sm font-extrabold" {!! $avatarStyle !!}>
+                                <div data-lc-el="avatar" class="flex shrink-0 items-center justify-center overflow-hidden text-sm font-extrabold" {!! $avatarStyle !!}>
                                     @if (!empty($avatarUrl))
                                         <img src="{{ $avatarUrl }}" alt="{{ $authorName }}" loading="lazy"
                                             class="h-full w-full object-cover" />
@@ -201,7 +201,7 @@
 
                                 <div class="min-w-0">
                                     <div class="flex flex-wrap items-center gap-1.5">
-                                        <span class="text-sm font-bold" {!! $authorStyle !!}>{{ $authorName }}</span>
+                                        <span data-lc-el="author" class="text-sm font-bold" {!! $authorStyle !!}>{{ $authorName }}</span>
                                         @if ($verified)
                                             <span class="inline-flex items-center gap-0.5 text-[10px] font-bold"
                                                 style="color: {{ e($accentColor) }};">
@@ -239,13 +239,13 @@
             </div>
 
             @if ($isCarousel && $showArrows)
-                <button type="button" data-lc-prev aria-label="Previous testimonial"
+                <button type="button" data-lc-prev data-lc-el="arrow" aria-label="Previous testimonial"
                     class="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7" />
                     </svg>
                 </button>
-                <button type="button" data-lc-next aria-label="Next testimonial"
+                <button type="button" data-lc-next data-lc-el="arrow" aria-label="Next testimonial"
                     class="absolute right-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7" />
@@ -256,7 +256,7 @@
             @if ($isCarousel && $showDots)
                 <div data-lc-dots class="mt-5 flex items-center justify-center gap-1.5">
                     @foreach ($items as $index => $item)
-                        <button type="button" data-lc-dot aria-label="Go to testimonial {{ $index + 1 }}"
+                        <button type="button" data-lc-dot data-lc-el="dot" aria-label="Go to testimonial {{ $index + 1 }}"
                             class="lc-carousel-dot"></button>
                     @endforeach
                 </div>

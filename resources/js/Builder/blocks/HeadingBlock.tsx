@@ -38,6 +38,7 @@ export function HeadingBlock({ props, styles = {} }: HeadingBlockComponentProps)
     return (
         <Tag
             style={inlineStyles}
+            data-lc-el="title"
             className={`lc-heading font-bold tracking-tight ${alignClass} break-words w-full`}
         >
             {props.text || 'Heading Title'}

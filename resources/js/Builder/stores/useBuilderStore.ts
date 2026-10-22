@@ -72,6 +72,22 @@ export function updateBlockStylesInTree(
     });
 }
 
+export function setBlockStylesInTree(
+    blocks: Block[],
+    id: string,
+    styles: BlockStyles
+): Block[] {
+    return blocks.map((b) => {
+        if (b.id === id) {
+            return { ...b, styles };
+        }
+        if (b.children && b.children.length > 0) {
+            return { ...b, children: setBlockStylesInTree(b.children, id, styles) };
+        }
+        return b;
+    });
+}
+
 export function removeBlockFromTree(blocks: Block[], id: string): Block[] {
     return blocks
         .filter((b) => b.id !== id)
@@ -220,6 +236,7 @@ export interface BuilderState {
     addBlocks: (blocks: Block[], parentId?: string | null) => void;
     updateBlockProps: (id: string, props: Partial<BlockProps>) => void;
     updateBlockStyles: (id: string, styles: Partial<BlockStyles>) => void;
+    setBlockStyles: (id: string, styles: BlockStyles) => void;
     removeBlock: (id: string) => void;
     reorderBlocks: (startIndex: number, endIndex: number, parentId?: string | null) => void;
     moveBlock: (activeId: string, targetParentId: string | null, targetIndex?: number) => void;
@@ -335,6 +352,21 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
     updateBlockStyles: (id: string, styles: Partial<BlockStyles>) => {
         const { ast, history, historyIndex } = get();
         const newBlocks = updateBlockStylesInTree(ast.blocks, id, styles);
+
+        const newAst: PageAst = { ...ast, blocks: newBlocks };
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newAst);
+
+        set({
+            ast: newAst,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+        });
+    },
+
+    setBlockStyles: (id: string, styles: BlockStyles) => {
+        const { ast, history, historyIndex } = get();
+        const newBlocks = setBlockStylesInTree(ast.blocks, id, styles);
 
         const newAst: PageAst = { ...ast, blocks: newBlocks };
         const newHistory = history.slice(0, historyIndex + 1);

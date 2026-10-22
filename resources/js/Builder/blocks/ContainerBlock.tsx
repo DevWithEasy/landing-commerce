@@ -47,6 +47,7 @@ export function ContainerBlock({
     return (
         <div
             style={inlineStyles}
+            data-lc-el="container"
             className="lc-container w-full max-w-7xl mx-auto transition-all relative"
         >
             {hasChildren && renderChildren ? (

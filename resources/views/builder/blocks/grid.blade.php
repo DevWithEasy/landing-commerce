@@ -83,8 +83,8 @@
     }
 </style>
 
-<div id="{{ $id }}" {!! $styleAttribute !!} class="lc-grid-container {{ $containerScope }} w-full max-w-7xl mx-auto">
-    <div class="{{ $scope }} lc-grid" {!! $gridStyle !!}>
+<div id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root lc-grid-container {{ $containerScope }} w-full max-w-7xl mx-auto">
+    <div class="{{ $scope }} lc-grid" {!! $gridStyle !!} data-lc-el="grid">
         {!! $childrenHtml !!}
     </div>
 </div>

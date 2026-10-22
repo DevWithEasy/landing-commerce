@@ -14,73 +14,113 @@ class PageAstValidator
      * @var list<string>
      */
     public const ALLOWED_CSS_PROPERTIES = [
-        'color',
-        'background-color',
-        'backgroundcolor',
-        'padding',
-        'padding-top',
-        'paddingtop',
-        'padding-bottom',
-        'paddingbottom',
-        'padding-left',
-        'paddingleft',
-        'padding-right',
-        'paddingright',
-        'margin',
-        'margin-top',
-        'margintop',
-        'margin-bottom',
-        'marginbottom',
-        'margin-left',
-        'marginleft',
-        'margin-right',
-        'marginright',
-        'border-radius',
-        'borderradius',
-        'font-size',
-        'fontsize',
-        'text-align',
-        'textalign',
-        'max-width',
-        'maxwidth',
-        'border-color',
-        'bordercolor',
-        'border-width',
-        'borderwidth',
-        'border-style',
-        'borderstyle',
-        'z-index',
-        'zindex',
-        'position',
-        'background',
-        'box-shadow',
-        'boxshadow',
-        'font-family',
-        'fontfamily',
-        'font-weight',
-        'fontweight',
-        'line-height',
-        'lineheight',
-        'letter-spacing',
-        'letterspacing',
-        'overflow',
+        // Core layout & sizing
         'display',
-        'flex',
-        'flex-direction',
-        'flexdirection',
-        'flex-wrap',
-        'flexwrap',
-        'justify-content',
-        'justifycontent',
-        'align-items',
-        'alignitems',
-        'gap',
+        'position',
+        'top',
+        'right',
+        'bottom',
+        'left',
+        'zindex',
         'width',
         'height',
-        'min-width',
         'minwidth',
-        'min-height',
         'minheight',
+        'maxwidth',
+        'maxheight',
+        'overflow',
+        'overflowx',
+        'overflowy',
+        'boxsizing',
+        'aspectratio',
+        'verticalalign',
+        // Flex / grid
+        'flex',
+        'flexdirection',
+        'flexwrap',
+        'flexgrow',
+        'flexshrink',
+        'flexbasis',
+        'justifycontent',
+        'alignitems',
+        'aligncontent',
+        'alignself',
+        'justifyself',
+        'gap',
+        'rowgap',
+        'columngap',
+        'gridcolumn',
+        'gridrow',
+        // Spacing
+        'padding',
+        'paddingtop',
+        'paddingright',
+        'paddingbottom',
+        'paddingleft',
+        'margin',
+        'margintop',
+        'marginright',
+        'marginbottom',
+        'marginleft',
+        // Typography
+        'color',
+        'fontfamily',
+        'fontsize',
+        'fontweight',
+        'fontstyle',
+        'lineheight',
+        'letterspacing',
+        'textalign',
+        'texttransform',
+        'textdecoration',
+        'textdecorationcolor',
+        'textunderlineoffset',
+        'textshadow',
+        'whitespace',
+        'wordbreak',
+        'overflowwrap',
+        'liststyletype',
+        // Background & effects
+        'background',
+        'backgroundcolor',
+        'opacity',
+        'boxshadow',
+        'transform',
+        'transformorigin',
+        'transition',
+        'filter',
+        'backdropfilter',
+        'cursor',
+        'objectfit',
+        'objectposition',
+        // Borders
+        'borderradius',
+        'bordercolor',
+        'borderwidth',
+        'borderstyle',
+        'bordertopwidth',
+        'borderrightwidth',
+        'borderbottomwidth',
+        'borderleftwidth',
+        'bordertopcolor',
+        'borderrightcolor',
+        'borderbottomcolor',
+        'borderleftcolor',
+    ];
+
+    /**
+     * Non-CSS style keys stored in the builder AST.
+     *
+     * @var list<string>
+     */
+    public const STRUCTURAL_STYLE_KEYS = [
+        'responsive',
+        'elements',
+        'selfalign',
+        'buttonbgcolor',
+        'buttontextcolor',
+        'buttonborderradius',
+        'buttonpulseanimation',
     ];
 
     /**
@@ -191,7 +231,7 @@ class PageAstValidator
         if (! is_array($styles)) {
             $errors["{$prefix}.styles"] = ['Block styles must be an object/array.'];
         } else {
-            $this->validateStyles($styles, $prefix, $type, $errors);
+            $this->validateStyles($styles, "{$prefix}.styles", $type, $errors);
         }
 
         // Block Children (Optional, but if present must be an array of child blocks)
@@ -331,25 +371,133 @@ class PageAstValidator
      * @param  array<string, mixed>  $styles
      * @param  array<string, list<string>>  $errors
      */
-    protected function validateStyles(array $styles, string $prefix, string $blockType, array &$errors): void
-    {
+    protected function validateStyles(
+        array $styles,
+        string $stylePathPrefix,
+        string $blockType,
+        array &$errors,
+        bool $allowMeta = true,
+        int $depth = 0
+    ): void {
         foreach ($styles as $prop => $value) {
-            $stylePath = "{$prefix}.styles.{$prop}";
+            if (! is_string($prop)) {
+                $errors[$stylePathPrefix] = ['Style keys must be strings.'];
+
+                continue;
+            }
+
+            $stylePath = "{$stylePathPrefix}.{$prop}";
             $normalizedProp = strtolower(str_replace(['-', '_'], '', $prop));
+
+            if ($normalizedProp === 'responsive') {
+                if (! $allowMeta) {
+                    $errors[$stylePath] = ['Nested responsive style blocks are not permitted.'];
+
+                    continue;
+                }
+
+                if (! is_array($value)) {
+                    $errors[$stylePath] = ['Responsive styles must be an object.'];
+
+                    continue;
+                }
+
+                foreach ($value as $device => $deviceStyles) {
+                    if (! in_array($device, ['tablet', 'mobile'], true)) {
+                        $errors["{$stylePath}.{$device}"] = ['Responsive device must be tablet or mobile.'];
+
+                        continue;
+                    }
+
+                    if (! is_array($deviceStyles)) {
+                        $errors["{$stylePath}.{$device}"] = ['Responsive style overrides must be an object.'];
+
+                        continue;
+                    }
+
+                    $this->validateStyles(
+                        $deviceStyles,
+                        "{$stylePath}.{$device}",
+                        $blockType,
+                        $errors,
+                        false
+                    );
+                }
+
+                continue;
+            }
+
+            if ($normalizedProp === 'elements') {
+                if (! $allowMeta || $depth > 0) {
+                    $errors[$stylePath] = ['Nested element style blocks are not permitted here.'];
+
+                    continue;
+                }
+
+                if (! is_array($value)) {
+                    $errors[$stylePath] = ['Element styles must be an object.'];
+
+                    continue;
+                }
+
+                foreach ($value as $elementKey => $elementStyles) {
+                    if (! is_string($elementKey) || ! preg_match('/^[a-z][a-z0-9-]{0,39}$/', $elementKey)) {
+                        $errors["{$stylePath}.{$elementKey}"] = ['Invalid inner element style key.'];
+
+                        continue;
+                    }
+
+                    if (! is_array($elementStyles)) {
+                        $errors["{$stylePath}.{$elementKey}"] = ['Inner element styles must be an object.'];
+
+                        continue;
+                    }
+
+                    $this->validateStyles(
+                        $elementStyles,
+                        "{$stylePath}.{$elementKey}",
+                        $blockType,
+                        $errors,
+                        true,
+                        $depth + 1
+                    );
+                }
+
+                continue;
+            }
+
+            if ($normalizedProp === 'selfalign') {
+                if (! in_array($value, ['left', 'center', 'right'], true)) {
+                    $errors[$stylePath] = ['Block self alignment must be left, center or right.'];
+                }
+
+                continue;
+            }
+
+            // Legacy builder style shortcuts are not emitted as raw CSS.
+            if (in_array($normalizedProp, self::STRUCTURAL_STYLE_KEYS, true)) {
+                continue;
+            }
 
             // 1. Whitelist property check
             if (! in_array($normalizedProp, self::ALLOWED_CSS_PROPERTIES, true)) {
                 $errors[$stylePath] = [
-                    "Disallowed CSS property '{$prop}'. Only approved styling properties (colors, backgrounds, padding, margins, font-size, text-align, borders) are permitted.",
+                    "Disallowed CSS property '{$prop}'. Only approved styling properties are permitted.",
                 ];
+
+                continue;
+            }
+
+            if (is_array($value) || is_object($value)) {
+                $errors[$stylePath] = ["CSS property '{$prop}' must have a scalar value."];
 
                 continue;
             }
 
             $strVal = is_string($value) ? $value : (string) $value;
 
-            // 2. Reject unsafe CSS injection vectors: expression, @import, url(), behavior, javascript:
-            if (preg_match('/(expression\s*\(|@import|url\s*\(|behavior\s*:|-moz-binding|<script|onerror\s*=)/i', $strVal)) {
+            // 2. Reject unsafe CSS injection vectors.
+            if (preg_match('/(expression\s*\(|@import|url\s*\(|behavior\s*:|-moz-binding|<script|onerror\s*=|[;{}<>\\\\])/i', $strVal)) {
                 $errors[$stylePath] = [
                     "Unsafe CSS expression, import, or script vector detected in property '{$prop}'.",
                 ];
@@ -357,7 +505,7 @@ class PageAstValidator
                 continue;
             }
 
-            // 3. Prohibit 'position: fixed' or 'position: sticky' overlays on all blocks except StickyBarBlock
+            // 3. Prohibit fixed/sticky/absolute overlays on all blocks except StickyBarBlock
             if ($normalizedProp === 'position') {
                 $cleanVal = strtolower(trim($strVal));
                 if (in_array($cleanVal, ['fixed', 'sticky', 'absolute'], true) && $blockType !== 'StickyBarBlock') {

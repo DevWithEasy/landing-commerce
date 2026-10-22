@@ -72,6 +72,12 @@
     scroll-snap-stop: always;
 }
 
+@media (max-width: 1024px) {
+    .lc-carousel-slide {
+        width: calc(100% / var(--lc-tablet, var(--lc-desktop, 3)));
+    }
+}
+
 @media (max-width: 767px) {
     .lc-carousel-slide {
         width: calc(100% / var(--lc-mobile, 1));

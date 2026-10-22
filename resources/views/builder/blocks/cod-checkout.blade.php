@@ -380,11 +380,11 @@
     }
 </style>
 
-<section id="cod-checkout" {!! $styleAttribute !!} class="w-full">
+<section id="cod-checkout" {!! $styleAttribute !!} data-lc-el="section" class="lc-block-root w-full">
     <div class="mx-auto" {!! $containerStyle !!}>
-        <div {!! $cardStyle !!}>
+        <div {!! $cardStyle !!} data-lc-el="card">
             @if ($showHeader)
-                <div {!! $headerStyle !!}>
+                <div {!! $headerStyle !!} data-lc-el="header">
                     @if ($showHeaderBadge)
                         <div {!! $badgeStyle !!}>
                             <svg class="h-4 w-4" style="color: {{ e($accentColor) }}" fill="none"
@@ -396,10 +396,10 @@
                         </div>
                     @endif
                     @if ($showHeaderTitle)
-                        <h2 {!! $titleStyle !!}>{{ $headerTitle }}</h2>
+                        <h2 {!! $titleStyle !!} data-lc-el="title">{{ $headerTitle }}</h2>
                     @endif
                     @if ($showHeaderSubtitle)
-                        <p {!! $subtitleStyle !!}>{{ $headerSubtitle }}</p>
+                        <p {!! $subtitleStyle !!} data-lc-el="subtitle">{{ $headerSubtitle }}</p>
                     @endif
                 </div>
             @endif
@@ -463,7 +463,7 @@
 
                                     $itemCardStyle = $inlineStyle($productCardBaseStyle);
                                 @endphp
-                                <div class="cod-product-card relative flex flex-col {{ $isItemChecked ? 'cod-card-selected' : '' }}"
+                                <div class="cod-product-card relative flex flex-col {{ $isItemChecked ? 'cod-card-selected' : '' }}" data-lc-el="product-card"
                                     {!! $itemCardStyle !!}>
                                     <label class="flex w-full cursor-pointer items-center justify-between">
                                         <div class="flex min-w-0 flex-1 items-center space-x-3">
@@ -622,41 +622,41 @@
 
                 {{-- Customer Fields (Name, Phone, Address) - Fully Customizable --}}
                 <div>
-                    <label {!! $labelStyle !!}>
+                    <label {!! $labelStyle !!} data-lc-el="label">
                         {{ $nameLabel }}
                         @if ($showRequiredMark)
                             <span style="color: {{ e($requiredMarkColor) }};">*</span>
                         @endif
                     </label>
-                    <input type="text" name="customer_name" required
+                    <input type="text" name="customer_name" required data-lc-el="input"
                         placeholder="{{ $namePlaceholder }}" {!! $inputStyle !!} />
                 </div>
 
                 <div>
-                    <label {!! $labelStyle !!}>
+                    <label {!! $labelStyle !!} data-lc-el="label">
                         {{ $phoneLabel }}
                         @if ($showRequiredMark)
                             <span style="color: {{ e($requiredMarkColor) }};">*</span>
                         @endif
                     </label>
                     <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}"
-                        pattern="01[3-9][0-9]{8}" {!! $inputStyle !!} />
+                        pattern="01[3-9][0-9]{8}" data-lc-el="input" {!! $inputStyle !!} />
                 </div>
 
                 <div>
-                    <label {!! $labelStyle !!}>
+                    <label {!! $labelStyle !!} data-lc-el="label">
                         {{ $addressLabel }}
                         @if ($showRequiredMark)
                             <span style="color: {{ e($requiredMarkColor) }};">*</span>
                         @endif
                     </label>
-                    <textarea name="delivery_address" required rows="2"
+                    <textarea name="delivery_address" required rows="2" data-lc-el="input"
                         placeholder="{{ $addressPlaceholder }}" {!! $inputStyle !!}></textarea>
                 </div>
 
                 {{-- Shipping Method Dropdown --}}
                 <div>
-                    <label {!! $labelStyle !!}>
+                    <label {!! $labelStyle !!} data-lc-el="label">
                         {{ $shippingLabel }}
                         @if ($showRequiredMark)
                             <span style="color: {{ e($requiredMarkColor) }};">*</span>
@@ -688,7 +688,7 @@
 
                 {{-- Live Summary Breakdown --}}
                 @if ($showSummary)
-                    <div {!! $summaryStyle !!}>
+                    <div {!! $summaryStyle !!} data-lc-el="summary">
                         <div class="flex justify-between">
                             <span>Items Subtotal:</span>
                             <span id="cod-summary-subtotal" class="font-bold"
@@ -709,7 +709,7 @@
 
                 <div>
                     <button type="submit" id="cod-submit-btn"
-                        data-default-text="{{ e($buttonText) }}" {!! $buttonStyle !!}
+                        data-default-text="{{ e($buttonText) }}" data-lc-el="button" {!! $buttonStyle !!}
                         class="cod-submit-btn flex w-full cursor-pointer items-center justify-center space-x-2 text-white transition disabled:cursor-not-allowed disabled:opacity-60 {{ $buttonPulse ? 'animate-pulse' : '' }}">
                         <span id="cod-btn-spinner" class="hidden">
                             <svg class="-ml-1 mr-2 h-5 w-5 animate-spin text-white" fill="none"
@@ -724,7 +724,7 @@
                 </div>
 
                 @if ($showTrustBadges)
-                    <div class="flex flex-wrap items-center justify-center text-center" {!! $trustRowStyle !!}>
+                    <div class="flex flex-wrap items-center justify-center text-center" data-lc-el="trust" {!! $trustRowStyle !!}>
                         <span class="inline-flex items-center">
                             <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

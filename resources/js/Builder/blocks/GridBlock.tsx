@@ -119,7 +119,7 @@ export function GridBlock({
             className={`${containerScope} lc-grid-container mx-auto w-full max-w-7xl transition-all`}
         >
             <style>{responsiveCss}</style>
-            <div ref={dropRef} style={gridStyle} className={`${scope} lc-grid`}>
+            <div ref={dropRef} data-lc-el="grid" style={gridStyle} className={`${scope} lc-grid`}>
                 {hasChildren && renderChildren ? (
                     renderChildren(children)
                 ) : isEditor ? (

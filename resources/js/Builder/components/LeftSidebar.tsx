@@ -162,7 +162,7 @@ export function LeftSidebar({
                             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                                 {category}
                             </span>
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="grid grid-cols-1 gap-1">
                                 {defs.map((def) => (
                                     <PaletteItem
                                         key={def.type}
@@ -259,19 +259,17 @@ function PaletteItem({ definition, targetContainerId, onAddBlock }: PaletteItemP
             }}
             onClick={handleClick}
             title={`${definition.name} - ${definition.description}\nDrag onto the canvas or click to insert.`}
-            className={`group relative flex min-h-[58px] w-full cursor-grab flex-col items-start gap-1 rounded-lg border border-gray-200 bg-white p-2 text-left transition hover:border-primary-400 hover:bg-primary-50/40 hover:shadow-xs active:cursor-grabbing ${
+            className={`group relative flex min-h-[36px] w-full cursor-grab flex-row items-center gap-2 rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-left transition hover:border-primary-400 hover:bg-primary-50/40 hover:shadow-xs active:cursor-grabbing ${
                 isDragging ? 'opacity-40' : ''
             }`}
         >
-            <div className="flex w-full items-center justify-between">
-                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gray-100 text-gray-600 transition group-hover:bg-primary-100 group-hover:text-primary-700">
-                    <IconComponent className="h-3.5 w-3.5" />
-                </span>
-                <GripVertical className="h-3 w-3 text-gray-300 opacity-0 transition group-hover:opacity-100" />
-            </div>
-            <span className="line-clamp-2 text-[10px] font-bold leading-tight text-gray-800 transition group-hover:text-primary-700">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-600 transition group-hover:bg-primary-100 group-hover:text-primary-700">
+                <IconComponent className="h-3.5 w-3.5" />
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[10.5px] font-bold leading-tight text-gray-800 transition group-hover:text-primary-700">
                 {definition.name}
             </span>
+            <GripVertical className="h-3 w-3 shrink-0 text-gray-300 opacity-0 transition group-hover:opacity-100" />
         </button>
     );
 }

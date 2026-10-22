@@ -209,6 +209,7 @@ export function HtmlBlock({ props, styles = {}, isEditor = false }: HtmlBlockCom
         <section
             id={scopeId}
             style={inlineStyles}
+            data-lc-el="html"
             className="w-full relative transition-all duration-150"
         >
             {/* Custom HTML Content or Placeholder */}

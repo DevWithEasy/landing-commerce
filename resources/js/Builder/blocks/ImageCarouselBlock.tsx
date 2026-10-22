@@ -8,6 +8,7 @@ import {
     type TouchEvent,
 } from 'react';
 import { SafeImage } from '@/Shared/SafeImage';
+import { useBuilderStore } from '../stores/useBuilderStore';
 import type { BlockStyles, ImageCarouselBlockProps } from '@/types/builder';
 
 export interface ImageCarouselBlockComponentProps {
@@ -41,28 +42,20 @@ export function ImageCarouselBlock({
     isEditor = false,
 }: ImageCarouselBlockComponentProps) {
     const images = Array.isArray(props.images) ? props.images : [];
+    const viewport = useBuilderStore((state) => state.viewport);
     const desktopPerView = clampPerView(props.desktopItemsPerView, 3, 6);
+    const tabletPerView = clampPerView(props.tabletItemsPerView, desktopPerView, 6);
     const mobilePerView = clampPerView(props.mobileItemsPerView, 1, 4);
 
-    const [isMobileViewport, setIsMobileViewport] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const touchStartX = useRef<number | null>(null);
 
-    useEffect(() => {
-        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-            return;
-        }
-
-        const mediaQuery = window.matchMedia('(max-width: 767px)');
-        const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
-
-        syncViewport();
-        mediaQuery.addEventListener('change', syncViewport);
-
-        return () => mediaQuery.removeEventListener('change', syncViewport);
-    }, []);
-
-    const requestedPerView = isMobileViewport ? mobilePerView : desktopPerView;
+    const requestedPerView =
+        viewport === 'mobile'
+            ? mobilePerView
+            : viewport === 'tablet'
+              ? tabletPerView
+              : desktopPerView;
     const perView = Math.max(1, Math.min(requestedPerView, images.length || 1));
     const maxIndex = Math.max(0, images.length - perView);
 
@@ -177,9 +170,12 @@ export function ImageCarouselBlock({
 
     return (
         <section style={inlineStyles} className="w-full bg-white py-12">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 {props.title && (
-                    <h2 className="mb-8 text-center text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                    <h2
+                        data-lc-el="title"
+                        className="mb-8 text-center text-2xl font-extrabold tracking-tight text-slate-900 @min-[640px]:text-3xl"
+                    >
                         {props.title}
                     </h2>
                 )}
@@ -200,6 +196,7 @@ export function ImageCarouselBlock({
                                 {images.map((image) => (
                                     <div
                                         key={image.id}
+                                        data-lc-el="slide"
                                         className="shrink-0"
                                         style={{
                                             width: slideWidth,
@@ -208,6 +205,7 @@ export function ImageCarouselBlock({
                                         }}
                                     >
                                         <div
+                                            data-lc-el="image"
                                             className="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm"
                                             style={{ aspectRatio }}
                                         >
@@ -230,7 +228,8 @@ export function ImageCarouselBlock({
                                     type="button"
                                     onClick={goPrevious}
                                     aria-label="Previous images"
-                                    className="pointer-events-auto absolute left-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white hover:text-slate-950 sm:left-2"
+                                    data-lc-el="arrow"
+                                    className="pointer-events-auto absolute left-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white hover:text-slate-950 @min-[640px]:left-2"
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </button>
@@ -238,7 +237,8 @@ export function ImageCarouselBlock({
                                     type="button"
                                     onClick={goNext}
                                     aria-label="Next images"
-                                    className="pointer-events-auto absolute right-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white hover:text-slate-950 sm:right-2"
+                                    data-lc-el="arrow"
+                                    className="pointer-events-auto absolute right-1 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-700 shadow-md transition hover:bg-white hover:text-slate-950 @min-[640px]:right-2"
                                 >
                                     <ChevronRight className="h-5 w-5" />
                                 </button>
@@ -254,6 +254,7 @@ export function ImageCarouselBlock({
                                         onClick={() => goTo(dotIndex)}
                                         aria-label={`Go to image group ${dotIndex + 1}`}
                                         aria-current={currentIndex === dotIndex}
+                                        data-lc-el="dot"
                                         className={`pointer-events-auto h-2 rounded-full transition-all ${
                                             currentIndex === dotIndex
                                                 ? 'w-6 bg-slate-900'

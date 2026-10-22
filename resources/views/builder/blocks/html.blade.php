@@ -4,7 +4,7 @@
     $customCss = $props['css'] ?? '';
 @endphp
 
-<div id="{{ e($blockId) }}" {!! $styleAttribute !!} class="w-full custom-html-block overflow-hidden relative">
+<div id="{{ e($blockId) }}" {!! $styleAttribute !!} data-lc-el="html" class="lc-block-root w-full custom-html-block overflow-hidden relative">
     @if(!empty($customCss))
         <style>
             {!! $customCss !!}

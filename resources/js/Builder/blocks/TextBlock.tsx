@@ -34,6 +34,7 @@ export function TextBlock({ props, styles = {} }: TextBlockComponentProps) {
     return (
         <div
             style={inlineStyles}
+            data-lc-el="text"
             className={`lc-text text-base ${alignClass} whitespace-pre-line break-words w-full`}
         >
             {props.content || 'Write your paragraph or product description here.'}

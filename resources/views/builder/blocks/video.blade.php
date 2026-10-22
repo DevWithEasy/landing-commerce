@@ -9,9 +9,9 @@
     };
 @endphp
 
-<section {!! $styleAttribute !!} class="w-full py-12 bg-white">
+<section {!! $styleAttribute !!} class="lc-block-root w-full py-12 bg-white">
     <div class="max-w-4xl mx-auto px-4 sm:px-6">
-        <div class="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 {{ $aspectClass }}">
+        <div data-lc-el="video" class="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-800 {{ $aspectClass }}">
             @if(!empty($embedUrl))
                 <iframe
                     src="{{ e($embedUrl) }}"

@@ -29,7 +29,7 @@
 
     $renderStars = static function (int $rating) use ($starColor, $starEmptyColor, $starSize, $starStyle): string {
         $safeRating = max(0, min(5, $rating));
-        $html = '<div class="flex items-center gap-0.5" aria-label="'.e($safeRating).' out of 5 stars">';
+        $html = '<div data-lc-el="stars" class="flex items-center gap-0.5" aria-label="'.e($safeRating).' out of 5 stars">';
 
         for ($i = 1; $i <= 5; $i++) {
             $isFilled = $i <= $safeRating;
@@ -45,11 +45,11 @@
     };
 @endphp
 
-<section {!! $styleAttribute !!} class="w-full py-16 bg-white">
+<section {!! $styleAttribute !!} class="lc-block-root w-full py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if(!empty($props['title']))
             <div class="text-center max-w-2xl mx-auto mb-12">
-                <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+                <h2 data-lc-el="title" class="text-3xl font-extrabold text-slate-900 tracking-tight">
                     {{ $props['title'] }}
                 </h2>
                 @if ($showStars || $showRatingSummary)
@@ -58,7 +58,7 @@
                             {!! $renderStars(5) !!}
                         @endif
                         @if ($showRatingSummary)
-                            <span class="text-sm font-semibold" style="color: {{ e($ratingSummaryColor) }};">
+                            <span data-lc-el="summary" class="text-sm font-semibold" style="color: {{ e($ratingSummaryColor) }};">
                                 {{ $ratingSummaryText }}
                             </span>
                         @endif
@@ -69,7 +69,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($items as $review)
-                <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 flex flex-col justify-between">
+                <div data-lc-el="card" class="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 flex flex-col justify-between">
                     <div>
                         @if ($showStars)
                             <div class="mb-3">
@@ -77,14 +77,14 @@
                             </div>
                         @endif
 
-                        <p class="text-slate-700 text-sm leading-relaxed mb-4 italic">
+                        <p data-lc-el="comment" class="text-slate-700 text-sm leading-relaxed mb-4 italic">
                             "{{ $review['comment'] ?? '' }}"
                         </p>
                     </div>
 
                     <div class="flex items-center justify-between pt-4 border-t border-slate-200">
                         <div>
-                            <span class="block font-bold text-sm text-slate-900">
+                            <span data-lc-el="author" class="block font-bold text-sm text-slate-900">
                                 {{ $review['authorName'] ?? 'Verified Customer' }}
                             </span>
                             @if(!empty($review['location']))
@@ -95,7 +95,7 @@
                         </div>
 
                         @if(!empty($review['verifiedPurchase']))
-                            <span class="inline-flex items-center text-xs font-semibold text-emerald-600">
+                            <span data-lc-el="verified" class="inline-flex items-center text-xs font-semibold text-emerald-600">
                                 <svg class="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                 </svg>

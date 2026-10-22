@@ -65,8 +65,9 @@ export function VideoBlock({ props, styles = {}, isEditor = false }: VideoBlockC
 
     return (
         <section style={inlineStyles} className="w-full py-10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="max-w-4xl mx-auto px-4 @min-[640px]:px-6">
                 <div
+                    data-lc-el="video"
                     className={`relative w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-gray-800 ${aspectRatioClass}`}
                 >
                     {isEditor ? (

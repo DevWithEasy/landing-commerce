@@ -334,12 +334,12 @@ export function CodCheckoutBlock({
     const showRequiredMark = props.showRequiredMark !== false;
 
     return (
-        <section id="cod-checkout" style={sectionStyle} className="w-full">
+        <section id="cod-checkout" style={sectionStyle} data-lc-el="section" className="w-full">
             <style>{COD_CHECKOUT_STATIC_CSS}</style>
             <div style={containerStyle} className="mx-auto">
-                <div style={cardStyle}>
+                <div style={cardStyle} data-lc-el="card">
                     {(props.showHeader !== false) && (
-                        <div style={headerStyle}>
+                        <div style={headerStyle} data-lc-el="header">
                             {(props.showHeaderBadge !== false) && (
                                 <div style={badgeStyle}>
                                     <ShieldCheck className="w-4 h-4" style={{ color: accentColor }} />
@@ -347,10 +347,14 @@ export function CodCheckoutBlock({
                                 </div>
                             )}
                             {(props.showHeaderTitle !== false) && (
-                                <h2 style={titleStyle}>{headerTitle}</h2>
+                                <h2 style={titleStyle} data-lc-el="title">
+                                    {headerTitle}
+                                </h2>
                             )}
                             {(props.showHeaderSubtitle !== false) && (
-                                <p style={subtitleStyle}>{headerSubtitle}</p>
+                                <p style={subtitleStyle} data-lc-el="subtitle">
+                                    {headerSubtitle}
+                                </p>
                             )}
                         </div>
                     )}
@@ -425,6 +429,7 @@ export function CodCheckoutBlock({
                                             <div
                                                 key={pid}
                                                 onClick={() => handleToggleProduct(pid)}
+                                                data-lc-el="product-card"
                                                 style={{
                                                     ...productCardStyle,
                                                     ...(isSelected
@@ -633,7 +638,7 @@ export function CodCheckoutBlock({
 
                         {/* 1. Customer Name */}
                         <div>
-                            <label style={labelStyle}>
+                            <label style={labelStyle} data-lc-el="label">
                                 {nameLabel}{' '}
                                 {showRequiredMark && (
                                     <span style={{ color: requiredMarkColor }}>*</span>
@@ -648,6 +653,7 @@ export function CodCheckoutBlock({
                                     type="text"
                                     disabled={isEditor}
                                     placeholder={namePlaceholder}
+                                    data-lc-el="input"
                                     style={inputStyle}
                                 />
                             </div>
@@ -655,7 +661,7 @@ export function CodCheckoutBlock({
 
                         {/* 2. Customer Phone */}
                         <div>
-                            <label style={labelStyle}>
+                            <label style={labelStyle} data-lc-el="label">
                                 {phoneLabel}{' '}
                                 {showRequiredMark && (
                                     <span style={{ color: requiredMarkColor }}>*</span>
@@ -670,6 +676,7 @@ export function CodCheckoutBlock({
                                     type="tel"
                                     disabled={isEditor}
                                     placeholder={phonePlaceholder}
+                                    data-lc-el="input"
                                     style={{ ...inputStyle, fontFamily: 'monospace' }}
                                 />
                             </div>
@@ -677,7 +684,7 @@ export function CodCheckoutBlock({
 
                         {/* 3. Detailed Address */}
                         <div>
-                            <label style={labelStyle}>
+                            <label style={labelStyle} data-lc-el="label">
                                 {addressLabel}{' '}
                                 {showRequiredMark && (
                                     <span style={{ color: requiredMarkColor }}>*</span>
@@ -692,6 +699,7 @@ export function CodCheckoutBlock({
                                     rows={2}
                                     disabled={isEditor}
                                     placeholder={addressPlaceholder}
+                                    data-lc-el="input"
                                     style={{
                                         ...inputStyle,
                                         paddingTop: '8px',
@@ -703,7 +711,7 @@ export function CodCheckoutBlock({
 
                         {/* 4. Shipping Method Dropdown */}
                         <div>
-                            <label style={labelStyle}>
+                            <label style={labelStyle} data-lc-el="label">
                                 {shippingLabel}{' '}
                                 {showRequiredMark && (
                                     <span style={{ color: requiredMarkColor }}>*</span>
@@ -717,7 +725,7 @@ export function CodCheckoutBlock({
 
                         {/* 5. Live Summary */}
                         {props.showSummary !== false && (
-                            <div style={summaryStyle}>
+                            <div style={summaryStyle} data-lc-el="summary">
                                 <div className="flex justify-between">
                                     <span>Items Subtotal:</span>
                                     <span className="font-bold" style={summaryValueStyle}>
@@ -751,6 +759,7 @@ export function CodCheckoutBlock({
                                 type="button"
                                 disabled={isEditor}
                                 style={buttonStyle}
+                                data-lc-el="button"
                                 className={`cod-submit-btn flex cursor-pointer items-center justify-center space-x-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonPulseClass}`}
                             >
                                 <ShoppingCart className="h-5 w-5" />
@@ -760,6 +769,7 @@ export function CodCheckoutBlock({
 
                         {props.showTrustBadges !== false && (
                             <div
+                                data-lc-el="trust"
                                 className="flex flex-wrap items-center justify-center text-center"
                                 style={trustRowStyle}
                             >

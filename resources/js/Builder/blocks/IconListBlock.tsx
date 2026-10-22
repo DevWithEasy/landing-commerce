@@ -42,9 +42,12 @@ export function IconListBlock({ props, styles = {} }: IconListBlockComponentProp
 
     return (
         <section style={inlineStyles} className="w-full bg-white py-12">
-            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 {props.title && (
-                    <h2 className="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl">
+                    <h2
+                        data-lc-el="title"
+                        className="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 @min-[640px]:text-3xl"
+                    >
                         {props.title}
                     </h2>
                 )}
@@ -57,7 +60,8 @@ export function IconListBlock({ props, styles = {} }: IconListBlockComponentProp
                         {items.map((item, index) => (
                             <li
                                 key={item.id}
-                                className={`rounded-2xl bg-slate-50/80 px-4 py-3.5 sm:px-5 ${
+                                data-lc-el="item"
+                                className={`rounded-2xl bg-slate-50/80 px-4 py-3.5 @min-[640px]:px-5 ${
                                     showDividers
                                         ? 'border border-slate-100'
                                         : 'border border-transparent'
@@ -66,13 +70,17 @@ export function IconListBlock({ props, styles = {} }: IconListBlockComponentProp
                                 <div className="flex items-start gap-1.5">
                                     {showMarkers && (
                                         <span
+                                            data-lc-el="marker"
                                             className="mt-0.5 shrink-0 text-sm font-bold leading-relaxed text-slate-500"
                                             aria-hidden="true"
                                         >
                                             {listType === 'ol' ? `${index + 1}.` : '•'}
                                         </span>
                                     )}
-                                    <strong className="flex-1 text-sm font-bold leading-relaxed text-slate-800 sm:text-base">
+                                    <strong
+                                        data-lc-el="text"
+                                        className="flex-1 text-sm font-bold leading-relaxed text-slate-800 @min-[640px]:text-base"
+                                    >
                                         {item.text}
                                     </strong>
                                 </div>

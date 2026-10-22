@@ -540,10 +540,11 @@ test('dangerous css properties and injection attacks are stripped from inline st
     expect($css)
         ->toContain('background-color: #ffffff')
         ->toContain('position: relative')
-        ->toContain('color: blue font-size: 500px')
         ->not->toContain('expression')
         ->not->toContain('url(')
-        ->not->toContain('evilProperty');
+        ->not->toContain('evilProperty')
+        ->not->toContain('blue')
+        ->not->toContain('font-size: 500px');
 });
 
 test('renderAst renders complete page sequence', function () {

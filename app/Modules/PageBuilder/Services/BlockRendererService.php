@@ -126,7 +126,13 @@ class BlockRendererService
             $styles = array_merge($layoutStyles, $styles);
         }
 
-        $styleAttribute = $this->convertStylesToCssAttribute($styles);
+        $styleAttribute = $this->convertStylesToCssAttribute($this->withoutRootOnlyStyles($styles));
+        $blockId = (string) ($block['id'] ?? Str::uuid()->toString());
+        $scopeClass = $this->buildBlockScopeClass($blockId);
+        $wrapperStyleAttribute = $this->convertStylesToCssAttribute(
+            $this->buildWrapperStyles($styles)
+        );
+        $scopedCss = $this->buildScopedCss($scopeClass, $styles);
 
         // Recursively render child blocks if present
         $childrenHtml = '';
@@ -173,8 +179,8 @@ class BlockRendererService
             }
         }
 
-        return View::make($viewName, [
-            'id' => $block['id'] ?? Str::uuid()->toString(),
+        $renderedBlock = View::make($viewName, [
+            'id' => $blockId,
             'props' => $props,
             'styles' => $styles,
             'styleAttribute' => $styleAttribute,
@@ -187,6 +193,262 @@ class BlockRendererService
             'context' => $context,
             'renderer' => $this,
         ])->render();
+
+        $styleTag = $scopedCss !== '' ? '<style>'.$scopedCss.'</style>' : '';
+
+        return $styleTag
+            .'<div class="lc-block-scope '.e($scopeClass).'"'
+            .' data-lc-block-scope="'.e($scopeClass).'"'
+            .' data-lc-block-id="'.e($blockId).'"'
+            .($wrapperStyleAttribute !== '' ? ' '.$wrapperStyleAttribute : '')
+            .'>'.$renderedBlock.'</div>';
+    }
+
+    /**
+     * Remove structural keys that belong to the wrapper/scoped CSS system
+     * rather than the block root inline style.
+     *
+     * @param  array<string, mixed>  $styles
+     * @return array<string, mixed>
+     */
+    private function withoutStructuralStyles(array $styles): array
+    {
+        unset(
+            $styles['responsive'],
+            $styles['elements'],
+            $styles['selfAlign'],
+            $styles['selfalign']
+        );
+
+        return $styles;
+    }
+
+    /**
+     * Root width belongs to the alignment wrapper, not to the block root.
+     *
+     * @param  array<string, mixed>  $styles
+     * @return array<string, mixed>
+     */
+    private function withoutRootOnlyStyles(array $styles): array
+    {
+        $styles = $this->withoutStructuralStyles($styles);
+        unset($styles['width']);
+
+        return $styles;
+    }
+
+    /**
+     * @param  array<string, mixed>  $styles
+     * @return array<string, string>
+     */
+    private function buildWrapperStyles(array $styles): array
+    {
+        $wrapper = [];
+        $width = $this->sanitizeCssValue($styles['width'] ?? null);
+
+        if ($width !== null) {
+            $wrapper['width'] = $width;
+        }
+
+        $alignment = $styles['selfAlign'] ?? $styles['selfalign'] ?? null;
+
+        if ($alignment === 'left') {
+            $wrapper['margin-left'] = '0';
+            $wrapper['margin-right'] = 'auto';
+        } elseif ($alignment === 'center') {
+            $wrapper['margin-left'] = 'auto';
+            $wrapper['margin-right'] = 'auto';
+        } elseif ($alignment === 'right') {
+            $wrapper['margin-left'] = 'auto';
+            $wrapper['margin-right'] = '0';
+        }
+
+        return $wrapper;
+    }
+
+    private function buildBlockScopeClass(string $blockId): string
+    {
+        return 'lc-scope-'.preg_replace('/[^a-zA-Z0-9_-]/', '_', $blockId);
+    }
+
+    /**
+     * Build responsive root and per-element CSS for the published page.
+     *
+     * Inline styles win over normal stylesheet declarations, so scoped
+     * overrides are emitted with !important. Values still pass the same
+     * allowlist and injection checks as inline styles.
+     *
+     * @param  array<string, mixed>  $styles
+     */
+    private function buildScopedCss(string $scopeClass, array $styles): string
+    {
+        $scopeSelector = '[data-lc-block-scope="'.e($scopeClass).'"]';
+        $rootSelector = $scopeSelector.' > .lc-block-root';
+        $rules = [];
+
+        $elements = $styles['elements'] ?? [];
+
+        if (is_array($elements)) {
+            foreach ($elements as $elementKey => $elementStyles) {
+                if (
+                    ! is_string($elementKey)
+                    || ! preg_match('/^[a-z][a-z0-9-]{0,39}$/', $elementKey)
+                    || ! is_array($elementStyles)
+                ) {
+                    continue;
+                }
+
+                $elementSelector = $scopeSelector.' [data-lc-el="'.$elementKey.'"]';
+                $baseDeclarations = $this->convertStylesToCssDeclarations(
+                    $this->withoutStructuralStyles($elementStyles)
+                );
+
+                if ($baseDeclarations !== []) {
+                    $rules[] = $elementSelector.' { '
+                        .implode(' ', $this->importantDeclarations($baseDeclarations))
+                        .' }';
+                }
+
+                $elementResponsive = $elementStyles['responsive'] ?? [];
+
+                if (is_array($elementResponsive)) {
+                    foreach (['tablet' => 1024, 'mobile' => 767] as $device => $maxWidth) {
+                        $deviceStyles = $elementResponsive[$device] ?? null;
+
+                        if (! is_array($deviceStyles)) {
+                            continue;
+                        }
+
+                        $declarations = $this->convertStylesToCssDeclarations(
+                            $this->withoutStructuralStyles($deviceStyles)
+                        );
+
+                        if ($declarations === []) {
+                            continue;
+                        }
+
+                        $rules[] = '@media (max-width: '.$maxWidth.'px) { '
+                            .$elementSelector.' { '
+                            .implode(' ', $this->importantDeclarations($declarations))
+                            .' } }';
+                    }
+                }
+            }
+        }
+
+        $responsive = $styles['responsive'] ?? [];
+
+        if (is_array($responsive)) {
+            foreach (['tablet' => 1024, 'mobile' => 767] as $device => $maxWidth) {
+                $deviceStyles = $responsive[$device] ?? null;
+
+                if (! is_array($deviceStyles)) {
+                    continue;
+                }
+
+                $rootDeclarations = $this->convertStylesToCssDeclarations(
+                    $this->withoutRootOnlyStyles($deviceStyles)
+                );
+                $wrapperDeclarations = $this->convertStylesToCssDeclarations(
+                    $this->buildWrapperStyles($deviceStyles)
+                );
+
+                if ($rootDeclarations !== []) {
+                    $rules[] = '@media (max-width: '.$maxWidth.'px) { '
+                        .$rootSelector.' { '
+                        .implode(' ', $this->importantDeclarations($rootDeclarations))
+                        .' } }';
+                }
+
+                if ($wrapperDeclarations !== []) {
+                    $rules[] = '@media (max-width: '.$maxWidth.'px) { '
+                        .$scopeSelector.' { '
+                        .implode(' ', $this->importantDeclarations($wrapperDeclarations))
+                        .' } }';
+                }
+            }
+        }
+
+        return implode("\n", $rules);
+    }
+
+    /**
+     * @param  list<string>  $declarations
+     * @return list<string>
+     */
+    private function importantDeclarations(array $declarations): array
+    {
+        return array_map(
+            static fn (string $declaration): string => $declaration.' !important;',
+            $declarations
+        );
+    }
+
+    private function sanitizeCssValue(mixed $value): ?string
+    {
+        if ($value === null || $value === '' || is_array($value) || is_object($value)) {
+            return null;
+        }
+
+        $stringValue = trim((string) $value);
+
+        if (
+            $stringValue === ''
+            || preg_match('/(?:url\s*\(|expression\s*\(|javascript\s*:|@import|behavior\s*:|-moz-binding|[;{}<>\\\\])/i', $stringValue)
+        ) {
+            return null;
+        }
+
+        return $stringValue;
+    }
+
+    /**
+     * Convert AST style dictionaries into sanitized CSS declarations.
+     *
+     * @param  array<string, mixed>  $styles
+     * @return list<string>
+     */
+    public function convertStylesToCssDeclarations(array $styles): array
+    {
+        $cssDeclarations = [];
+
+        foreach ($styles as $property => $value) {
+            if ($value === null || $value === '' || is_array($value) || is_object($value)) {
+                continue;
+            }
+
+            // Convert camelCase to kebab-case
+            $kebabProperty = strtolower((string) preg_replace('/(?<!^)[A-Z]/', '-$0', (string) $property));
+            $normalizedProperty = str_replace(['-', '_'], '', $kebabProperty);
+
+            // Strictly check allowlisted property names
+            if (! in_array($normalizedProperty, PageAstValidator::ALLOWED_CSS_PROPERTIES, true)) {
+                continue;
+            }
+
+            $safeValue = $this->sanitizeCssValue($value);
+
+            if ($safeValue === null) {
+                continue;
+            }
+
+            // The renderer must not depend on the save-time validator alone.
+            // Never emit overlay positioning or high z-index values from AST data.
+            if (
+                $normalizedProperty === 'position'
+                && in_array(strtolower(trim($safeValue)), ['fixed', 'sticky', 'absolute'], true)
+            ) {
+                continue;
+            }
+
+            if ($normalizedProperty === 'zindex' && (int) $safeValue > PageAstValidator::MAX_Z_INDEX) {
+                continue;
+            }
+
+            $cssDeclarations[] = "{$kebabProperty}: {$safeValue}";
+        }
+
+        return $cssDeclarations;
     }
 
     /**
@@ -196,32 +458,14 @@ class BlockRendererService
      */
     public function convertStylesToCssAttribute(array $styles): string
     {
-        $cssDeclarations = [];
+        $cssDeclarations = array_map(
+            static function (string $declaration): string {
+                [$property, $value] = explode(':', $declaration, 2);
 
-        foreach ($styles as $property => $value) {
-            if ($value === null || $value === '') {
-                continue;
-            }
-
-            // Convert camelCase to kebab-case
-            $kebabProperty = strtolower((string) preg_replace('/(?<!^)[A-Z]/', '-$0', $property));
-
-            // Strictly check allowlisted property names
-            if (! in_array($kebabProperty, PageAstValidator::ALLOWED_CSS_PROPERTIES, true)) {
-                continue;
-            }
-
-            // Sanitize value: disallow dangerous css injection patterns
-            $stringValue = (string) $value;
-            if (preg_match('/(?:url\(|expression\(|javascript:|@import)/i', $stringValue)) {
-                continue;
-            }
-
-            // Escape double quotes or semicolons
-            $safeValue = str_replace(['"', ';'], '', $stringValue);
-
-            $cssDeclarations[] = "{$kebabProperty}: {$safeValue}";
-        }
+                return $property.': '.htmlspecialchars(trim($value), ENT_QUOTES, 'UTF-8');
+            },
+            $this->convertStylesToCssDeclarations($styles)
+        );
 
         if (empty($cssDeclarations)) {
             return '';

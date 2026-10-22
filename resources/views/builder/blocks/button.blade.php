@@ -38,8 +38,8 @@
     }
 @endphp
 
-<div id="{{ $id }}" {!! $styleAttribute !!} class="lc-button-wrapper flex {{ $containerAlign }} my-2 w-full">
-    <a href="{{ $target }}" style="{{ $btnStyle }}" class="lc-button {{ $sizeClasses }} {{ $widthClass }} items-center justify-center font-bold shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-98 {{ $pulse ? 'animate-pulse' : '' }}">
+<div id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root lc-button-wrapper flex {{ $containerAlign }} my-2 w-full">
+    <a href="{{ $target }}" data-lc-el="button" style="{{ $btnStyle }}" class="lc-button {{ $sizeClasses }} {{ $widthClass }} items-center justify-center font-bold shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-98 {{ $pulse ? 'animate-pulse' : '' }}">
         {{ $text }}
     </a>
 </div>

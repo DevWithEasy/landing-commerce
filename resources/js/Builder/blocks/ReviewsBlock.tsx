@@ -25,7 +25,7 @@ function RatingStars({
     const safeRating = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
 
     return (
-        <div className="flex items-center gap-0.5" aria-label={`${safeRating} out of 5 stars`}>
+        <div className="flex items-center gap-0.5" data-lc-el="stars" aria-label={`${safeRating} out of 5 stars`}>
             {Array.from({ length: 5 }).map((_, index) => {
                 const isFilled = index < safeRating;
 
@@ -79,7 +79,7 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
 
     return (
         <section style={inlineStyles} className="w-full py-12">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 {props.title && (
                     <div className="text-center mb-10">
                         {showStars && (
@@ -93,11 +93,15 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                                 />
                             </div>
                         )}
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                        <h2
+                            data-lc-el="title"
+                            className="text-2xl @min-[640px]:text-3xl font-extrabold text-gray-900 tracking-tight"
+                        >
                             {props.title}
                         </h2>
                         {showRatingSummary && (
                             <p
+                                data-lc-el="summary"
                                 className="mt-2 text-sm font-semibold"
                                 style={{ color: ratingSummaryColor }}
                             >
@@ -107,10 +111,11 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 @min-[768px]:grid-cols-2 @min-[1024px]:grid-cols-3 gap-6">
                     {props.items?.map((review) => (
                         <div
                             key={review.id}
+                            data-lc-el="card"
                             className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between"
                         >
                             <div>
@@ -128,7 +133,10 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                                 )}
 
                                 {/* Review Body */}
-                                <p className="text-sm text-gray-700 leading-relaxed italic mb-4">
+                                <p
+                                    data-lc-el="comment"
+                                    className="text-sm text-gray-700 leading-relaxed italic mb-4"
+                                >
                                     "{review.comment}"
                                 </p>
                             </div>
@@ -136,7 +144,7 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                             {/* Author Info */}
                             <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                                 <div>
-                                    <div className="font-bold text-sm text-gray-900">
+                                    <div data-lc-el="author" className="font-bold text-sm text-gray-900">
                                         {review.authorName}
                                     </div>
                                     {review.location && (
@@ -148,7 +156,10 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                                 </div>
 
                                 {review.verifiedPurchase !== false && (
-                                    <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold">
+                                    <div
+                                        data-lc-el="verified"
+                                        className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold"
+                                    >
                                         <CheckCircle className="w-3 h-3" />
                                         <span>Verified Buyer</span>
                                     </div>

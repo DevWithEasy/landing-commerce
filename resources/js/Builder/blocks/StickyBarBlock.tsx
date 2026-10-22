@@ -39,7 +39,10 @@ export function StickyBarBlock({
         >
             <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
                 <div className="flex-1 truncate">
-                    <span className="text-xs sm:text-sm font-semibold text-slate-100 truncate block">
+                    <span
+                        data-lc-el="message"
+                        className="text-xs @min-[640px]:text-sm font-semibold text-slate-100 truncate block"
+                    >
                         {props.message || 'Special Promotion - Cash on Delivery Available!'}
                     </span>
                 </div>
@@ -49,7 +52,8 @@ export function StickyBarBlock({
                         <button
                             type="button"
                             style={buttonCustomStyle}
-                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md cursor-pointer ${buttonPulseClass}`}
+                            data-lc-el="button"
+                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs @min-[640px]:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md cursor-pointer ${buttonPulseClass}`}
                         >
                             <ShoppingCart className="w-4 h-4 mr-1.5" />
                             <span>{props.buttonText || 'Order Now'}</span>
@@ -58,7 +62,8 @@ export function StickyBarBlock({
                         <a
                             href={props.buttonTarget || '#cod-checkout'}
                             style={buttonCustomStyle}
-                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md transform hover:-translate-y-0.5 transition-transform ${buttonPulseClass}`}
+                            data-lc-el="button"
+                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-bold text-xs @min-[640px]:text-sm text-white bg-primary-600 hover:bg-primary-700 shadow-md transform hover:-translate-y-0.5 transition-transform ${buttonPulseClass}`}
                         >
                             <ShoppingCart className="w-4 h-4 mr-1.5" />
                             <span>{props.buttonText || 'Order Now'}</span>

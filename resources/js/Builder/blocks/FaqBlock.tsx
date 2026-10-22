@@ -40,13 +40,16 @@ export function FaqBlock({ props, styles = {} }: FaqBlockComponentProps) {
 
     return (
         <section style={inlineStyles} className="w-full py-12">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="max-w-3xl mx-auto px-4 @min-[640px]:px-6">
                 {props.title && (
                     <div className="text-center mb-8">
                         <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center mx-auto mb-3">
                             <HelpCircle className="w-5 h-5" />
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                        <h2
+                            data-lc-el="title"
+                            className="text-2xl @min-[640px]:text-3xl font-extrabold text-gray-900 tracking-tight"
+                        >
                             {props.title}
                         </h2>
                     </div>
@@ -59,12 +62,14 @@ export function FaqBlock({ props, styles = {} }: FaqBlockComponentProps) {
                         return (
                             <div
                                 key={item.id}
+                                data-lc-el="item"
                                 className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs transition-all"
                             >
                                 <button
                                     type="button"
                                     onClick={() => toggleItem(item.id)}
-                                    className="w-full px-5 py-4 text-left font-bold text-sm sm:text-base text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                    data-lc-el="question"
+                                    className="w-full px-5 py-4 text-left font-bold text-sm @min-[640px]:text-base text-gray-900 flex items-center justify-between hover:bg-gray-50 transition-colors"
                                 >
                                     <span>{item.question}</span>
                                     <ChevronDown
@@ -75,7 +80,10 @@ export function FaqBlock({ props, styles = {} }: FaqBlockComponentProps) {
                                 </button>
 
                                 {isOpen && (
-                                    <div className="px-5 pb-5 pt-1 text-sm text-gray-600 leading-relaxed border-t border-gray-100">
+                                    <div
+                                        data-lc-el="answer"
+                                        className="px-5 pb-5 pt-1 text-sm text-gray-600 leading-relaxed border-t border-gray-100"
+                                    >
                                         {item.answer}
                                     </div>
                                 )}
