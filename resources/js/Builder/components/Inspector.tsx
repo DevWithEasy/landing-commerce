@@ -4,12 +4,12 @@ import {
     AlignLeft,
     AlignRight,
     Box,
-    ChevronDown,
-    ChevronUp,
     Code,
+    LayoutGrid,
     Maximize2,
     Palette,
     Plus,
+    Quote,
     Sparkles,
     Square,
     Trash2,
@@ -21,6 +21,17 @@ import { useState } from 'react';
 import { PageSettingsInspector } from './PageSettingsInspector';
 import { CodeEditor } from './CodeEditor';
 import { CodCheckoutDesignSettings } from './CodCheckoutDesignSettings';
+import {
+    AlignmentControl,
+    ColorControl,
+    ControlSection,
+    NumberUnitControl,
+    SelectControl,
+    SpacingControl,
+    TextControl,
+    TextareaControl,
+    ToggleControl,
+} from './controls';
 import { findBlockInTree, useBuilderStore } from '../stores/useBuilderStore';
 import type {
     AccordionBlockProps,
@@ -37,6 +48,7 @@ import type {
     CountdownTimerBlockProps,
     FaqBlockProps,
     FaqItem,
+    GridBlockProps,
     HeadingBlockProps,
     HeroBlockProps,
     HtmlBlockProps,
@@ -49,6 +61,7 @@ import type {
     ReviewItem,
     ReviewsBlockProps,
     StickyBarBlockProps,
+    TestimonialBlockProps,
     TextBlockProps,
     VideoBlockProps,
 } from '@/types';
@@ -128,10 +141,10 @@ export function Inspector({ blockDefinitions, products, width }: InspectorProps)
                         type="button"
                         onClick={() => setShowPageSettings(true)}
                         className="px-2 py-1 rounded-md text-[11px] font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 flex items-center space-x-1 transition-colors"
-                        title="পেজ সেটিংস (Page Settings)"
+                        title="Page Settings"
                     >
                         <Palette className="w-3.5 h-3.5" />
-                        <span>পেজ সেটিংস</span>
+                        <span>Page Settings</span>
                     </button>
                     <button
                         type="button"
@@ -220,7 +233,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
                             <span className="text-xs font-bold text-gray-900 flex items-center">
                                 <Type className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
-                                Headline (হেডলাইন ডিজাইন)
+                                Headline
                             </span>
                         </div>
                         <div>
@@ -313,7 +326,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
                             <span className="text-xs font-bold text-gray-900 flex items-center">
                                 <AlignLeft className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
-                                Subheadline (সাব-হেডলাইন ডিজাইন)
+                                Subheadline
                             </span>
                         </div>
                         <div>
@@ -373,7 +386,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
                             <span className="text-xs font-bold text-gray-900 flex items-center">
                                 <Sparkles className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
-                                Badge Tag (টপ ব্যাজ ডিজাইন)
+                                Badge Tag
                             </span>
                         </div>
                         <div>
@@ -437,7 +450,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
                             <span className="text-xs font-bold text-gray-900 flex items-center">
                                 <Zap className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
-                                CTA Button (বাটন ডিজাইন)
+                                CTA Button
                             </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -477,10 +490,10 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     onChange={(e) => onChange('buttonSize', e.target.value)}
                                     className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
                                 >
-                                    <option value="sm">Small (ছোট)</option>
-                                    <option value="md">Medium (মাঝারি)</option>
-                                    <option value="lg">Large (বড়)</option>
-                                    <option value="xl">Extra Large (বিশাল)</option>
+                                    <option value="sm">Small</option>
+                                    <option value="md">Medium</option>
+                                    <option value="lg">Large</option>
+                                    <option value="xl">Extra Large</option>
                                 </select>
                             </div>
                             <div>
@@ -492,8 +505,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     onChange={(e) => onChange('buttonWidth', e.target.value)}
                                     className="w-full text-xs rounded border-gray-300 p-1.5 bg-white"
                                 >
-                                    <option value="auto">Auto (ফিট কনটেন্ট)</option>
-                                    <option value="full">Full Width (সম্পূর্ণ চওড়া)</option>
+                                    <option value="auto">Auto (Fit Content)</option>
+                                    <option value="full">Full Width</option>
                                 </select>
                             </div>
                         </div>
@@ -555,7 +568,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                     <option value="6px">Small (6px)</option>
                                     <option value="12px">Rounded (12px)</option>
                                     <option value="16px">Large (16px)</option>
-                                    <option value="9999px">Pill (সম্পূর্ণ গোল)</option>
+                                    <option value="9999px">Pill</option>
                                 </select>
                             </div>
                             <div className="flex items-center space-x-2 pt-4">
@@ -578,7 +591,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         <div className="flex items-center justify-between pb-1.5 border-b border-gray-200">
                             <span className="text-xs font-bold text-gray-900 flex items-center">
                                 <Box className="w-3.5 h-3.5 mr-1.5 text-primary-600" />
-                                Showcase Image (ইমেজ সেটিংস)
+                                Showcase Image
                             </span>
                         </div>
                         <div>
@@ -602,9 +615,9 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 onChange={(e) => onChange('imagePosition', e.target.value)}
                                 className="w-full text-xs rounded-lg border-gray-300 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 p-2 bg-white"
                             >
-                                <option value="right">Right Side (ডানে)</option>
-                                <option value="left">Left Side (বামে)</option>
-                                <option value="background">Background Overlay (ব্যাকগ্রাউন্ডে)</option>
+                                <option value="right">Right Side</option>
+                                <option value="left">Left Side</option>
+                                <option value="background">Background Overlay</option>
                             </select>
                         </div>
                     </div>
@@ -631,7 +644,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
 
                     <div className="pt-2 border-t border-gray-100">
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Order Button Text (প্রতিটি কার্ডের বাটন টেক্সট)
+                            Order Button Text
                         </label>
                         <input
                             type="text"
@@ -690,7 +703,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Form Fields Customization (Labels & Placeholders) */}
                     <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 space-y-3">
                         <div className="text-xs font-bold text-gray-800 border-b border-gray-200 pb-1.5 flex items-center justify-between">
-                            <span>Form Fields (লেবেল ও প্লেসহোল্ডার)</span>
+                            <span>Form Fields</span>
                         </div>
 
                         {/* Customer Name Field */}
@@ -779,7 +792,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                         {/* Submit Button Text */}
                         <div className="space-y-1 pt-1 border-t border-gray-200">
                             <label className="block text-[11px] font-semibold text-gray-700">
-                                Submit Button Text (অর্ডার বাটন):
+                                Submit Button Text
                             </label>
                             <input
                                 type="text"
@@ -1357,10 +1370,11 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl">
                         <div className="flex items-center space-x-1.5 text-emerald-900 font-bold text-xs mb-1">
                             <Code className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>কাস্টম HTML ও CSS এডিটর</span>
+                            <span>Custom HTML & CSS Editor</span>
                         </div>
                         <p className="text-[11px] text-emerald-800 leading-relaxed">
-                            এখানে আপনার ইচ্ছামতো যেকোনো HTML কোড ও কাস্টম CSS ক্লাস লিখুন। কোড লেখার সাথে সাথে বামপাশের ক্যানভাসে তা লাইভ প্রিভিউ হবে।
+                            Write any valid HTML markup and scoped CSS classes here. The left
+                            canvas previews your changes live as you type.
                         </p>
                     </div>
 
@@ -1403,8 +1417,10 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-200 text-[11px] text-amber-900 leading-normal">
-                        <strong className="block font-semibold mb-0.5">নিরাপত্তা নীতিমালা:</strong>
-                        নিরাপত্তাজনিত কারণে &lt;script&gt; ট্যাগ বা ইনলাইন ইভেন্ট হ্যান্ডলার (যেমন onclick, onerror) ব্লক করা থাকবে। আপনি সকল বৈধ HTML এলিমেন্ট এবং TailwindCSS ক্লাস ব্যবহার করতে পারবেন।
+                        <strong className="block font-semibold mb-0.5">Security Policy:</strong>
+                        For safety, &lt;script&gt; tags and inline event handlers (such as onclick,
+                        onerror) are blocked. All valid HTML elements and TailwindCSS classes are
+                        supported.
                     </div>
                 </div>
             );
@@ -1429,7 +1445,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Flex Direction */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
-                            Direction (দিক নির্দেশনা)
+                            Direction
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             {[
@@ -1455,12 +1471,12 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Flex Wrap */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
-                            Flex Wrap (র‌্যাপ মোড)
+                            Flex Wrap
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             {[
                                 { value: 'nowrap', label: 'No Wrap' },
-                                { value: 'wrap', label: 'Wrap (নতুন লাইনে)' },
+                                { value: 'wrap', label: 'Wrap' },
                             ].map((opt) => (
                                 <button
                                     key={opt.value}
@@ -1481,43 +1497,43 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Justify Content */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Justify Content (প্রধান অক্ষ বরাবর সাজানো)
+                            Justify Content
                         </label>
                         <select
                             value={p.justifyContent || 'flex-start'}
                             onChange={(e) => onChange('justifyContent', e.target.value)}
                             className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
                         >
-                            <option value="flex-start">Start (শুরুতে)</option>
-                            <option value="center">Center (মাঝখানে)</option>
-                            <option value="flex-end">End (শেষে)</option>
-                            <option value="space-between">Space Between (মাঝখানে সমান ফাঁকা)</option>
-                            <option value="space-around">Space Around (চারপাশে সমান ফাঁকা)</option>
-                            <option value="space-evenly">Space Evenly (সমান দূরত্ব)</option>
+                            <option value="flex-start">Start</option>
+                            <option value="center">Center</option>
+                            <option value="flex-end">End</option>
+                            <option value="space-between">Space Between</option>
+                            <option value="space-around">Space Around</option>
+                            <option value="space-evenly">Space Evenly</option>
                         </select>
                     </div>
 
                     {/* Align Items */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Align Items (লম্বালম্বি প্রান্তিককরণ)
+                            Align Items
                         </label>
                         <select
                             value={p.alignItems || 'stretch'}
                             onChange={(e) => onChange('alignItems', e.target.value)}
                             className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
                         >
-                            <option value="stretch">Stretch (পুরো দৈর্ঘ্য)</option>
-                            <option value="flex-start">Start (শুরুতে)</option>
-                            <option value="center">Center (মাঝখানে)</option>
-                            <option value="flex-end">End (শেষে)</option>
+                            <option value="stretch">Stretch</option>
+                            <option value="flex-start">Start</option>
+                            <option value="center">Center</option>
+                            <option value="flex-end">End</option>
                         </select>
                     </div>
 
                     {/* Gap */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Items Gap (উপাদানগুলোর ব্যবধান)
+                            Items Gap
                         </label>
                         <div className="grid grid-cols-4 gap-1 mb-2">
                             {['0px', '8px', '16px', '24px'].map((g) => (
@@ -1568,7 +1584,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* HTML Tag Level */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1.5">
-                            HTML Tag (হেডিং লেভেল)
+                            HTML Tag
                         </label>
                         <div className="grid grid-cols-6 gap-1">
                             {(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const).map((tag) => (
@@ -1789,7 +1805,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Image URL */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Image URL (ছবির লিংক)
+                            Image URL
                         </label>
                         <input
                             type="url"
@@ -1803,7 +1819,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Alt Text */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Alt Text (ছবির বিবরণ / SEO)
+                            Alt Text
                         </label>
                         <input
                             type="text"
@@ -1817,7 +1833,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Caption */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Caption (ক্যাপশন)
+                            Caption
                         </label>
                         <input
                             type="text"
@@ -1831,7 +1847,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Link URL */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Click Link URL (ক্লিক করলে যে লিংকে যাবে)
+                            Click Link URL
                         </label>
                         <input
                             type="text"
@@ -1877,14 +1893,14 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Aspect Ratio */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Aspect Ratio (অনুপাত)
+                            Aspect Ratio
                         </label>
                         <select
                             value={p.aspectRatio || 'auto'}
                             onChange={(e) => onChange('aspectRatio', e.target.value)}
                             className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
                         >
-                            <option value="auto">Auto (স্বাভাবিক মাপ)</option>
+                            <option value="auto">Auto</option>
                             <option value="1/1">Square (1:1)</option>
                             <option value="4/3">Landscape (4:3)</option>
                             <option value="16/9">Widescreen (16:9)</option>
@@ -1901,7 +1917,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Button Text */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Button Text (বাটনের লেখা)
+                            Button Text
                         </label>
                         <input
                             type="text"
@@ -1915,7 +1931,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                     {/* Target Selector / URL */}
                     <div>
                         <label className="block text-[11px] font-semibold text-gray-700 mb-1">
-                            Target / Link URL (টার্গেট বা লিংক)
+                            Target / Link URL
                         </label>
                         <input
                             type="text"
@@ -1925,7 +1941,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             className="w-full text-xs rounded-lg border-gray-300 p-2 font-mono"
                         />
                         <span className="text-[10px] text-gray-400 mt-1 block">
-                            যেমন #cod_checkout_form দিলে স্ক্রোল করে ফর্ম দেখাবে, বা পূর্ণ URL দিলে সেই পেজে যাবে।
+                            Use #cod-checkout to scroll to the form, or a full URL to open another page.
                         </span>
                     </div>
 
@@ -1955,8 +1971,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                                 onChange={(e) => onChange('width', e.target.value)}
                                 className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
                             >
-                                <option value="auto">Auto (লেখার মাপ অনুযায়ী)</option>
-                                <option value="full">Full Width (পুরো প্রস্থ)</option>
+                                <option value="auto">Auto (Fit Content)</option>
+                                <option value="full">Full Width</option>
                             </select>
                         </div>
                     </div>
@@ -2100,7 +2116,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Section Title (শিরোনাম)
+                            Section Title
                         </label>
                         <textarea
                             rows={2}
@@ -2113,7 +2129,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
 
                     <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                            List Style (তালিকার ধরন)
+                            List Style
                         </label>
                         <select
                             value={p.listType || 'ul'}
@@ -2133,7 +2149,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
                         />
                         <span className="text-xs font-semibold text-gray-700">
-                            Show list markers (বুলেট/নম্বর)
+                            Show list markers
                         </span>
                     </label>
 
@@ -2256,7 +2272,7 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                 <div className="space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                            Section Title (ঐচ্ছিক)
+                            Section Title (Optional)
                         </label>
                         <input
                             type="text"
@@ -2345,8 +2361,8 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
                             onChange={(e) => onChange('imageFit', e.target.value)}
                             className="w-full text-xs rounded-lg border-gray-300 p-2 bg-white cursor-pointer"
                         >
-                            <option value="cover">Cover (সব জায়গা ভরবে)</option>
-                            <option value="contain">Contain (পুরো ছবি দেখা যাবে)</option>
+                            <option value="cover">Cover</option>
+                            <option value="contain">Contain</option>
                         </select>
                     </div>
 
@@ -2464,6 +2480,247 @@ function BlockPropsForm({ block, products, onChange }: BlockPropsFormProps) {
             );
         }
 
+        case 'GridBlock': {
+            const p = props as unknown as GridBlockProps;
+            const numberValue = (value: string, fallback: number) => {
+                const parsed = Number.parseFloat(value);
+                return Number.isFinite(parsed) ? parsed : fallback;
+            };
+            const alignOptions = [
+                { label: 'Stretch', value: 'stretch' },
+                { label: 'Start', value: 'start' },
+                { label: 'Center', value: 'center' },
+                { label: 'End', value: 'end' },
+            ];
+
+            return (
+                <div className="space-y-2">
+                    <ControlSection title="Grid Layout" icon={LayoutGrid} defaultOpen>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <NumberUnitControl
+                                label="Desktop Columns"
+                                value={String(p.columns ?? 3)}
+                                unit={null}
+                                min={1}
+                                max={6}
+                                step={1}
+                                onChange={(value) =>
+                                    onChange('columns', numberValue(value, p.columns ?? 3))
+                                }
+                            />
+                            <NumberUnitControl
+                                label="Tablet Columns"
+                                value={String(p.tabletColumns ?? 2)}
+                                unit={null}
+                                min={1}
+                                max={6}
+                                step={1}
+                                onChange={(value) =>
+                                    onChange(
+                                        'tabletColumns',
+                                        numberValue(value, p.tabletColumns ?? 2)
+                                    )
+                                }
+                            />
+                            <NumberUnitControl
+                                label="Mobile Columns"
+                                value={String(p.mobileColumns ?? 1)}
+                                unit={null}
+                                min={1}
+                                max={6}
+                                step={1}
+                                onChange={(value) =>
+                                    onChange(
+                                        'mobileColumns',
+                                        numberValue(value, p.mobileColumns ?? 1)
+                                    )
+                                }
+                            />
+                            <div />
+                            <NumberUnitControl
+                                label="Column Gap"
+                                value={p.columnGap ?? '16px'}
+                                unit="px"
+                                min={0}
+                                max={120}
+                                onChange={(value) => onChange('columnGap', value)}
+                            />
+                            <NumberUnitControl
+                                label="Row Gap"
+                                value={p.rowGap ?? '16px'}
+                                unit="px"
+                                min={0}
+                                max={120}
+                                onChange={(value) => onChange('rowGap', value)}
+                            />
+                            <SelectControl
+                                label="Align Items"
+                                value={p.alignItems ?? 'stretch'}
+                                options={alignOptions}
+                                onChange={(value) => onChange('alignItems', value)}
+                            />
+                            <SelectControl
+                                label="Justify Items"
+                                value={p.justifyItems ?? 'stretch'}
+                                options={alignOptions}
+                                onChange={(value) => onChange('justifyItems', value)}
+                            />
+                        </div>
+                    </ControlSection>
+                    <p className="px-1 text-[9px] leading-relaxed text-gray-400">
+                        Grid children flow into responsive columns based on the canvas or
+                        container width. Use the Layers panel to nest blocks inside.
+                    </p>
+                </div>
+            );
+        }
+
+        case 'TestimonialBlock': {
+            const p = props as unknown as TestimonialBlockProps;
+
+            return (
+                <div className="space-y-2">
+                    <ControlSection title="Testimonial Content" icon={Quote} defaultOpen>
+                        <TextareaControl
+                            label="Quote"
+                            value={p.quote || ''}
+                            placeholder="Share what the customer said..."
+                            rows={3}
+                            onChange={(value) => onChange('quote', value)}
+                        />
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <TextControl
+                                label="Author Name"
+                                value={p.authorName || ''}
+                                onChange={(value) => onChange('authorName', value)}
+                            />
+                            <TextControl
+                                label="Role / Label"
+                                value={p.authorRole || ''}
+                                placeholder="Verified Customer"
+                                onChange={(value) => onChange('authorRole', value)}
+                            />
+                            <TextControl
+                                label="Location"
+                                value={p.location || ''}
+                                placeholder="Dhaka"
+                                onChange={(value) => onChange('location', value)}
+                            />
+                            <SelectControl
+                                label="Rating"
+                                value={String(p.rating ?? 5)}
+                                options={[5, 4, 3, 2, 1].map((value) => ({
+                                    label: `${value} Star${value === 1 ? '' : 's'}`,
+                                    value: String(value),
+                                }))}
+                                onChange={(value) => onChange('rating', Number(value))}
+                            />
+                        </div>
+                        <TextControl
+                            label="Avatar URL"
+                            type="url"
+                            value={p.avatarUrl || ''}
+                            placeholder="https://example.com/avatar.jpg"
+                            onChange={(value) => onChange('avatarUrl', value)}
+                        />
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <SelectControl
+                                label="Layout"
+                                value={p.layout ?? 'card'}
+                                options={[
+                                    { label: 'Card', value: 'card' },
+                                    { label: 'Minimal', value: 'minimal' },
+                                ]}
+                                onChange={(value) => onChange('layout', value)}
+                            />
+                            <div className="flex flex-col justify-end">
+                                <ToggleControl
+                                    label="Verified Purchase"
+                                    checked={p.verifiedPurchase !== false}
+                                    onChange={(checked) =>
+                                        onChange('verifiedPurchase', checked)
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <ToggleControl
+                                label="Show Quote Icon"
+                                checked={p.showQuoteIcon !== false}
+                                onChange={(checked) => onChange('showQuoteIcon', checked)}
+                            />
+                            <ToggleControl
+                                label="Show Rating"
+                                checked={p.showRating !== false}
+                                onChange={(checked) => onChange('showRating', checked)}
+                            />
+                        </div>
+                    </ControlSection>
+
+                    <ControlSection title="Testimonial Design" icon={Palette} defaultOpen>
+                        <div className="grid grid-cols-2 gap-1.5">
+                            <ColorControl
+                                label="Accent Color"
+                                value={p.accentColor || ''}
+                                fallback="#059669"
+                                onChange={(value) => onChange('accentColor', value)}
+                            />
+                            <ColorControl
+                                label="Card Background"
+                                value={p.cardBgColor || ''}
+                                fallback="#ffffff"
+                                onChange={(value) => onChange('cardBgColor', value)}
+                            />
+                            <ColorControl
+                                label="Quote Color"
+                                value={p.quoteColor || ''}
+                                fallback="#1e293b"
+                                onChange={(value) => onChange('quoteColor', value)}
+                            />
+                            <ColorControl
+                                label="Author Color"
+                                value={p.authorColor || ''}
+                                fallback="#0f172a"
+                                onChange={(value) => onChange('authorColor', value)}
+                            />
+                            <NumberUnitControl
+                                label="Quote Font Size"
+                                value={p.quoteFontSize ?? '20px'}
+                                unit="px"
+                                min={10}
+                                max={60}
+                                onChange={(value) => onChange('quoteFontSize', value)}
+                            />
+                            <NumberUnitControl
+                                label="Avatar Size"
+                                value={p.avatarSize ?? '52px'}
+                                unit="px"
+                                min={24}
+                                max={160}
+                                onChange={(value) => onChange('avatarSize', value)}
+                            />
+                            <NumberUnitControl
+                                label="Card Radius"
+                                value={p.cardRadius ?? '20px'}
+                                unit="px"
+                                min={0}
+                                max={80}
+                                onChange={(value) => onChange('cardRadius', value)}
+                            />
+                            <NumberUnitControl
+                                label="Card Padding"
+                                value={p.cardPadding ?? '32px'}
+                                unit="px"
+                                min={0}
+                                max={120}
+                                onChange={(value) => onChange('cardPadding', value)}
+                            />
+                        </div>
+                    </ControlSection>
+                </div>
+            );
+        }
+
         default:
             return <div className="text-xs text-gray-400">No properties for this block.</div>;
     }
@@ -2476,638 +2733,353 @@ interface BlockStylesFormProps {
 }
 
 function BlockStylesForm({ styles, onChange, onBatchChange }: BlockStylesFormProps) {
-    const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-        background: true,
-        typography: true,
-        spacing: true,
-        borders: false,
-        shadows: false,
-        button: true,
-    });
+    const batch = (updates: Partial<BlockStyles>) => {
+        if (onBatchChange) {
+            onBatchChange(updates);
+            return;
+        }
 
-    const toggleSection = (sec: string) => {
-        setOpenSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
+        (Object.keys(updates) as Array<keyof BlockStyles>).forEach((key) => {
+            onChange(key, updates[key]);
+        });
     };
 
-    const BG_SWATCHES = [
-        { name: 'White', color: '#ffffff' },
-        { name: 'Slate Light', color: '#f8fafc' },
-        { name: 'Gray', color: '#f3f4f6' },
-        { name: 'Cream', color: '#fffbeb' },
-        { name: 'Emerald Soft', color: '#ecfdf5' },
-        { name: 'Rose Soft', color: '#fff1f2' },
-        { name: 'Slate Dark', color: '#0f172a' },
+    const padding: [string, string, string, string] = [
+        styles.paddingTop ?? '',
+        styles.paddingRight ?? '',
+        styles.paddingBottom ?? '',
+        styles.paddingLeft ?? '',
     ];
+
+    const margin: [string, string, string, string] = [
+        styles.marginTop ?? '',
+        styles.marginRight ?? '',
+        styles.marginBottom ?? '',
+        styles.marginLeft ?? '',
+    ];
+
+    const BACKGROUND_SWATCHES = ['#ffffff', '#f8fafc', '#f3f4f6', '#fffbeb', '#ecfdf5', '#fff1f2', '#0f172a'];
+    const TEXT_SWATCHES = ['#0f172a', '#475569', '#ffffff', '#059669', '#e11d48', '#d97706'];
+    const BUTTON_SWATCHES = ['#059669', '#16a34a', '#2563eb', '#4f46e5', '#dc2626', '#0f172a'];
 
     const GRADIENT_PRESETS = [
         { name: 'None', gradient: '' },
         { name: 'Slate Dark', gradient: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' },
-        { name: 'Emerald Luxury', gradient: 'linear-gradient(135deg, #065f46 0%, #022c22 100%)' },
-        { name: 'Sunset Warm', gradient: 'linear-gradient(135deg, #fff1f2 0%, #fef3c7 100%)' },
+        { name: 'Emerald', gradient: 'linear-gradient(135deg, #065f46 0%, #022c22 100%)' },
+        { name: 'Sunset', gradient: 'linear-gradient(135deg, #fff1f2 0%, #fef3c7 100%)' },
         { name: 'Cool Ice', gradient: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)' },
         { name: 'Midnight', gradient: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)' },
     ];
 
-    const TEXT_SWATCHES = [
-        { name: 'Dark Slate', color: '#0f172a' },
-        { name: 'Muted', color: '#475569' },
-        { name: 'Pure White', color: '#ffffff' },
-        { name: 'Emerald Brand', color: '#059669' },
-        { name: 'Crimson', color: '#e11d48' },
-        { name: 'Amber', color: '#d97706' },
-    ];
-
     const SHADOW_PRESETS = [
         { id: 'none', label: 'None', val: 'none' },
-        { id: 'sm', label: 'Soft', val: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' },
-        { id: 'md', label: 'Card', val: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' },
-        { id: 'lg', label: 'Float', val: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' },
-        { id: 'xl', label: 'Deep Glow', val: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
-        { id: 'emerald', label: 'Brand Glow', val: '0 10px 25px -5px rgba(16, 185, 129, 0.3)' },
+        {
+            id: 'sm',
+            label: 'Soft',
+            val: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+        },
+        {
+            id: 'md',
+            label: 'Card',
+            val: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        },
+        {
+            id: 'lg',
+            label: 'Float',
+            val: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        },
+        {
+            id: 'xl',
+            label: 'Deep',
+            val: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+        },
+        {
+            id: 'emerald',
+            label: 'Glow',
+            val: '0 10px 25px -5px rgba(16, 185, 129, 0.3)',
+        },
+    ];
+
+    const WIDTH_PRESETS = [
+        { label: 'Full', val: '100%' },
+        { label: '1280', val: '1280px' },
+        { label: '1024', val: '1024px' },
+        { label: '768', val: '768px' },
     ];
 
     return (
-        <div className="space-y-3 text-xs">
-            {/* 1. Background & Colors */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                <button
-                    type="button"
-                    onClick={() => toggleSection('background')}
-                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
-                >
-                    <div className="flex items-center space-x-2">
-                        <Palette className="w-3.5 h-3.5 text-primary-600" />
-                        <span>Background & Colors</span>
-                    </div>
-                    {openSections.background ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-                </button>
+        <div className="space-y-2">
+            <ControlSection title="Background & Colors" icon={Palette} description="Solid fill, gradient and text color" defaultOpen>
+                <ColorControl
+                    label="Solid Background"
+                    value={styles.backgroundColor || ''}
+                    fallback="#ffffff"
+                    presets={BACKGROUND_SWATCHES}
+                    onChange={(value) => batch({ backgroundColor: value, background: '' })}
+                />
 
-                {openSections.background && (
-                    <div className="p-3.5 space-y-3.5">
-                        {/* Background Color with Swatches */}
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label className="font-semibold text-gray-700">Solid Background</label>
-                                <span className="font-mono text-[10px] text-gray-400">{styles.backgroundColor || '#ffffff'}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 mb-2">
-                                <input
-                                    type="color"
-                                    value={styles.backgroundColor || '#ffffff'}
-                                    onChange={(e) => {
-                                        if (onBatchChange) {
-                                            onBatchChange({ backgroundColor: e.target.value, background: '' });
-                                        } else {
-                                            onChange('backgroundColor', e.target.value);
-                                        }
-                                    }}
-                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                                />
-                                <input
-                                    type="text"
-                                    value={styles.backgroundColor || ''}
-                                    onChange={(e) => onChange('backgroundColor', e.target.value)}
-                                    placeholder="#ffffff"
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                                />
-                            </div>
-
-                            {/* Quick Swatches */}
-                            <div className="flex items-center gap-1.5 pt-1">
-                                {BG_SWATCHES.map((sw, idx) => (
-                                    <button
-                                        key={idx}
-                                        type="button"
-                                        title={sw.name}
-                                        onClick={() => {
-                                            if (onBatchChange) {
-                                                onBatchChange({ backgroundColor: sw.color, background: '' });
-                                            } else {
-                                                onChange('backgroundColor', sw.color);
-                                            }
-                                        }}
-                                        style={{ backgroundColor: sw.color }}
-                                        className={`w-6 h-6 rounded-full border border-gray-300 shadow-2xs transition hover:scale-110 cursor-pointer ${
-                                            styles.backgroundColor === sw.color ? 'ring-2 ring-primary-500 ring-offset-1' : ''
-                                        }`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Gradient Presets */}
-                        <div className="pt-2 border-t border-gray-100">
-                            <label className="block font-semibold text-gray-700 mb-1.5">Gradient Presets</label>
-                            <div className="grid grid-cols-3 gap-1.5">
-                                {GRADIENT_PRESETS.map((gp, i) => (
-                                    <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => {
-                                            if (onBatchChange) {
-                                                onBatchChange({
-                                                    background: gp.gradient,
-                                                    backgroundColor: gp.gradient ? 'transparent' : '#ffffff',
-                                                });
-                                            } else {
-                                                onChange('background', gp.gradient);
-                                            }
-                                        }}
-                                        className={`p-1.5 rounded-lg border text-[10px] font-medium text-center truncate transition cursor-pointer ${
-                                            (styles.background || '') === gp.gradient
-                                                ? 'border-primary-600 bg-primary-50 text-primary-900 font-bold ring-1 ring-primary-500'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-white'
-                                        }`}
-                                    >
-                                        {gp.name}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* 2. Typography & Alignment */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                <button
-                    type="button"
-                    onClick={() => toggleSection('typography')}
-                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
-                >
-                    <div className="flex items-center space-x-2">
-                        <Type className="w-3.5 h-3.5 text-primary-600" />
-                        <span>Typography & Alignment</span>
-                    </div>
-                    {openSections.typography ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-                </button>
-
-                {openSections.typography && (
-                    <div className="p-3.5 space-y-3.5">
-                        {/* Text Alignment */}
-                        <div>
-                            <label className="block font-semibold text-gray-700 mb-1.5">Content Alignment</label>
-                            <div className="grid grid-cols-4 gap-1 p-1 bg-gray-100 rounded-lg">
-                                {[
-                                    { mode: 'left', icon: AlignLeft, label: 'Left' },
-                                    { mode: 'center', icon: AlignCenter, label: 'Center' },
-                                    { mode: 'right', icon: AlignRight, label: 'Right' },
-                                    { mode: 'justify', icon: AlignJustify, label: 'Justify' },
-                                ].map((item) => {
-                                    const IconComponent = item.icon;
-                                    const isSel = (styles.textAlign || 'left') === item.mode;
-                                    return (
-                                        <button
-                                            key={item.mode}
-                                            type="button"
-                                            onClick={() => onChange('textAlign', item.mode)}
-                                            className={`py-1.5 flex flex-col items-center justify-center rounded-md transition cursor-pointer ${
-                                                isSel ? 'bg-white shadow-xs text-primary-700 font-bold' : 'text-gray-500 hover:text-gray-900'
-                                            }`}
-                                        >
-                                            <IconComponent className="w-4 h-4" />
-                                            <span className="text-[9px] mt-0.5">{item.label}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Text Color */}
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label className="font-semibold text-gray-700">Text Color</label>
-                                <span className="font-mono text-[10px] text-gray-400">{styles.color || '#000000'}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 mb-2">
-                                <input
-                                    type="color"
-                                    value={styles.color || '#000000'}
-                                    onChange={(e) => onChange('color', e.target.value)}
-                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                                />
-                                <input
-                                    type="text"
-                                    value={styles.color || ''}
-                                    onChange={(e) => onChange('color', e.target.value)}
-                                    placeholder="#000000"
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                                {TEXT_SWATCHES.map((sw, idx) => (
-                                    <button
-                                        key={idx}
-                                        type="button"
-                                        title={sw.name}
-                                        onClick={() => onChange('color', sw.color)}
-                                        style={{ backgroundColor: sw.color }}
-                                        className={`w-5 h-5 rounded-full border border-gray-300 shadow-2xs transition hover:scale-110 cursor-pointer ${
-                                            styles.color === sw.color ? 'ring-2 ring-primary-500 ring-offset-1' : ''
-                                        }`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Font Size & Weight */}
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                            <div>
-                                <label className="block font-semibold text-gray-700 mb-1">Font Size</label>
-                                <select
-                                    value={styles.fontSize || ''}
-                                    onChange={(e) => onChange('fontSize', e.target.value)}
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
-                                >
-                                    <option value="">Default</option>
-                                    <option value="14px">Small (14px)</option>
-                                    <option value="16px">Medium (16px)</option>
-                                    <option value="18px">Large (18px)</option>
-                                    <option value="20px">XL (20px)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block font-semibold text-gray-700 mb-1">Font Weight</label>
-                                <select
-                                    value={styles.fontWeight || ''}
-                                    onChange={(e) => onChange('fontWeight', e.target.value)}
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
-                                >
-                                    <option value="">Default</option>
-                                    <option value="400">Regular (400)</option>
-                                    <option value="500">Medium (500)</option>
-                                    <option value="600">SemiBold (600)</option>
-                                    <option value="700">Bold (700)</option>
-                                    <option value="800">Extra Bold (800)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* 3. Spacing & Dimensions */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                <button
-                    type="button"
-                    onClick={() => toggleSection('spacing')}
-                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
-                >
-                    <div className="flex items-center space-x-2">
-                        <Maximize2 className="w-3.5 h-3.5 text-primary-600" />
-                        <span>Spacing & Dimensions</span>
-                    </div>
-                    {openSections.spacing ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-                </button>
-
-                {openSections.spacing && (
-                    <div className="p-3.5 space-y-3.5">
-                        {/* Container Max Width */}
-                        <div>
-                            <label className="block font-semibold text-gray-700 mb-1.5">Section Width</label>
-                            <div className="grid grid-cols-4 gap-1">
-                                {[
-                                    { label: 'Full', val: '100%' },
-                                    { label: '1280px', val: '1280px' },
-                                    { label: '1024px', val: '1024px' },
-                                    { label: '768px', val: '768px' },
-                                ].map((item) => (
-                                    <button
-                                        key={item.val}
-                                        type="button"
-                                        onClick={() => onChange('maxWidth', item.val)}
-                                        className={`py-1 rounded-md border text-[11px] font-medium transition cursor-pointer ${
-                                            (styles.maxWidth || '100%') === item.val
-                                                ? 'bg-primary-50 border-primary-600 text-primary-950 font-bold'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Section Min Height */}
-                        <div>
-                            <label className="block text-[11px] text-gray-500 mb-0.5">Section Min Height</label>
-                            <input
-                                type="text"
-                                value={styles.minHeight || ''}
-                                onChange={(e) => onChange('minHeight', e.target.value)}
-                                placeholder="e.g. 480px (optional)"
-                                className="w-full text-xs rounded-lg border-gray-300 p-1.5"
-                            />
-                        </div>
-
-                        {/* Vertical Padding Presets */}
-                        <div>
-                            <label className="block font-semibold text-gray-700 mb-1.5">Vertical Padding Presets</label>
-                            <div className="grid grid-cols-4 gap-1 mb-2">
-                                {[
-                                    { label: 'None', val: '0px' },
-                                    { label: 'Compact', val: '24px' },
-                                    { label: 'Standard', val: '48px' },
-                                    { label: 'Spacious', val: '80px' },
-                                ].map((pad) => (
-                                    <button
-                                        key={pad.val}
-                                        type="button"
-                                        onClick={() => {
-                                            if (onBatchChange) {
-                                                onBatchChange({ paddingTop: pad.val, paddingBottom: pad.val });
-                                            } else {
-                                                onChange('paddingTop', pad.val);
-                                                onChange('paddingBottom', pad.val);
-                                            }
-                                        }}
-                                        className={`py-1 rounded-md border text-[11px] font-medium transition cursor-pointer ${
-                                            styles.paddingTop === pad.val && styles.paddingBottom === pad.val
-                                                ? 'bg-primary-50 border-primary-600 text-primary-950 font-bold'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                                        }`}
-                                    >
-                                        {pad.label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Fine tuning */}
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="block text-[11px] text-gray-500 mb-0.5">Top Padding</label>
-                                    <input
-                                        type="text"
-                                        value={styles.paddingTop || ''}
-                                        onChange={(e) => onChange('paddingTop', e.target.value)}
-                                        placeholder="e.g. 48px"
-                                        className="w-full text-xs rounded-lg border-gray-300 p-1.5"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] text-gray-500 mb-0.5">Bottom Padding</label>
-                                    <input
-                                        type="text"
-                                        value={styles.paddingBottom || ''}
-                                        onChange={(e) => onChange('paddingBottom', e.target.value)}
-                                        placeholder="e.g. 48px"
-                                        className="w-full text-xs rounded-lg border-gray-300 p-1.5"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Margins */}
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                            <div>
-                                <label className="block text-[11px] text-gray-500 mb-0.5">Top Margin</label>
-                                <input
-                                    type="text"
-                                    value={styles.marginTop || ''}
-                                    onChange={(e) => onChange('marginTop', e.target.value)}
-                                    placeholder="0px"
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] text-gray-500 mb-0.5">Bottom Margin</label>
-                                <input
-                                    type="text"
-                                    value={styles.marginBottom || ''}
-                                    onChange={(e) => onChange('marginBottom', e.target.value)}
-                                    placeholder="0px"
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* 4. Borders & Corners */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                <button
-                    type="button"
-                    onClick={() => toggleSection('borders')}
-                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
-                >
-                    <div className="flex items-center space-x-2">
-                        <Square className="w-3.5 h-3.5 text-primary-600" />
-                        <span>Borders & Corners</span>
-                    </div>
-                    {openSections.borders ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-                </button>
-
-                {openSections.borders && (
-                    <div className="p-3.5 space-y-3">
-                        {/* Border Radius Presets */}
-                        <div>
-                            <label className="block font-semibold text-gray-700 mb-1.5">Corner Radius</label>
-                            <div className="grid grid-cols-5 gap-1 mb-2">
-                                {[
-                                    { label: '0px', val: '0px' },
-                                    { label: '8px', val: '8px' },
-                                    { label: '16px', val: '16px' },
-                                    { label: '24px', val: '24px' },
-                                    { label: 'Pill', val: '9999px' },
-                                ].map((item) => (
-                                    <button
-                                        key={item.val}
-                                        type="button"
-                                        onClick={() => onChange('borderRadius', item.val)}
-                                        className={`py-1 rounded-md border text-[10px] font-medium transition cursor-pointer ${
-                                            styles.borderRadius === item.val
-                                                ? 'bg-primary-50 border-primary-600 text-primary-950 font-bold'
-                                                : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                                        }`}
-                                    >
-                                        {item.label}
-                                    </button>
-                                ))}
-                            </div>
-                            <input
-                                type="text"
-                                value={styles.borderRadius || ''}
-                                onChange={(e) => onChange('borderRadius', e.target.value)}
-                                placeholder="Custom radius e.g. 16px"
-                                className="w-full text-xs rounded-lg border-gray-300 p-1.5"
-                            />
-                        </div>
-
-                        {/* Border Width & Style */}
-                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                            <div>
-                                <label className="block text-[11px] text-gray-600 mb-1">Border Width</label>
-                                <select
-                                    value={styles.borderWidth || ''}
-                                    onChange={(e) => onChange('borderWidth', e.target.value)}
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
-                                >
-                                    <option value="">None (0px)</option>
-                                    <option value="1px">1px</option>
-                                    <option value="2px">2px</option>
-                                    <option value="4px">4px</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-[11px] text-gray-600 mb-1">Border Style</label>
-                                <select
-                                    value={styles.borderStyle || 'solid'}
-                                    onChange={(e) => onChange('borderStyle', e.target.value)}
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 bg-white cursor-pointer"
-                                >
-                                    <option value="solid">Solid</option>
-                                    <option value="dashed">Dashed</option>
-                                    <option value="dotted">Dotted</option>
-                                    <option value="none">None</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Border Color */}
-                        {Boolean(styles.borderWidth && styles.borderWidth !== '0px') && (
-                            <div>
-                                <label className="block text-[11px] text-gray-600 mb-1">Border Color</label>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="color"
-                                        value={styles.borderColor || '#e2e8f0'}
-                                        onChange={(e) => onChange('borderColor', e.target.value)}
-                                        className="w-7 h-7 rounded border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                                    />
-                                    <input
-                                        type="text"
-                                        value={styles.borderColor || ''}
-                                        onChange={(e) => onChange('borderColor', e.target.value)}
-                                        placeholder="#e2e8f0"
-                                        className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* 5. Box Shadow & Depth */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                <button
-                    type="button"
-                    onClick={() => toggleSection('shadows')}
-                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
-                >
-                    <div className="flex items-center space-x-2">
-                        <Box className="w-3.5 h-3.5 text-primary-600" />
-                        <span>Box Shadow & Depth</span>
-                    </div>
-                    {openSections.shadows ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-                </button>
-
-                {openSections.shadows && (
-                    <div className="p-3.5 space-y-2">
-                        <div className="grid grid-cols-3 gap-1.5">
-                            {SHADOW_PRESETS.map((sh) => (
+                <div>
+                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">Gradient Presets</span>
+                    <div className="grid grid-cols-3 gap-1">
+                        {GRADIENT_PRESETS.map((preset) => {
+                            const active = (styles.background || '') === preset.gradient;
+                            return (
                                 <button
-                                    key={sh.id}
+                                    key={preset.name}
                                     type="button"
-                                    onClick={() => onChange('boxShadow', sh.val)}
-                                    className={`p-2 rounded-lg border text-center transition cursor-pointer ${
-                                        (styles.boxShadow || 'none') === sh.val
-                                            ? 'border-primary-600 bg-primary-50 text-primary-950 font-bold ring-1 ring-primary-500'
-                                            : 'border-gray-200 hover:border-gray-300 text-gray-700 bg-white'
+                                    onClick={() =>
+                                        batch({
+                                            background: preset.gradient,
+                                            backgroundColor: preset.gradient ? 'transparent' : '#ffffff',
+                                        })
+                                    }
+                                    className={`h-7 truncate rounded-md border px-1 text-[9.5px] font-medium transition ${
+                                        active
+                                            ? 'border-primary-600 bg-primary-50 font-bold text-primary-900 ring-1 ring-primary-500'
+                                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                                     }`}
                                 >
-                                    <span className="text-[11px] block">{sh.label}</span>
+                                    {preset.name}
                                 </button>
-                            ))}
-                        </div>
+                            );
+                        })}
                     </div>
-                )}
-            </div>
+                </div>
 
-            {/* 6. Button & CTA Styling */}
-            <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-                <button
-                    type="button"
-                    onClick={() => toggleSection('button')}
-                    className="w-full px-3.5 py-2.5 bg-gray-50/80 hover:bg-gray-100/70 flex items-center justify-between text-left font-bold text-gray-800 transition cursor-pointer"
-                >
-                    <div className="flex items-center space-x-2">
-                        <Zap className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Action Button & CTA</span>
+                <ColorControl
+                    label="Text Color"
+                    value={styles.color || ''}
+                    fallback="#0f172a"
+                    presets={TEXT_SWATCHES}
+                    onChange={(value) => onChange('color', value)}
+                />
+            </ControlSection>
+
+            <ControlSection title="Typography & Alignment" icon={Type} description="Alignment, size, weight and spacing" defaultOpen>
+                <AlignmentControl
+                    label="Content Alignment"
+                    value={styles.textAlign || 'left'}
+                    onChange={(value) => onChange('textAlign', value as BlockStyles['textAlign'])}
+                />
+
+                <div className="grid grid-cols-2 gap-1.5">
+                    <NumberUnitControl
+                        label="Font Size"
+                        value={styles.fontSize || ''}
+                        unit="px"
+                        min={6}
+                        max={120}
+                        placeholder="Default"
+                        onChange={(value) => onChange('fontSize', value)}
+                    />
+                    <SelectControl
+                        label="Font Weight"
+                        value={styles.fontWeight || ''}
+                        options={[
+                            { label: 'Default', value: '' },
+                            { label: 'Regular (400)', value: '400' },
+                            { label: 'Medium (500)', value: '500' },
+                            { label: 'Semibold (600)', value: '600' },
+                            { label: 'Bold (700)', value: '700' },
+                            { label: 'Extra Bold (800)', value: '800' },
+                        ]}
+                        onChange={(value) => onChange('fontWeight', value)}
+                    />
+                    <NumberUnitControl
+                        label="Line Height"
+                        value={styles.lineHeight || ''}
+                        unit={null}
+                        min={0.8}
+                        max={3}
+                        step={0.05}
+                        placeholder="Default"
+                        onChange={(value) => onChange('lineHeight', value)}
+                    />
+                    <NumberUnitControl
+                        label="Letter Spacing"
+                        value={styles.letterSpacing || ''}
+                        units={['px', 'em']}
+                        step={0.01}
+                        placeholder="0"
+                        onChange={(value) => onChange('letterSpacing', value)}
+                    />
+                </div>
+            </ControlSection>
+
+            <ControlSection title="Spacing & Dimensions" icon={Maximize2} description="Width, height, padding and margin" defaultOpen>
+                <div>
+                    <span className="mb-1 block text-[10px] font-semibold text-gray-600">Section Width</span>
+                    <div className="grid grid-cols-4 gap-1">
+                        {WIDTH_PRESETS.map((preset) => (
+                            <button
+                                key={preset.val}
+                                type="button"
+                                onClick={() => onChange('maxWidth', preset.val)}
+                                className={`h-6 rounded-md border text-[10px] font-medium transition ${
+                                    (styles.maxWidth || '100%') === preset.val
+                                        ? 'border-primary-600 bg-primary-50 font-bold text-primary-950'
+                                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                                }`}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
                     </div>
-                    {openSections.button ? <ChevronUp className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
-                </button>
+                </div>
 
-                {openSections.button && (
-                    <div className="p-3.5 space-y-3.5">
-                        {/* Button Color */}
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label className="font-semibold text-gray-700">Button Background</label>
-                                <span className="font-mono text-[10px] text-gray-400">{styles.buttonBgColor || '#059669'}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="color"
-                                    value={styles.buttonBgColor || '#059669'}
-                                    onChange={(e) => onChange('buttonBgColor', e.target.value)}
-                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                                />
-                                <input
-                                    type="text"
-                                    value={styles.buttonBgColor || ''}
-                                    onChange={(e) => onChange('buttonBgColor', e.target.value)}
-                                    placeholder="#059669 (Emerald)"
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
-                                />
-                            </div>
-                        </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <NumberUnitControl
+                        label="Max Width"
+                        value={styles.maxWidth || ''}
+                        units={['px', '%']}
+                        min={0}
+                        max={2400}
+                        placeholder="100%"
+                        onChange={(value) => onChange('maxWidth', value)}
+                    />
+                    <NumberUnitControl
+                        label="Min Height"
+                        value={styles.minHeight || ''}
+                        unit="px"
+                        min={0}
+                        max={2400}
+                        placeholder="Optional"
+                        onChange={(value) => onChange('minHeight', value)}
+                    />
+                </div>
 
-                        {/* Button Text Color */}
-                        <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                                <label className="font-semibold text-gray-700">Button Text Color</label>
-                                <span className="font-mono text-[10px] text-gray-400">{styles.buttonTextColor || '#ffffff'}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="color"
-                                    value={styles.buttonTextColor || '#ffffff'}
-                                    onChange={(e) => onChange('buttonTextColor', e.target.value)}
-                                    className="w-8 h-8 rounded-lg border border-gray-300 p-0.5 cursor-pointer shrink-0"
-                                />
-                                <input
-                                    type="text"
-                                    value={styles.buttonTextColor || ''}
-                                    onChange={(e) => onChange('buttonTextColor', e.target.value)}
-                                    placeholder="#ffffff"
-                                    className="w-full text-xs rounded-lg border-gray-300 p-1.5 font-mono"
-                                />
-                            </div>
-                        </div>
+                <SpacingControl
+                    label="Padding"
+                    values={padding}
+                    onChange={(values) =>
+                        batch({
+                            padding: '',
+                            paddingTop: values[0],
+                            paddingRight: values[1],
+                            paddingBottom: values[2],
+                            paddingLeft: values[3],
+                        })
+                    }
+                />
 
-                        {/* Elementor Pulse Animation Switch */}
-                        <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                            <div>
-                                <label htmlFor="btn-pulse-toggle" className="font-bold text-gray-800 text-xs flex items-center space-x-1 cursor-pointer">
-                                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                                    <span>Elementor Pulse Effect</span>
-                                </label>
-                                <p className="text-[10px] text-gray-400"> বাউন্স/পালস অ্যানিমেশন দিয়ে কাস্টমারের দৃষ্টি আকর্ষণ করুন</p>
-                            </div>
-                            <input
-                                type="checkbox"
-                                id="btn-pulse-toggle"
-                                checked={Boolean(styles.buttonPulseAnimation)}
-                                onChange={(e) => onChange('buttonPulseAnimation', e.target.checked)}
-                                className="w-4 h-4 rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
-                            />
-                        </div>
-                    </div>
-                )}
-            </div>
+                <SpacingControl
+                    label="Margin"
+                    values={margin}
+                    onChange={(values) =>
+                        batch({
+                            margin: '',
+                            marginTop: values[0],
+                            marginRight: values[1],
+                            marginBottom: values[2],
+                            marginLeft: values[3],
+                        })
+                    }
+                />
+            </ControlSection>
+
+            <ControlSection title="Borders & Corners" icon={Square} description="Width, style, color and radius">
+                <div className="grid grid-cols-2 gap-1.5">
+                    <NumberUnitControl
+                        label="Border Width"
+                        value={styles.borderWidth || ''}
+                        unit="px"
+                        min={0}
+                        max={40}
+                        step={0.5}
+                        placeholder="0"
+                        onChange={(value) => onChange('borderWidth', value)}
+                    />
+                    <SelectControl
+                        label="Border Style"
+                        value={styles.borderStyle || 'solid'}
+                        options={[
+                            { label: 'Solid', value: 'solid' },
+                            { label: 'Dashed', value: 'dashed' },
+                            { label: 'Dotted', value: 'dotted' },
+                            { label: 'None', value: 'none' },
+                        ]}
+                        onChange={(value) =>
+                            onChange('borderStyle', value as BlockStyles['borderStyle'])
+                        }
+                    />
+                    <NumberUnitControl
+                        label="Corner Radius"
+                        value={styles.borderRadius || ''}
+                        units={['px', '%']}
+                        min={0}
+                        max={9999}
+                        placeholder="0"
+                        onChange={(value) => onChange('borderRadius', value)}
+                    />
+                    <ColorControl
+                        label="Border Color"
+                        value={styles.borderColor || ''}
+                        fallback="#e2e8f0"
+                        onChange={(value) => onChange('borderColor', value)}
+                    />
+                </div>
+            </ControlSection>
+
+            <ControlSection title="Box Shadow & Depth" icon={Box} description="Elevation presets or a custom shadow">
+                <div className="grid grid-cols-3 gap-1">
+                    {SHADOW_PRESETS.map((shadow) => {
+                        const active = (styles.boxShadow || 'none') === shadow.val;
+                        return (
+                            <button
+                                key={shadow.id}
+                                type="button"
+                                onClick={() => onChange('boxShadow', shadow.val)}
+                                className={`h-7 rounded-md border text-[10px] font-medium transition ${
+                                    active
+                                        ? 'border-primary-600 bg-primary-50 font-bold text-primary-950 ring-1 ring-primary-500'
+                                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                }`}
+                            >
+                                {shadow.label}
+                            </button>
+                        );
+                    })}
+                </div>
+                <TextControl
+                    label="Custom Shadow"
+                    value={styles.boxShadow || ''}
+                    placeholder="0 10px 25px -5px rgba(0, 0, 0, 0.1)"
+                    onChange={(value) => onChange('boxShadow', value)}
+                />
+            </ControlSection>
+
+            <ControlSection title="Action Button & CTA" icon={Zap} description="Button colors, radius and pulse effect" defaultOpen>
+                <div className="grid grid-cols-2 gap-1.5">
+                    <ColorControl
+                        label="Button Background"
+                        value={styles.buttonBgColor || ''}
+                        fallback="#059669"
+                        presets={BUTTON_SWATCHES}
+                        onChange={(value) => onChange('buttonBgColor', value)}
+                    />
+                    <ColorControl
+                        label="Button Text Color"
+                        value={styles.buttonTextColor || ''}
+                        fallback="#ffffff"
+                        onChange={(value) => onChange('buttonTextColor', value)}
+                    />
+                    <NumberUnitControl
+                        label="Button Radius"
+                        value={styles.buttonBorderRadius || ''}
+                        units={['px', '%']}
+                        min={0}
+                        max={9999}
+                        placeholder="12"
+                        onChange={(value) => onChange('buttonBorderRadius', value)}
+                    />
+                </div>
+                <ToggleControl
+                    label="Pulse Animation"
+                    checked={Boolean(styles.buttonPulseAnimation)}
+                    onChange={(checked) => onChange('buttonPulseAnimation', checked)}
+                    hint="Adds a subtle attention animation to the button."
+                />
+            </ControlSection>
         </div>
     );
 }
@@ -3301,7 +3273,7 @@ function ProductPickerSection({
 
                 <div>
                     <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                        Default Highlight Badge (ডিফল্ট ব্যাজ টেক্সট)
+                        Default Highlight Badge
                     </label>
                     <input
                         type="text"
@@ -3316,7 +3288,7 @@ function ProductPickerSection({
                 {selectedIds.length > 0 && (
                     <div className="pt-2 border-t border-gray-200 space-y-2">
                         <label className="block text-[11px] font-bold text-gray-700">
-                            Custom Product Badges (আলাদা আলাদা প্রোডাক্টের ব্যাজ):
+                            Custom Product Badges
                         </label>
                         <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                             {selectedIds.map((pid) => {
@@ -3330,7 +3302,7 @@ function ProductPickerSection({
                                         <input
                                             type="text"
                                             value={currentBadge}
-                                            placeholder="যেমন: 🔥 Hot Deal"
+                                            placeholder="e.g. 🔥 Hot Deal"
                                             onChange={(e) => {
                                                 const next = { ...(productBadges || {}), [pid]: e.target.value };
                                                 onChange('productBadges', next);

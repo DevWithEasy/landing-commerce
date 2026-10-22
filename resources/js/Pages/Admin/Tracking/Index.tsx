@@ -48,13 +48,15 @@ interface GlobalTrackingSettings {
     target_page_ids: number[];
 }
 
+type PageTrackingSettings = Partial<GlobalTrackingSettings> & { override_global?: boolean };
+
 interface LandingPageSummary {
     id: number;
     title: string;
     slug: string;
     status: string;
     override_global: boolean;
-    tracking_settings: Record<string, any> | null;
+    tracking_settings: PageTrackingSettings | null;
 }
 
 interface TrackingIndexProps extends SharedProps {
@@ -125,7 +127,7 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
 
     const openPageEditModal = (page: LandingPageSummary) => {
         setEditingPage(page);
-        const pSettings = page.tracking_settings || {};
+        const pSettings = (page.tracking_settings || {}) as PageTrackingSettings;
         setPageOverrideForm({
             override_global: Boolean(pSettings.override_global),
             meta_pixel: {
@@ -814,7 +816,7 @@ export default function TrackingIndex({ settings, landingPages }: TrackingIndexP
                         ) : (
                             <div className="divide-y divide-slate-100">
                                 {landingPages.map((page) => {
-                                    const pSett = page.tracking_settings || {};
+                                    const pSett = (page.tracking_settings || {}) as PageTrackingSettings;
                                     const hasOverride = Boolean(pSett.override_global);
                                     const isDraft = page.status === 'draft';
 

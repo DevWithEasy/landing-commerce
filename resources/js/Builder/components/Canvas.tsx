@@ -4,9 +4,16 @@ import { CSS } from '@dnd-kit/utilities';
 import { Box, ChevronDown, ChevronUp, GripVertical, Layers, Plus, Trash2 } from 'lucide-react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { ContainerBlock } from '../blocks/ContainerBlock';
+import { GridBlock } from '../blocks/GridBlock';
 import { renderAstBlock } from '../blocks';
 import { useBuilderStore } from '../stores/useBuilderStore';
-import type { Block, BlockDefinition, BlockType, ContainerBlockProps } from '@/types';
+import type {
+    Block,
+    BlockDefinition,
+    BlockType,
+    ContainerBlockProps,
+    GridBlockProps,
+} from '@/types';
 
 export interface CanvasProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
@@ -123,7 +130,7 @@ function SortableBlockWrapper({
         data: { block, parentId },
     });
 
-    const isContainer = block.type === 'ContainerBlock';
+    const isContainer = block.type === 'ContainerBlock' || block.type === 'GridBlock';
     const children = block.children || [];
     const blockDefinition = blockDefinitions[block.type];
 
@@ -272,6 +279,47 @@ function ContainerWrapper({
     });
 
     const hasChildren = childrenBlocks.length > 0;
+    const isGrid = block.type === 'GridBlock';
+
+    const renderChild = (child: Block, childIdx: number) => (
+        <SortableBlockWrapper
+            key={child.id}
+            block={child}
+            parentId={block.id}
+            index={childIdx}
+            totalBlocks={childrenBlocks.length}
+            depth={depth + 1}
+            isSelected={selectedBlockId === child.id}
+            selectedBlockId={selectedBlockId}
+            blockDefinitions={blockDefinitions}
+            onSelect={onSelect}
+            onRemove={onRemove}
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            onAddBlockToContainer={onAddBlockToContainer}
+        />
+    );
+
+    if (isGrid) {
+        return (
+            <GridBlock
+                props={block.props as unknown as GridBlockProps}
+                styles={block.styles}
+                children={childrenBlocks}
+                isEditor={true}
+                onAddChild={() => onAddBlockToContainer?.(block.id)}
+                dropRef={setDropRef}
+                renderChildren={() => (
+                    <SortableContext
+                        items={childrenBlocks.map((c) => c.id)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        {childrenBlocks.map(renderChild)}
+                    </SortableContext>
+                )}
+            />
+        );
+    }
 
     return (
         <ContainerBlock
@@ -293,24 +341,7 @@ function ContainerWrapper({
                             strategy={verticalListSortingStrategy}
                         >
                             <div className="w-full space-y-2">
-                                {childrenBlocks.map((child, childIdx) => (
-                                    <SortableBlockWrapper
-                                        key={child.id}
-                                        block={child}
-                                        parentId={block.id}
-                                        index={childIdx}
-                                        totalBlocks={childrenBlocks.length}
-                                        depth={depth + 1}
-                                        isSelected={selectedBlockId === child.id}
-                                        selectedBlockId={selectedBlockId}
-                                        blockDefinitions={blockDefinitions}
-                                        onSelect={onSelect}
-                                        onRemove={onRemove}
-                                        onMoveUp={onMoveUp}
-                                        onMoveDown={onMoveDown}
-                                        onAddBlockToContainer={onAddBlockToContainer}
-                                    />
-                                ))}
+                                {childrenBlocks.map(renderChild)}
                             </div>
                         </SortableContext>
                     ) : (

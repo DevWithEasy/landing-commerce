@@ -123,7 +123,7 @@ export function VariantGenerator({
 
         // First flush any remaining currentInput across all attributes
         const preparedAttrs = attributeOptions.map((attr) => {
-            let values = [...attr.values];
+            const values = [...attr.values];
             if (attr.currentInput.trim()) {
                 const items = attr.currentInput
                     .split(/[,|\n]+/)

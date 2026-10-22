@@ -20,12 +20,14 @@ export type BlockType =
     | 'StickyBarBlock'
     | 'HtmlBlock'
     | 'ContainerBlock'
+    | 'GridBlock'
     | 'HeadingBlock'
     | 'TextBlock'
     | 'ImageBlock'
     | 'ButtonBlock'
     | 'IconListBlock'
-    | 'ImageCarouselBlock';
+    | 'ImageCarouselBlock'
+    | 'TestimonialBlock';
 
 export interface BlockStyles {
     color?: string;
@@ -159,6 +161,7 @@ export interface CodCheckoutBlockProps {
     fieldGap?: string;
 
     // Header design
+    headerPaddingTop?: string;
     headerPaddingBottom?: string;
     headerBorderColor?: string;
     headerBorderWidth?: string;
@@ -167,16 +170,19 @@ export interface CodCheckoutBlockProps {
     badgeTextColor?: string;
     badgeBorderRadius?: string;
     badgeFontSize?: string;
+    badgeFontWeight?: string;
     badgePaddingX?: string;
     badgePaddingY?: string;
     titleColor?: string;
     titleFontSize?: string;
     titleFontWeight?: string;
     titleLineHeight?: string;
+    titleLetterSpacing?: string;
     titleMarginBottom?: string;
     subtitleColor?: string;
     subtitleFontSize?: string;
     subtitleLineHeight?: string;
+    subtitleLetterSpacing?: string;
 
     // Card design
     cardBgColor?: string;
@@ -195,6 +201,7 @@ export interface CodCheckoutBlockProps {
     labelColor?: string;
     labelFontSize?: string;
     labelFontWeight?: string;
+    labelLineHeight?: string;
     labelLetterSpacing?: string;
     labelTextTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
     labelMarginBottom?: string;
@@ -209,10 +216,13 @@ export interface CodCheckoutBlockProps {
     inputPaddingX?: string;
     inputPaddingY?: string;
     inputFontSize?: string;
+    inputFontWeight?: string;
+    inputMinHeight?: string;
     inputIconColor?: string;
     inputPlaceholderColor?: string;
     inputFocusColor?: string;
     inputFocusRingColor?: string;
+    inputFocusRingWidth?: string;
 
     // Product cards
     productPanelBgColor?: string;
@@ -228,8 +238,10 @@ export interface CodCheckoutBlockProps {
     productCardSelectedBorderWidth?: string;
     productCardBorderRadius?: string;
     productCardPadding?: string;
+    productCardGap?: string;
     productTitleColor?: string;
     productTitleFontSize?: string;
+    productTitleFontWeight?: string;
     productPriceColor?: string;
     productPriceFontSize?: string;
     productOldPriceColor?: string;
@@ -237,6 +249,7 @@ export interface CodCheckoutBlockProps {
     productInfoFontSize?: string;
     productImageSize?: string;
     productImageRadius?: string;
+    productImageFit?: 'cover' | 'contain';
     productBadgeBgColor?: string;
     productBadgeTextColor?: string;
     productBadgeBorderRadius?: string;
@@ -266,6 +279,7 @@ export interface CodCheckoutBlockProps {
     summaryBorderWidth?: string;
     summaryBorderRadius?: string;
     summaryPadding?: string;
+    summaryRowGap?: string;
     summaryTextColor?: string;
     summaryValueColor?: string;
     summaryTotalColor?: string;
@@ -276,6 +290,8 @@ export interface CodCheckoutBlockProps {
     buttonBgColor?: string;
     buttonTextColor?: string;
     buttonHoverBgColor?: string;
+    buttonBorderWidth?: string;
+    buttonBorderColor?: string;
     buttonBorderRadius?: string;
     buttonMinHeight?: string;
     buttonPaddingY?: string;
@@ -290,7 +306,10 @@ export interface CodCheckoutBlockProps {
     // Trust row
     trustTextColor?: string;
     trustFontSize?: string;
+    trustFontWeight?: string;
     trustIconColor?: string;
+    trustIconSize?: string;
+    trustGap?: string;
     trustPaddingTop?: string;
 }
 
@@ -321,6 +340,27 @@ export interface ReviewsBlockProps {
     title?: string;
     layout?: 'grid' | 'carousel' | 'list';
     items: ReviewItem[];
+}
+
+export interface TestimonialBlockProps {
+    quote: string;
+    authorName: string;
+    authorRole?: string;
+    location?: string;
+    rating?: number;
+    avatarUrl?: string;
+    verifiedPurchase?: boolean;
+    showQuoteIcon?: boolean;
+    showRating?: boolean;
+    layout?: 'card' | 'minimal';
+    accentColor?: string;
+    cardBgColor?: string;
+    quoteColor?: string;
+    authorColor?: string;
+    quoteFontSize?: string;
+    avatarSize?: string;
+    cardRadius?: string;
+    cardPadding?: string;
 }
 
 export interface VideoBlockProps {
@@ -373,6 +413,16 @@ export interface ContainerBlockProps {
     justifyContent?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
     alignItems?: 'stretch' | 'flex-start' | 'center' | 'flex-end' | 'baseline';
     gap?: string;
+}
+
+export interface GridBlockProps {
+    columns?: number;
+    tabletColumns?: number;
+    mobileColumns?: number;
+    columnGap?: string;
+    rowGap?: string;
+    alignItems?: 'stretch' | 'start' | 'center' | 'end';
+    justifyItems?: 'stretch' | 'start' | 'center' | 'end';
 }
 
 export interface HeadingBlockProps {
@@ -461,12 +511,14 @@ export type BlockProps =
     | StickyBarBlockProps
     | HtmlBlockProps
     | ContainerBlockProps
+    | GridBlockProps
     | HeadingBlockProps
     | TextBlockProps
     | ImageBlockProps
     | ButtonBlockProps
     | IconListBlockProps
     | ImageCarouselBlockProps
+    | TestimonialBlockProps
     | Record<string, unknown>;
 
 export interface Block<TProps = BlockProps> {

@@ -43,6 +43,7 @@ export function buildCheckoutCssVariables(props: CodCheckoutBlockProps): Checkou
     set('--cod-accent', props.accentColor || props.highlightColor || '#059669');
     set('--cod-focus', props.inputFocusColor || props.accentColor || props.highlightColor || '#10b981');
     set('--cod-focus-ring', props.inputFocusRingColor || 'rgba(16, 185, 129, 0.18)');
+    set('--cod-focus-ring-width', props.inputFocusRingWidth || '3px');
     set('--cod-placeholder', props.inputPlaceholderColor || '#94a3b8');
     set('--cod-btn-hover', props.buttonHoverBgColor || '#047857');
 
@@ -59,7 +60,7 @@ export const COD_CHECKOUT_STATIC_CSS = `
 #cod-checkout textarea:focus {
     outline: none !important;
     border-color: var(--cod-focus, #10b981) !important;
-    box-shadow: 0 0 0 3px var(--cod-focus-ring, rgba(16, 185, 129, 0.18)) !important;
+    box-shadow: 0 0 0 var(--cod-focus-ring-width, 3px) var(--cod-focus-ring, rgba(16, 185, 129, 0.18)) !important;
 }
 #cod-checkout input::placeholder,
 #cod-checkout textarea::placeholder {

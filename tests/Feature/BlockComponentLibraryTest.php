@@ -23,12 +23,12 @@ beforeEach(function () {
     ]);
 });
 
-test('block registry returns all 18 approved blocks with complete schema definitions', function () {
+test('block registry returns all 20 approved blocks with complete schema definitions', function () {
     $blocks = BlockRegistry::APPROVED_BLOCKS;
-    expect($blocks)->toHaveCount(18);
+    expect($blocks)->toHaveCount(20);
 
     $definitions = BlockRegistry::getAllBlockDefinitions();
-    expect($definitions)->toHaveCount(18);
+    expect($definitions)->toHaveCount(20);
 
     foreach ($blocks as $blockType) {
         expect(BlockRegistry::isApproved($blockType))->toBeTrue();
@@ -628,4 +628,81 @@ test('hero block applies individual element styling to headline, subheadline, ba
         ->toContain('background-color: #059669;')
         ->toContain('w-full justify-center')
         ->toContain('px-10 py-5 text-xl font-black');
+});
+
+test('grid block renders responsive column rules and nested children', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'grid-1',
+        'type' => 'GridBlock',
+        'props' => [
+            'columns' => 4,
+            'tabletColumns' => 2,
+            'mobileColumns' => 1,
+            'columnGap' => '20px',
+            'rowGap' => '12px',
+        ],
+        'styles' => ['paddingTop' => '24px'],
+        'children' => [
+            [
+                'id' => 'grid-child-1',
+                'type' => 'TextBlock',
+                'props' => ['content' => 'Child inside grid'],
+            ],
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('grid-template-columns: repeat(4, minmax(0, 1fr))')
+        ->toContain('@container (max-width: 1024px)')
+        ->toContain('grid-template-columns: repeat(2, minmax(0, 1fr))')
+        ->toContain('@container (max-width: 640px)')
+        ->toContain('container-type: inline-size')
+        ->toContain('column-gap: 20px')
+        ->toContain('row-gap: 12px')
+        ->toContain('Child inside grid');
+});
+
+test('testimonial block renders quote, author, rating and verified badge', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'testimonial-1',
+        'type' => 'TestimonialBlock',
+        'props' => [
+            'quote' => 'The product quality exceeded my expectations.',
+            'authorName' => 'Nusrat Jahan',
+            'authorRole' => 'Verified Buyer',
+            'location' => 'Chattogram',
+            'rating' => 4,
+            'avatarUrl' => 'https://example.com/avatar.jpg',
+            'verifiedPurchase' => true,
+            'accentColor' => '#0f766e',
+        ],
+    ]);
+
+    expect($html)
+        ->toContain('The product quality exceeded my expectations.')
+        ->toContain('Nusrat Jahan')
+        ->toContain('Verified Buyer')
+        ->toContain('Chattogram')
+        ->toContain('4 out of 5 stars')
+        ->toContain('Verified')
+        ->toContain('https://example.com/avatar.jpg')
+        ->toContain('color: #0f766e');
+});
+
+test('testimonial block escapes markup and rejects unsafe avatar urls', function () {
+    $html = $this->renderer->renderBlock([
+        'id' => 'testimonial-2',
+        'type' => 'TestimonialBlock',
+        'props' => [
+            'quote' => '<script>alert(1)</script>',
+            'authorName' => '"><img src=x onerror=alert(1)>',
+            'avatarUrl' => 'javascript:alert(1)',
+        ],
+    ]);
+
+    expect($html)
+        ->not->toContain('<script>alert(1)</script>')
+        ->not->toContain('javascript:alert')
+        ->not->toContain('<img src=x onerror=alert')
+        ->toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
 });

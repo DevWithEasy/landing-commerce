@@ -233,10 +233,10 @@ export function HtmlBlock({ props, styles = {}, isEditor = false }: HtmlBlockCom
                     <div className="w-9 h-9 mx-auto rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 mb-2">
                         <Code className="w-5 h-5" />
                     </div>
-                    <h4 className="text-xs font-bold text-gray-800">কাস্টম HTML ও CSS সেকশন</h4>
+                    <h4 className="text-xs font-bold text-gray-800">Custom HTML & CSS Section</h4>
                     <p className="text-[11px] text-gray-500 mt-1 max-w-md mx-auto">
-                        ডানপাশের Inspector প্যানেল থেকে আপনার কাস্টম HTML ও CSS কোড যোগ করুন। কোড
-                        লিখলে তা সাথে সাথে এখানে লাইভ প্রিভিউ দেখাবে।
+                        Add your custom HTML and CSS in the Inspector panel. Changes preview live
+                        here as you type.
                     </p>
                 </div>
             ) : null}

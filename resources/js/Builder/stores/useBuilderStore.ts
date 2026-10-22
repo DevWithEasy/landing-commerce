@@ -299,7 +299,9 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         const normalizedBlocks = blocks.map((block) => cloneBlockWithUniqueId(block, usedIds));
 
         const targetParent = parentId ? findBlockInTree(ast.blocks, parentId) : null;
-        const newBlocks = targetParent?.type === 'ContainerBlock'
+        const isNestedLayout =
+            targetParent?.type === 'ContainerBlock' || targetParent?.type === 'GridBlock';
+        const newBlocks = isNestedLayout
             ? addBlocksToTree(ast.blocks, normalizedBlocks, targetParent.id)
             : [...ast.blocks, ...normalizedBlocks];
 

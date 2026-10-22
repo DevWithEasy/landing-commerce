@@ -112,6 +112,7 @@ export function CodCheckoutBlock({
 
     const headerStyle: CSSProperties = {
         textAlign: props.headerAlign || 'center',
+        paddingTop: safeCheckoutCss(props.headerPaddingTop) || '0px',
         paddingBottom: safeCheckoutCss(props.headerPaddingBottom) || '24px',
         borderBottomWidth: safeCheckoutCss(props.headerBorderWidth) || '1px',
         borderBottomStyle: 'solid',
@@ -127,7 +128,7 @@ export function CodCheckoutBlock({
         backgroundColor: safeCheckoutCss(props.badgeBgColor) || '#d1fae5',
         color: safeCheckoutCss(props.badgeTextColor) || '#065f46',
         fontSize: safeCheckoutCss(props.badgeFontSize) || '11px',
-        fontWeight: 700,
+        fontWeight: safeCheckoutCss(props.badgeFontWeight) || '700',
         letterSpacing: '0.05em',
         textTransform: 'uppercase',
         marginBottom: '8px',
@@ -138,6 +139,7 @@ export function CodCheckoutBlock({
         fontSize: safeCheckoutCss(props.titleFontSize) || '30px',
         fontWeight: safeCheckoutCss(props.titleFontWeight) || '800',
         lineHeight: safeCheckoutCss(props.titleLineHeight) || '1.2',
+        letterSpacing: safeCheckoutCss(props.titleLetterSpacing),
         margin: 0,
         marginBottom: safeCheckoutCss(props.titleMarginBottom) || '4px',
     };
@@ -146,6 +148,7 @@ export function CodCheckoutBlock({
         color: safeCheckoutCss(props.subtitleColor) || '#64748b',
         fontSize: safeCheckoutCss(props.subtitleFontSize) || '13px',
         lineHeight: safeCheckoutCss(props.subtitleLineHeight) || '1.5',
+        letterSpacing: safeCheckoutCss(props.subtitleLetterSpacing),
         margin: 0,
     };
 
@@ -176,6 +179,7 @@ export function CodCheckoutBlock({
     const productTitleStyle: CSSProperties = {
         color: safeCheckoutCss(props.productTitleColor) || '#0f172a',
         fontSize: safeCheckoutCss(props.productTitleFontSize) || '12px',
+        fontWeight: safeCheckoutCss(props.productTitleFontWeight) || '700',
     };
 
     const productInfoStyle: CSSProperties = {
@@ -200,6 +204,7 @@ export function CodCheckoutBlock({
         color: safeCheckoutCss(props.labelColor) || '#334155',
         fontSize: safeCheckoutCss(props.labelFontSize) || '11px',
         fontWeight: safeCheckoutCss(props.labelFontWeight) || '700',
+        lineHeight: safeCheckoutCss(props.labelLineHeight) || '1.35',
         letterSpacing: safeCheckoutCss(props.labelLetterSpacing) || '0.05em',
         textTransform: props.labelTextTransform || 'uppercase',
         marginBottom: safeCheckoutCss(props.labelMarginBottom) || '4px',
@@ -219,6 +224,8 @@ export function CodCheckoutBlock({
         paddingLeft: `calc(${inputHorizontalPadding} + 24px)`,
         paddingRight: inputHorizontalPadding,
         fontSize: safeCheckoutCss(props.inputFontSize) || '14px',
+        fontWeight: safeCheckoutCss(props.inputFontWeight) || '400',
+        minHeight: safeCheckoutCss(props.inputMinHeight),
         fontFamily: 'inherit',
         transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
     };
@@ -250,6 +257,9 @@ export function CodCheckoutBlock({
         padding: safeCheckoutCss(props.summaryPadding) || '16px',
         color: safeCheckoutCss(props.summaryTextColor) || '#475569',
         fontSize: safeCheckoutCss(props.summaryFontSize) || '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: safeCheckoutCss(props.summaryRowGap) || '8px',
     };
 
     const summaryValueStyle: CSSProperties = {
@@ -272,6 +282,9 @@ export function CodCheckoutBlock({
             safeCheckoutCss(styles.buttonTextColor) ||
             '#ffffff',
         borderRadius: safeCheckoutCss(props.buttonBorderRadius) || '12px',
+        borderWidth: safeCheckoutCss(props.buttonBorderWidth) || '0px',
+        borderStyle: 'solid',
+        borderColor: safeCheckoutCss(props.buttonBorderColor) || safeCheckoutCss(props.buttonBgColor) || '#059669',
         minHeight: safeCheckoutCss(props.buttonMinHeight),
         paddingTop: safeCheckoutCss(props.buttonPaddingY) || '16px',
         paddingBottom: safeCheckoutCss(props.buttonPaddingY) || '16px',
@@ -292,6 +305,15 @@ export function CodCheckoutBlock({
         paddingTop: safeCheckoutCss(props.trustPaddingTop) || '8px',
         color: safeCheckoutCss(props.trustTextColor) || '#64748b',
         fontSize: safeCheckoutCss(props.trustFontSize) || '11px',
+        fontWeight: safeCheckoutCss(props.trustFontWeight) || '400',
+        gap: safeCheckoutCss(props.trustGap) || '16px',
+    };
+
+    const trustIconStyle: CSSProperties = {
+        width: safeCheckoutCss(props.trustIconSize) || '14px',
+        height: safeCheckoutCss(props.trustIconSize) || '14px',
+        marginRight: '4px',
+        color: safeCheckoutCss(props.trustIconColor) || accentColor,
     };
 
     const nameLabel = props.nameLabel || 'আপনার নাম (Your Name)';
@@ -359,7 +381,12 @@ export function CodCheckoutBlock({
                                             : 'Single Selection (Radio)'}
                                     </span>
                                 </div>
-                                <div className="flex flex-col" style={{ gap: '8px' }}>
+                                <div
+                                    className="flex flex-col"
+                                    style={{
+                                        gap: safeCheckoutCss(props.productCardGap) || '8px',
+                                    }}
+                                >
                                     {productIds.map((pid, idx) => {
                                         const realProd = availableProducts.find((p) => p.id === pid);
                                         const isSelected = selectedProductIds.includes(pid);
@@ -448,7 +475,14 @@ export function CodCheckoutBlock({
                                                             <SafeImage
                                                                 src={imgUrl}
                                                                 alt={realProd?.title || `Product #${pid}`}
-                                                                className="h-full w-full object-cover"
+                                                                className="h-full w-full"
+                                                                style={{
+                                                                    objectFit:
+                                                                        props.productImageFit ===
+                                                                        'contain'
+                                                                            ? 'contain'
+                                                                            : 'cover',
+                                                                }}
                                                                 fallbackIconSize="w-5 h-5"
                                                                 fallbackText=""
                                                             />
@@ -683,7 +717,7 @@ export function CodCheckoutBlock({
 
                         {/* 5. Live Summary */}
                         {props.showSummary !== false && (
-                            <div style={summaryStyle} className="space-y-2">
+                            <div style={summaryStyle}>
                                 <div className="flex justify-between">
                                     <span>Items Subtotal:</span>
                                     <span className="font-bold" style={summaryValueStyle}>
@@ -726,29 +760,15 @@ export function CodCheckoutBlock({
 
                         {props.showTrustBadges !== false && (
                             <div
-                                className="flex items-center justify-center space-x-4 text-center"
+                                className="flex flex-wrap items-center justify-center text-center"
                                 style={trustRowStyle}
                             >
                                 <span className="inline-flex items-center">
-                                    <CheckCircle2
-                                        className="mr-1 h-3.5 w-3.5"
-                                        style={{
-                                            color:
-                                                safeCheckoutCss(props.trustIconColor) ||
-                                                accentColor,
-                                        }}
-                                    />
+                                    <CheckCircle2 style={trustIconStyle} />
                                     {trustText1}
                                 </span>
                                 <span className="inline-flex items-center">
-                                    <CheckCircle2
-                                        className="mr-1 h-3.5 w-3.5"
-                                        style={{
-                                            color:
-                                                safeCheckoutCss(props.trustIconColor) ||
-                                                accentColor,
-                                        }}
-                                    />
+                                    <CheckCircle2 style={trustIconStyle} />
                                     {trustText2}
                                 </span>
                             </div>

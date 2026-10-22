@@ -11,11 +11,13 @@ import {
     HelpCircle,
     Image as ImageIcon,
     Images,
+    LayoutGrid,
     Layers,
     ListChecks,
     MousePointerClick,
     Package,
     Plus,
+    Quote,
     ShieldCheck,
     ShoppingBag,
     Sparkles,
@@ -53,6 +55,8 @@ const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
     AlignLeft,
     ListChecks,
     MousePointerClick,
+    LayoutGrid,
+    Quote,
 };
 
 function countAllBlocks(blocks: Block[]): number {
@@ -259,7 +263,7 @@ function LayerTreeItem({
     const def = blockDefinitions[block.type];
     const IconComponent = def ? ICON_MAP[def.icon] || FileText : FileText;
     const isSelected = selectedBlockId === block.id;
-    const isContainer = block.type === 'ContainerBlock';
+    const isContainer = block.type === 'ContainerBlock' || block.type === 'GridBlock';
     const children = block.children || [];
 
     return (

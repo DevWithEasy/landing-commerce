@@ -29,12 +29,14 @@ class BlockRendererService
         'StickyBarBlock' => 'builder.blocks.sticky-bar',
         'HtmlBlock' => 'builder.blocks.html',
         'ContainerBlock' => 'builder.blocks.container',
+        'GridBlock' => 'builder.blocks.grid',
         'HeadingBlock' => 'builder.blocks.heading',
         'TextBlock' => 'builder.blocks.text',
         'ImageBlock' => 'builder.blocks.image',
         'ButtonBlock' => 'builder.blocks.button',
         'IconListBlock' => 'builder.blocks.icon-list',
         'ImageCarouselBlock' => 'builder.blocks.image-carousel',
+        'TestimonialBlock' => 'builder.blocks.testimonial',
     ];
 
     /**

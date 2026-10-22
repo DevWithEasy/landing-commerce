@@ -58,7 +58,7 @@ export function ProductSelectorBlock({
     const orderButtonText = props.orderButtonText || 'অর্ডার করুন';
     const productBadges = props.productBadges || {};
 
-    const handleOrderClick = (prod: Product | undefined, _pid?: number) => {
+    const handleOrderClick = (prod: Product | undefined) => {
         if (!prod) return;
 
         // If product has multiple variants, open variant selection modal
@@ -76,7 +76,7 @@ export function ProductSelectorBlock({
         }
     };
 
-    const confirmVariantOrder = (_prod?: Product) => {
+    const confirmVariantOrder = () => {
         setVariantModalProduct(null);
         if (!isEditor) {
             const checkoutEl = document.getElementById('cod-checkout');
@@ -236,7 +236,7 @@ export function ProductSelectorBlock({
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleOrderClick(realProd, pid);
+                                                handleOrderClick(realProd);
                                             }}
                                             style={buttonCustomStyle}
                                             className={`w-full py-2.5 px-4 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-xs transition flex items-center justify-center space-x-1.5 cursor-pointer ${buttonPulseClass}`}
@@ -356,7 +356,7 @@ export function ProductSelectorBlock({
                                             <div className="pt-2">
                                                 <button
                                                     type="button"
-                                                    onClick={() => confirmVariantOrder(variantModalProduct)}
+                                                    onClick={() => confirmVariantOrder()}
                                                     style={buttonCustomStyle}
                                                     className={`w-full py-3 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-md transition flex items-center justify-center space-x-2 ${buttonPulseClass}`}
                                                 >
@@ -519,7 +519,7 @@ export function ProductSelectorBlock({
                                                     type="button"
                                                     onClick={() => {
                                                         setQuickViewProduct(null);
-                                                        confirmVariantOrder(quickViewProduct);
+                                                        confirmVariantOrder();
                                                     }}
                                                     style={buttonCustomStyle}
                                                     className={`w-full py-3 px-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition flex items-center justify-center space-x-2 ${buttonPulseClass}`}
@@ -629,7 +629,7 @@ export function ProductSelectorBlock({
                             <div className="pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => handleOrderClick(singleProd, singleProd?.id || 0)}
+                                    onClick={() => handleOrderClick(singleProd)}
                                     style={buttonCustomStyle}
                                     className={`w-full inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition-all text-center cursor-pointer ${buttonPulseClass}`}
                                 >

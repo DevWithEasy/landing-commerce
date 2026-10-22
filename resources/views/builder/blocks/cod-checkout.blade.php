@@ -77,6 +77,7 @@
     $inputHorizontalPadding = $safeCss($props['inputPaddingX'] ?? '12px') ?: '12px';
     $productPanelTitleColor = $safeCss($props['productPanelTitleColor'] ?? '#334155') ?: '#334155';
     $productOldPriceColor = $safeCss($props['productOldPriceColor'] ?? '#94a3b8') ?: '#94a3b8';
+    $productImageFit = ($props['productImageFit'] ?? 'cover') === 'contain' ? 'contain' : 'cover';
     $variantTextColor = $safeCss($props['variantTextColor'] ?? '#64748b') ?: '#64748b';
     $summaryBorderColor = $safeCss($props['summaryBorderColor'] ?? '#e2e8f0') ?: '#e2e8f0';
     $trustIconColor = $safeCss($props['trustIconColor'] ?? $accentColor) ?: $accentColor;
@@ -94,6 +95,7 @@
         '--cod-accent' => $accentColor,
         '--cod-focus' => $props['inputFocusColor'] ?? $accentColor,
         '--cod-focus-ring' => $props['inputFocusRingColor'] ?? 'rgba(16, 185, 129, 0.18)',
+        '--cod-focus-ring-width' => $props['inputFocusRingWidth'] ?? '3px',
         '--cod-placeholder' => $props['inputPlaceholderColor'] ?? '#94a3b8',
         '--cod-btn-hover' => $props['buttonHoverBgColor'] ?? '#047857',
         '--cod-card-selected-bg' => $props['productCardSelectedBgColor'] ?? '#ecfdf5',
@@ -117,6 +119,7 @@
 
     $headerStyle = $inlineStyle([
         'text-align' => $headerAlign,
+        'padding-top' => $props['headerPaddingTop'] ?? '0px',
         'padding-bottom' => $props['headerPaddingBottom'] ?? '24px',
         'border-bottom-width' => $props['headerBorderWidth'] ?? '1px',
         'border-bottom-style' => 'solid',
@@ -139,7 +142,7 @@
         'background-color' => $props['badgeBgColor'] ?? '#d1fae5',
         'color' => $props['badgeTextColor'] ?? '#065f46',
         'font-size' => $props['badgeFontSize'] ?? '11px',
-        'font-weight' => '700',
+        'font-weight' => $props['badgeFontWeight'] ?? '700',
         'letter-spacing' => '0.05em',
         'text-transform' => 'uppercase',
         'margin-bottom' => '8px',
@@ -150,6 +153,7 @@
         'font-size' => $props['titleFontSize'] ?? '30px',
         'font-weight' => $props['titleFontWeight'] ?? '800',
         'line-height' => $props['titleLineHeight'] ?? '1.2',
+        'letter-spacing' => $props['titleLetterSpacing'] ?? null,
         'margin' => '0',
         'margin-bottom' => $props['titleMarginBottom'] ?? '4px',
     ]);
@@ -158,6 +162,7 @@
         'color' => $props['subtitleColor'] ?? '#64748b',
         'font-size' => $props['subtitleFontSize'] ?? '13px',
         'line-height' => $props['subtitleLineHeight'] ?? '1.5',
+        'letter-spacing' => $props['subtitleLetterSpacing'] ?? null,
         'margin' => '0',
     ]);
 
@@ -188,6 +193,7 @@
     $productTitleStyle = $inlineStyle([
         'color' => $props['productTitleColor'] ?? '#0f172a',
         'font-size' => $props['productTitleFontSize'] ?? '12px',
+        'font-weight' => $props['productTitleFontWeight'] ?? '700',
     ]);
 
     $productInfoStyle = $inlineStyle([
@@ -212,6 +218,7 @@
         'color' => $props['labelColor'] ?? '#334155',
         'font-size' => $props['labelFontSize'] ?? '11px',
         'font-weight' => $props['labelFontWeight'] ?? '700',
+        'line-height' => $props['labelLineHeight'] ?? '1.35',
         'letter-spacing' => $props['labelLetterSpacing'] ?? '0.05em',
         'text-transform' => $props['labelTextTransform'] ?? 'uppercase',
         'margin-bottom' => $props['labelMarginBottom'] ?? '4px',
@@ -230,6 +237,8 @@
         'padding-left' => $inputHorizontalPadding,
         'padding-right' => $inputHorizontalPadding,
         'font-size' => $props['inputFontSize'] ?? '14px',
+        'font-weight' => $props['inputFontWeight'] ?? '400',
+        'min-height' => $props['inputMinHeight'] ?? null,
         'font-family' => 'inherit',
         'transition' => 'border-color 0.15s ease, box-shadow 0.15s ease',
     ]);
@@ -257,6 +266,9 @@
         'padding' => $props['summaryPadding'] ?? '16px',
         'color' => $props['summaryTextColor'] ?? '#475569',
         'font-size' => $props['summaryFontSize'] ?? '12px',
+        'display' => 'flex',
+        'flex-direction' => 'column',
+        'gap' => $props['summaryRowGap'] ?? '8px',
     ]);
 
     $summaryValueStyle = $inlineStyle([
@@ -276,6 +288,9 @@
         'width' => ($props['buttonWidth'] ?? 'full') === 'auto' ? 'auto' : '100%',
         'background-color' => $buttonBg,
         'color' => $buttonTextColor,
+        'border-width' => $props['buttonBorderWidth'] ?? '0px',
+        'border-style' => 'solid',
+        'border-color' => $props['buttonBorderColor'] ?? $buttonBg,
         'border-radius' => $props['buttonBorderRadius'] ?? '12px',
         'min-height' => $props['buttonMinHeight'] ?? null,
         'padding-top' => $props['buttonPaddingY'] ?? '16px',
@@ -294,7 +309,11 @@
         'padding-top' => $props['trustPaddingTop'] ?? '8px',
         'color' => $props['trustTextColor'] ?? '#64748b',
         'font-size' => $props['trustFontSize'] ?? '11px',
+        'font-weight' => $props['trustFontWeight'] ?? '400',
+        'gap' => $props['trustGap'] ?? '16px',
     ]);
+
+    $trustIconSize = $safeCss($props['trustIconSize'] ?? '14px') ?: '14px';
 
     // Resolve active shipping methods or fallbacks
     $activeMethods = $shippingMethods ?? collect();
@@ -326,7 +345,7 @@
     #cod-checkout textarea:focus {
         outline: none !important;
         border-color: var(--cod-focus, #10b981) !important;
-        box-shadow: 0 0 0 3px var(--cod-focus-ring, rgba(16, 185, 129, 0.18)) !important;
+        box-shadow: 0 0 0 var(--cod-focus-ring-width, 3px) var(--cod-focus-ring, rgba(16, 185, 129, 0.18)) !important;
     }
 
     #cod-checkout input::placeholder,
@@ -361,7 +380,7 @@
     }
 </style>
 
-<section id="cod-checkout py-4" {!! $styleAttribute !!} class="w-full">
+<section id="cod-checkout" {!! $styleAttribute !!} class="w-full">
     <div class="mx-auto" {!! $containerStyle !!}>
         <div {!! $cardStyle !!}>
             @if ($showHeader)
@@ -412,7 +431,7 @@
                             </span>
                         </div>
 
-                        <div class="flex flex-col" style="gap: 8px;">
+                        <div class="flex flex-col" style="gap: {{ e($safeCss($props['productCardGap'] ?? '8px') ?: '8px') }};">
                             @foreach ($products as $pIndex => $pItem)
                                 @php
                                     $pVar = $pItem->variants->first();
@@ -474,7 +493,8 @@
                                                 {!! $productThumbStyle !!}>
                                                 @if ($pImgUrl)
                                                     <img src="{{ e($pImgUrl) }}" alt="{{ e($pItem->title) }}"
-                                                        class="cod-card-img h-full w-full object-cover" />
+                                                        class="cod-card-img h-full w-full"
+                                                        style="object-fit: {{ e($productImageFit) }};" />
                                                 @else
                                                     <svg class="h-6 w-6 text-gray-300" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24">
@@ -668,7 +688,7 @@
 
                 {{-- Live Summary Breakdown --}}
                 @if ($showSummary)
-                    <div class="space-y-2" {!! $summaryStyle !!}>
+                    <div {!! $summaryStyle !!}>
                         <div class="flex justify-between">
                             <span>Items Subtotal:</span>
                             <span id="cod-summary-subtotal" class="font-bold"
@@ -704,9 +724,9 @@
                 </div>
 
                 @if ($showTrustBadges)
-                    <div class="flex items-center justify-center space-x-4 text-center" {!! $trustRowStyle !!}>
+                    <div class="flex flex-wrap items-center justify-center text-center" {!! $trustRowStyle !!}>
                         <span class="inline-flex items-center">
-                            <svg class="mr-1 h-3.5 w-3.5" style="color: {{ e($trustIconColor) }};"
+                            <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -714,7 +734,7 @@
                             {{ $trustText1 }}
                         </span>
                         <span class="inline-flex items-center">
-                            <svg class="mr-1 h-3.5 w-3.5" style="color: {{ e($trustIconColor) }};"
+                            <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />

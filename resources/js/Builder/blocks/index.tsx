@@ -9,6 +9,7 @@ import type {
     ContainerBlockProps,
     CountdownTimerBlockProps,
     FaqBlockProps,
+    GridBlockProps,
     HeadingBlockProps,
     HeroBlockProps,
     HtmlBlockProps,
@@ -18,6 +19,7 @@ import type {
     ProductSelectorBlockProps,
     ReviewsBlockProps,
     StickyBarBlockProps,
+    TestimonialBlockProps,
     TextBlockProps,
     VideoBlockProps,
 } from '@/types/builder';
@@ -29,6 +31,7 @@ import { CodCheckoutBlock } from './CodCheckoutBlock';
 import { ContainerBlock } from './ContainerBlock';
 import { CountdownTimerBlock } from './CountdownTimerBlock';
 import { FaqBlock } from './FaqBlock';
+import { GridBlock } from './GridBlock';
 import { HeadingBlock } from './HeadingBlock';
 import { HeroBlock } from './HeroBlock';
 import { HtmlBlock } from './HtmlBlock';
@@ -38,6 +41,7 @@ import { ImageCarouselBlock } from './ImageCarouselBlock';
 import { ProductSelectorBlock } from './ProductSelectorBlock';
 import { ReviewsBlock } from './ReviewsBlock';
 import { StickyBarBlock } from './StickyBarBlock';
+import { TestimonialBlock } from './TestimonialBlock';
 import { TextBlock } from './TextBlock';
 import { VideoBlock } from './VideoBlock';
 
@@ -64,12 +68,14 @@ export const BLOCK_COMPONENTS = {
     StickyBarBlock,
     HtmlBlock,
     ContainerBlock,
+    GridBlock,
     HeadingBlock,
     TextBlock,
     ImageBlock,
     ButtonBlock,
     IconListBlock,
     ImageCarouselBlock,
+    TestimonialBlock,
 } as const;
 
 /**
@@ -87,6 +93,21 @@ export function renderAstBlock(
                 <ContainerBlock
                     key={block.id}
                     props={block.props as unknown as ContainerBlockProps}
+                    styles={block.styles}
+                    children={block.children}
+                    renderChildren={
+                        renderChildren ||
+                        ((ch) => ch.map((c) => renderAstBlock(c, isEditor, renderChildren, onAddChild)))
+                    }
+                    isEditor={isEditor}
+                    onAddChild={onAddChild}
+                />
+            );
+        case 'GridBlock':
+            return (
+                <GridBlock
+                    key={block.id}
+                    props={block.props as unknown as GridBlockProps}
                     styles={block.styles}
                     children={block.children}
                     renderChildren={
@@ -174,6 +195,15 @@ export function renderAstBlock(
                 <ReviewsBlock
                     key={block.id}
                     props={block.props as unknown as ReviewsBlockProps}
+                    styles={block.styles}
+                    isEditor={isEditor}
+                />
+            );
+        case 'TestimonialBlock':
+            return (
+                <TestimonialBlock
+                    key={block.id}
+                    props={block.props as unknown as TestimonialBlockProps}
                     styles={block.styles}
                     isEditor={isEditor}
                 />
@@ -269,9 +299,11 @@ export {
     IconListBlock,
     ImageBlock,
     ImageCarouselBlock,
+    GridBlock,
     ProductSelectorBlock,
     ReviewsBlock,
     StickyBarBlock,
+    TestimonialBlock,
     TextBlock,
     VideoBlock,
 };
