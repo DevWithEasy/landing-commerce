@@ -1,9 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     ChevronDown,
-    ChevronRight,
     Heart,
-    HelpCircle,
     Home,
     Layers,
     LayoutDashboard,
@@ -30,7 +28,7 @@ import type { StorefrontTheme } from '@/types/storefront';
 
 interface StorefrontLayoutProps {
     children: ReactNode;
-    theme: StorefrontTheme;
+    theme?: StorefrontTheme;
     categories?: Category[];
     currentSearch?: string;
     title?: string;
@@ -38,11 +36,20 @@ interface StorefrontLayoutProps {
 
 export function StorefrontLayout({
     children,
-    theme,
+    theme: themeProp,
     categories = [],
     currentSearch = '',
 }: StorefrontLayoutProps) {
     const page = usePage<SharedProps>();
+    const theme: StorefrontTheme = themeProp ?? page.props.storefrontTheme ?? {
+        store_name: 'Velure',
+        store_phone: '',
+        store_whatsapp: '',
+        logo_url: '',
+        primary_color: '#0B3B2E',
+    };
+    const resolvedCategories =
+        categories.length > 0 ? categories : (page.props.navCategories ?? []);
     const pageCart = (page.props.cart as CartSummary) || {
         id: null,
         total_items: 0,
@@ -56,7 +63,6 @@ export function StorefrontLayout({
     const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(currentSearch);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
     const [expandedMobileCategories, setExpandedMobileCategories] = useState<Record<number, boolean>>({});
@@ -122,7 +128,6 @@ export function StorefrontLayout({
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 setIsMobileMenuOpen(false);
-                setIsCategoryDropdownOpen(false);
                 setIsMobileSearchOpen(false);
                 setIsAccountDropdownOpen(false);
             }
@@ -151,10 +156,10 @@ export function StorefrontLayout({
 
     return (
         <div
-            className="min-h-screen flex flex-col bg-gray-50 text-gray-900"
+            className="min-h-screen flex flex-col bg-[#FAF7F2] text-gray-900"
             style={
                 {
-                    '--primary-color': theme.primary_color || '#4f46e5',
+                    '--primary-color': theme.primary_color || '#0B3B2E',
                     fontFamily: theme.font_family || 'Hind Siliguri, Inter, sans-serif',
                 } as React.CSSProperties
             }
@@ -164,18 +169,17 @@ export function StorefrontLayout({
                 <style dangerouslySetInnerHTML={{ __html: theme.custom_css }} />
             )}
 
-            {/* Top Announcement Bar */}
-            <div className="bg-gray-900 text-gray-200 text-xs py-2 px-4">
+            {/* Top Announcement Bar (#0B3B2E Deep Forest Green) */}
+            <div className="bg-[#0B3B2E] text-white/90 text-[11px] sm:text-xs py-2 px-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 sm:gap-6">
                         <span className="flex items-center gap-1.5 font-medium">
-                            <Truck className="w-3.5 h-3.5 text-amber-400" />
-                            সারা বাংলাদেশে দ্রুত ক্যাশ অন ডেলিভারি
+                            <Truck className="w-3.5 h-3.5 text-emerald-300" />
+                            Free Delivery Over ৳2,000
                         </span>
-                        <span className="hidden md:inline-block text-gray-500">|</span>
-                        <span className="hidden md:flex items-center gap-1.5 text-gray-300">
-                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                            ১০০% আসল পণ্যের নিশ্চয়তা
+                        <span className="hidden sm:flex items-center gap-1.5 text-white/80">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+                            100% Authentic Products
                         </span>
                     </div>
 
@@ -187,48 +191,37 @@ export function StorefrontLayout({
                                 title="অ্যাডমিন প্যানেল খুলুন"
                             >
                                 <ShieldCheck className="w-3.5 h-3.5 text-amber-900" />
-                                <span>অ্যাডমিন মোড সক্রিয়</span>
+                                <span>Admin</span>
                             </Link>
                         )}
                         <Link
                             href="/track-order"
-                            className="hidden sm:inline-flex items-center gap-1 text-gray-300 hover:text-white transition"
+                            className="hidden sm:inline-flex items-center gap-1 text-white/80 hover:text-white transition"
                         >
-                            <Truck className="w-3 h-3 text-indigo-400" />
-                            <span>অর্ডার ট্র্যাকিং</span>
+                            <span>Track Order</span>
                         </Link>
                         {theme.store_phone && (
                             <a
                                 href={`tel:${theme.store_phone}`}
-                                className="flex items-center gap-1 text-gray-300 hover:text-white transition"
+                                className="flex items-center gap-1 text-white/90 hover:text-white font-medium transition"
                             >
-                                <Phone className="w-3 h-3 text-indigo-400" />
+                                <Phone className="w-3 h-3 text-emerald-300" />
                                 <span>{theme.store_phone}</span>
-                            </a>
-                        )}
-                        {theme.store_whatsapp && (
-                            <a
-                                href={`https://wa.me/${cleanWhatsapp}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hidden sm:inline-flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-semibold transition"
-                            >
-                                <span>WhatsApp অর্ডার</span>
                             </a>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Main Header (Row 1) */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+            {/* Main Header (Single Clean Row matching mockup) */}
+            <header className="bg-white border-b border-stone-200/80 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-4">
                     {/* Mobile Menu Button & Brand */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                         <button
                             type="button"
                             onClick={() => setIsMobileMenuOpen(true)}
-                            className="md:hidden p-2 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="lg:hidden p-2 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]"
                             aria-label="Open navigation menu"
                         >
                             <Menu className="w-6 h-6" />
@@ -238,10 +231,10 @@ export function StorefrontLayout({
                             <SafeImage
                                 src={theme.logo_url}
                                 alt={theme.store_name}
-                                className="h-10 sm:h-12 w-auto object-contain max-w-[180px]"
+                                className="h-9 sm:h-10 w-auto object-contain max-w-[160px]"
                                 fallbackText=""
                                 fallbackIcon={
-                                    <span className="text-xl sm:text-2xl font-black tracking-tight text-indigo-600">
+                                    <span className="text-2xl font-serif font-bold tracking-tight text-[#0B3B2E]">
                                         {theme.store_name}
                                     </span>
                                 }
@@ -249,29 +242,93 @@ export function StorefrontLayout({
                         </Link>
                     </div>
 
-                    {/* Central Search Bar (Desktop) */}
-                    <div className="hidden md:flex flex-1 max-w-xl mx-4">
-                        <form onSubmit={handleSearchSubmit} className="relative w-full">
+                    {/* Center Navigation Links (Desktop) */}
+                    <nav className="hidden lg:flex items-center gap-6 text-[13px] font-medium text-gray-700">
+                        <Link
+                            href="/"
+                            className={`py-2 transition whitespace-nowrap ${
+                                page.url === '/'
+                                    ? 'text-gray-900 font-semibold border-b-2 border-[#F96D16]'
+                                    : 'hover:text-[#0B3B2E]'
+                            }`}
+                        >
+                            Home
+                        </Link>
+                        {resolvedCategories.slice(0, 4).map((cat) => {
+                            const hasChildren = Boolean(cat.children && cat.children.length > 0);
+                            return (
+                                <div key={cat.id} className="relative group">
+                                    <Link
+                                        href={`/category/${cat.slug}`}
+                                        className={`inline-flex items-center gap-1 py-2 transition whitespace-nowrap ${
+                                            page.url.startsWith(`/category/${cat.slug}`)
+                                                ? 'text-gray-900 font-semibold border-b-2 border-[#F96D16]'
+                                                : 'hover:text-[#0B3B2E]'
+                                        }`}
+                                    >
+                                        <span>{cat.name}</span>
+                                        {hasChildren && (
+                                            <ChevronDown className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#0B3B2E] transition-transform duration-200 group-hover:rotate-180" />
+                                        )}
+                                    </Link>
+
+                                    {hasChildren && (
+                                        <div className="absolute left-0 top-full pt-1.5 w-52 opacity-0 invisible translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 transition-all duration-150 z-50">
+                                            <div className="bg-white rounded-xl shadow-xl border border-stone-200/90 py-1.5 overflow-hidden">
+                                                {cat.children!.map((sub) => (
+                                                    <Link
+                                                        key={sub.id}
+                                                        href={`/category/${sub.slug}`}
+                                                        className="flex items-center justify-between px-4 py-2 text-[13px] text-gray-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] font-medium transition"
+                                                    >
+                                                        <span>{sub.name}</span>
+                                                    </Link>
+                                                ))}
+                                                <div className="border-t border-stone-100 mt-1 pt-1">
+                                                    <Link
+                                                        href={`/category/${cat.slug}`}
+                                                        className="block px-4 py-1.5 text-xs font-semibold text-[#F96D16] hover:bg-[#FAF7F2] transition"
+                                                    >
+                                                        View All {cat.name} →
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        <Link
+                            href="/shop?sort=latest"
+                            className={`py-2 transition whitespace-nowrap ${
+                                page.url.includes('sort=latest')
+                                    ? 'text-gray-900 font-semibold border-b-2 border-[#F96D16]'
+                                    : 'hover:text-[#0B3B2E]'
+                            }`}
+                        >
+                            New Arrivals
+                        </Link>
+                        <Link
+                            href="/shop"
+                            className="px-3.5 py-1.5 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-bold transition shadow-xs"
+                        >
+                            Sale
+                        </Link>
+                    </nav>
+
+                    {/* Right Search Bar & Action Icons */}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <form onSubmit={handleSearchSubmit} className="hidden md:block relative w-52 xl:w-64">
                             <input
                                 type="text"
-                                aria-label="পণ্য বা মডেলের নাম দিয়ে খুঁজুন"
-                                placeholder="পণ্য বা মডেলের নাম দিয়ে খুঁজুন..."
+                                aria-label="Search for products"
+                                placeholder="Search for products..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-24 py-2.5 bg-gray-50 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                                className="w-full pl-9 pr-4 py-1.5 bg-[#FAF7F2] border border-stone-200 rounded-full text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E] focus:bg-white transition"
                             />
-                            <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                            <button
-                                type="submit"
-                                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-semibold shadow-sm transition"
-                            >
-                                খুঁজুন
-                            </button>
+                            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </form>
-                    </div>
-
-                    {/* Right Action Icons & Badges */}
-                    <div className="flex items-center gap-2 sm:gap-4">
                         {/* Mobile Search Toggle */}
                         <button
                             type="button"
@@ -505,19 +562,16 @@ export function StorefrontLayout({
                         <button
                             type="button"
                             onClick={() => setIsMiniCartOpen(true)}
-                            className="flex items-center gap-2 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold transition"
+                            className="p-2 text-gray-700 hover:text-[#0B3B2E] rounded-full hover:bg-stone-100 transition relative"
                             title="Shopping Cart"
                             aria-label="Open Shopping Cart"
                         >
-                            <div className="relative">
-                                <ShoppingBag className="w-5 h-5" />
-                                {activeCart.total_items > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-indigo-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">
-                                        {activeCart.total_items > 99 ? '99+' : activeCart.total_items}
-                                    </span>
-                                )}
-                            </div>
-                            <span className="hidden sm:inline">কার্ট</span>
+                            <ShoppingBag className="w-5 h-5" />
+                            {activeCart.total_items > 0 && (
+                                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#F96D16] text-white rounded-full text-[10px] font-bold flex items-center justify-center">
+                                    {activeCart.total_items > 99 ? '99+' : activeCart.total_items}
+                                </span>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -528,117 +582,22 @@ export function StorefrontLayout({
                         <form onSubmit={handleSearchSubmit} className="relative w-full">
                             <input
                                 type="text"
-                                placeholder="পণ্য খুঁজুন..."
+                                placeholder="Search for products..."
                                 autoFocus
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-20 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full pl-10 pr-20 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]"
                             />
                             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                             <button
                                 type="submit"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1 bg-indigo-600 text-white rounded-md text-xs font-semibold"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 px-3 py-1 bg-[#F96D16] text-white rounded-md text-xs font-semibold"
                             >
-                                খুঁজুন
+                                Search
                             </button>
                         </form>
                     </div>
                 )}
-
-                {/* Desktop 2-Row Navigation Bar (Row 2) */}
-                <div className="hidden md:block bg-gray-100 border-t border-gray-200">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-                        {/* All Categories Dropdown Menu */}
-                        <div className="relative">
-                            <button
-                                type="button"
-                                onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                                className="flex items-center gap-2.5 px-5 py-3 bg-indigo-600 text-white font-bold text-sm tracking-wide transition hover:bg-indigo-700"
-                            >
-                                <Menu className="w-4 h-4" />
-                                <span>সকল ক্যাটাগরি</span>
-                                <ChevronDown
-                                    className={`w-4 h-4 transition-transform duration-200 ${
-                                        isCategoryDropdownOpen ? 'rotate-180' : ''
-                                    }`}
-                                />
-                            </button>
-
-                            {/* Mega Dropdown Menu */}
-                            {isCategoryDropdownOpen && (
-                                <div className="absolute top-full left-0 w-64 bg-white border border-gray-200 shadow-xl rounded-b-xl z-50 py-2 max-h-96 overflow-y-auto">
-                                    {categories.length === 0 ? (
-                                        <div className="px-4 py-3 text-xs text-gray-400">কোন ক্যাটাগরি নেই</div>
-                                    ) : (
-                                        categories.map((cat) => (
-                                            <div key={cat.id} className="group relative">
-                                                <Link
-                                                    href={`/category/${cat.slug}`}
-                                                    onClick={() => setIsCategoryDropdownOpen(false)}
-                                                    className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                                                >
-                                                    <span className="font-medium">{cat.name}</span>
-                                                    {cat.children && cat.children.length > 0 && (
-                                                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
-                                                    )}
-                                                </Link>
-
-                                                {/* Subcategory Flyout (Level 2) */}
-                                                {cat.children && cat.children.length > 0 && (
-                                                    <div className="hidden group-hover:block absolute top-0 left-full w-56 bg-white border border-gray-200 shadow-xl rounded-r-xl py-2 z-50">
-                                                        {cat.children.map((sub) => (
-                                                            <Link
-                                                                key={sub.id}
-                                                                href={`/category/${sub.slug}`}
-                                                                onClick={() => setIsCategoryDropdownOpen(false)}
-                                                                className="block px-4 py-2 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                                                            >
-                                                                {sub.name}
-                                                            </Link>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Primary Store Links */}
-                        <nav className="flex items-center space-x-8 text-sm font-semibold text-gray-700">
-                            <Link href="/" className="hover:text-indigo-600 transition py-3">
-                                হোম
-                            </Link>
-                            <Link href="/shop" className="hover:text-indigo-600 transition py-3">
-                                শপ / সকল পণ্য
-                            </Link>
-                            {categories.slice(0, 5).map((cat) => (
-                                <Link
-                                    key={cat.id}
-                                    href={`/category/${cat.slug}`}
-                                    className="hover:text-indigo-600 transition py-3"
-                                >
-                                    {cat.name}
-                                </Link>
-                            ))}
-                            <Link href="/pages/about" className="hover:text-indigo-600 transition py-3">
-                                আমাদের সম্পর্কে
-                            </Link>
-                            <Link href="/pages/contact" className="hover:text-indigo-600 transition py-3">
-                                যোগাযোগ
-                            </Link>
-                        </nav>
-
-                        {/* Hotline Right pill */}
-                        {theme.store_phone && (
-                            <div className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-gray-600">
-                                <HelpCircle className="w-3.5 h-3.5 text-indigo-500" />
-                                <span>হটলাইন: {theme.store_phone}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
             </header>
 
             {/* Mobile Navigation Drawer */}
@@ -768,7 +727,7 @@ export function StorefrontLayout({
                         {/* Category Accordion */}
                         <div className="flex-1 p-4 space-y-1">
                             <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">ক্যাটাগরি সমূহ</p>
-                            {categories.map((cat) => {
+                            {resolvedCategories.map((cat) => {
                                 const hasChildren = cat.children && cat.children.length > 0;
                                 const isExpanded = !!expandedMobileCategories[cat.id];
 
@@ -973,110 +932,133 @@ export function StorefrontLayout({
                 </div>
             </div>
 
-            {/* Storefront Footer */}
-            <footer className="bg-gray-900 text-gray-300 border-t border-gray-800 pt-16 pb-12">
+            {/* Storefront Footer (#0B3B2E Deep Forest Green matching mockup) */}
+            <footer className="bg-[#0B3B2E] text-emerald-100/80 pt-14 pb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-10 border-b border-white/10">
                         {/* Column 1: Store info */}
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
+                        <div className="lg:col-span-3">
+                            <div className="flex items-center gap-2 mb-3">
                                 <SafeImage
                                     src={theme.logo_url}
                                     alt={theme.store_name}
-                                    className="h-10 w-auto brightness-200"
+                                    className="h-9 w-auto brightness-200"
                                     fallbackText=""
                                     fallbackIcon={
-                                        <span className="text-2xl font-black text-white">{theme.store_name}</span>
+                                        <span className="text-2xl font-serif font-bold text-white">
+                                            {theme.store_name}
+                                        </span>
                                     }
                                 />
                             </div>
-                            <p className="text-sm text-gray-400 leading-relaxed mb-4">
-                                দেশজুড়ে বিশ্বস্ত গ্রাহকসেবা ও ক্যাশ অন ডেলিভারি সুবিধা নিয়ে আপনার সেরা কেনাকাটার নির্ভরযোগ্য ঠিকানা।
+                            <p className="text-xs sm:text-sm text-emerald-100/75 leading-relaxed mb-4">
+                                Your trusted destination for modern fashion, footwear, and lifestyle
+                                accessories with fast Cash on Delivery across Bangladesh.
                             </p>
                             {theme.store_phone && (
-                                <p className="text-sm text-gray-300 font-semibold mb-1">
-                                    হটলাইন: <span className="text-indigo-400">{theme.store_phone}</span>
+                                <p className="text-xs text-emerald-100/90 font-semibold">
+                                    Hotline: {theme.store_phone}
                                 </p>
                             )}
-                            <p className="text-xs text-gray-500">প্রতিদিন সকাল ৯টা - রাত ১১টা</p>
                         </div>
 
                         {/* Column 2: Quick Links */}
-                        <div>
-                            <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">
-                                প্রয়োজনীয় লিংক
-                            </h4>
-                            <ul className="space-y-2 text-sm text-gray-400">
+                        <div className="lg:col-span-2">
+                            <h4 className="text-white font-semibold text-sm mb-3">Quick Links</h4>
+                            <ul className="space-y-2 text-xs text-emerald-100/75">
                                 <li>
-                                    <Link href="/" className="hover:text-white transition">হোম পেইজ</Link>
+                                    <Link href="/pages/about" className="hover:text-white transition">About Us</Link>
                                 </li>
                                 <li>
-                                    <Link href="/shop" className="hover:text-white transition">সকল পণ্য</Link>
+                                    <Link href="/pages/contact" className="hover:text-white transition">Contact Us</Link>
                                 </li>
                                 <li>
-                                    <Link href="/track-order" className="hover:text-white transition">অর্ডার ট্র্যাক করুন</Link>
+                                    <Link href="/shop" className="hover:text-white transition">All Products</Link>
                                 </li>
                                 <li>
-                                    <Link href={accountUrl} className="hover:text-white transition">{customer ? 'আমার একাউন্ট' : 'লগইন / রেজিস্টার'}</Link>
+                                    <Link href="/track-order" className="hover:text-white transition">Track Order</Link>
                                 </li>
                                 <li>
-                                    <Link href="/customer/wishlist" className="hover:text-white transition">আমার উইশলিস্ট</Link>
-                                </li>
-                                <li>
-                                    <Link href="/pages/about" className="hover:text-white transition">আমাদের সম্পর্কে</Link>
-                                </li>
-                                <li>
-                                    <Link href="/pages/contact" className="hover:text-white transition">যোগাযোগ</Link>
+                                    <Link href={accountUrl} className="hover:text-white transition">{customer ? 'My Account' : 'Login / Register'}</Link>
                                 </li>
                             </ul>
                         </div>
 
-                        {/* Column 3: Customer Care & Policies */}
-                        <div>
-                            <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">
-                                গ্রাহক সেবা ও পলিসি
-                            </h4>
-                            <ul className="space-y-2 text-sm text-gray-400">
+                        {/* Column 3: Shop */}
+                        <div className="lg:col-span-2">
+                            <h4 className="text-white font-semibold text-sm mb-3">Shop</h4>
+                            <ul className="space-y-2 text-xs text-emerald-100/75">
+                                {resolvedCategories.slice(0, 5).map((cat) => (
+                                    <li key={cat.id}>
+                                        <Link href={`/category/${cat.slug}`} className="hover:text-white transition">
+                                            {cat.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Column 4: Customer Care */}
+                        <div className="lg:col-span-2">
+                            <h4 className="text-white font-semibold text-sm mb-3">Customer Care</h4>
+                            <ul className="space-y-2 text-xs text-emerald-100/75">
                                 <li>
-                                    <Link href="/pages/privacy-policy" className="hover:text-white transition">গোপনীয়তা নীতি</Link>
+                                    <Link href="/pages/refund-policy" className="hover:text-white transition">Return &amp; Refund</Link>
                                 </li>
                                 <li>
-                                    <Link href="/pages/terms" className="hover:text-white transition">ব্যবহারের শর্তাবলী</Link>
+                                    <Link href="/customer/wishlist" className="hover:text-white transition">My Wishlist</Link>
                                 </li>
                                 <li>
-                                    <Link href="/pages/refund-policy" className="hover:text-white transition">রিটার্ন ও রিফান্ড নীতি</Link>
+                                    <Link href="/pages/terms" className="hover:text-white transition">Terms &amp; Conditions</Link>
+                                </li>
+                                <li>
+                                    <Link href="/pages/privacy-policy" className="hover:text-white transition">Privacy Policy</Link>
                                 </li>
                             </ul>
                         </div>
 
-                        {/* Column 4: Delivery & Trust badges */}
-                        <div>
-                            <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">
-                                ডেলিভারি ও পেমেন্ট
+                        {/* Column 5: Subscribe & Get Offers */}
+                        <div className="lg:col-span-3">
+                            <h4 className="text-white font-semibold text-sm mb-3">
+                                Subscribe &amp; Get Offers
                             </h4>
-                            <div className="space-y-3">
-                                <div className="p-3 bg-gray-800 rounded-xl border border-gray-700/60 flex items-center gap-3">
-                                    <Truck className="w-6 h-6 text-indigo-400 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-xs font-semibold text-white">৬৪ জেলায় হোম ডেলিভারি</p>
-                                        <p className="text-[11px] text-gray-400">ঢাকা সিটিতে ২৪-৪৮ ঘণ্টা, ঢাকার বাইরে ৪৮-৭২ ঘণ্টা</p>
-                                    </div>
-                                </div>
-
-                                <div className="p-3 bg-gray-800 rounded-xl border border-gray-700/60 flex items-center gap-3">
-                                    <ShieldCheck className="w-6 h-6 text-emerald-400 flex-shrink-0" />
-                                    <div>
-                                        <p className="text-xs font-semibold text-white">নিরাপদ ক্যাশ অন ডেলিভারি</p>
-                                        <p className="text-[11px] text-gray-400">পণ্য হাতে পেয়ে মূল্য পরিশোধের সুবিধা</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <p className="text-xs text-emerald-100/75 leading-relaxed mb-3">
+                                Get the latest updates, new arrivals, and exclusive offers straight
+                                to your inbox.
+                            </p>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    router.visit('/shop');
+                                }}
+                                className="flex items-stretch overflow-hidden rounded-full bg-white p-1"
+                            >
+                                <input
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    className="min-w-0 flex-1 border-0 bg-transparent px-3 py-1.5 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+                                />
+                                <button
+                                    type="submit"
+                                    className="px-4 py-1.5 rounded-full bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-bold transition shrink-0"
+                                    aria-label="Subscribe"
+                                >
+                                    &rarr;
+                                </button>
+                            </form>
                         </div>
                     </div>
 
-                    {/* Bottom Copyright */}
-                    <div className="pt-8 border-t border-gray-800 text-center text-xs text-gray-500">
-                        <p>&copy; {new Date().getFullYear()} {theme.store_name}. সর্বস্বত্ব সংরক্ষিত।</p>
+                    {/* Bottom Copyright & Payment Badges */}
+                    <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-emerald-100/70">
+                        <p>&copy; {new Date().getFullYear()} {theme.store_name}. All Rights Reserved.</p>
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
+                            <span className="px-2.5 py-1 rounded bg-white text-[#1A1F71]">VISA</span>
+                            <span className="px-2.5 py-1 rounded bg-white text-[#EB001B]">Mastercard</span>
+                            <span className="px-2.5 py-1 rounded bg-[#E2136E] text-white">bKash</span>
+                            <span className="px-2.5 py-1 rounded bg-[#F7941D] text-white">Nagad</span>
+                            <span className="px-2.5 py-1 rounded bg-[#8C3494] text-white">Rocket</span>
+                        </div>
                     </div>
                 </div>
             </footer>

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+﻿import { Head, router } from '@inertiajs/react';
 import {
     AlertCircle,
     ExternalLink,
@@ -192,7 +192,7 @@ export default function PolicyPagesIndex({
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search policy pages by title or slug..."
-                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         />
                         {search && (
                             <button
@@ -256,7 +256,7 @@ export default function PolicyPagesIndex({
                                                 type="button"
                                                 onClick={() => handleToggleStatus(page)}
                                                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                                    page.is_published ? 'bg-indigo-600' : 'bg-gray-200'
+                                                    page.is_published ? 'bg-primary-600' : 'bg-gray-200'
                                                 }`}
                                             >
                                                 <span
@@ -272,7 +272,7 @@ export default function PolicyPagesIndex({
                                                     href={`/pages/${page.slug}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                                                    className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-medium"
                                                 >
                                                     <span>View Live</span>
                                                     <ExternalLink className="w-3.5 h-3.5" />
@@ -286,7 +286,7 @@ export default function PolicyPagesIndex({
                                                 <button
                                                     type="button"
                                                     onClick={() => openEditModal(page)}
-                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-gray-100 transition"
+                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-gray-100 transition"
                                                     title="Edit page"
                                                 >
                                                     <Pencil className="w-4 h-4" />
@@ -338,7 +338,7 @@ export default function PolicyPagesIndex({
                     <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl border border-gray-200 my-8">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Plus className="w-5 h-5 text-indigo-600" />
+                                <Plus className="w-5 h-5 text-primary-600" />
                                 <span>Create Policy Page</span>
                             </h3>
                             <button
@@ -362,7 +362,7 @@ export default function PolicyPagesIndex({
                                         value={createTitle}
                                         onChange={(e) => setCreateTitle(e.target.value)}
                                         placeholder="e.g. Terms and Conditions"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     />
                                     {formErrors.title && (
                                         <p className="text-xs text-red-600 mt-1">{formErrors.title}</p>
@@ -377,7 +377,7 @@ export default function PolicyPagesIndex({
                                         value={createSlug}
                                         onChange={(e) => setCreateSlug(e.target.value)}
                                         placeholder="terms-and-conditions"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-xs"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-xs"
                                     />
                                     {formErrors.slug && (
                                         <p className="text-xs text-red-600 mt-1">{formErrors.slug}</p>
@@ -403,7 +403,7 @@ export default function PolicyPagesIndex({
                                         type="checkbox"
                                         checked={createIsPublished}
                                         onChange={(e) => setCreateIsPublished(e.target.checked)}
-                                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                     />
                                     <span>Published (accessible to customers at /pages/{createSlug || 'slug'})</span>
                                 </label>
@@ -433,7 +433,7 @@ export default function PolicyPagesIndex({
                     <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl border border-gray-200 my-8">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Pencil className="w-5 h-5 text-indigo-600" />
+                                <Pencil className="w-5 h-5 text-primary-600" />
                                 <span>Edit Policy Page: {editingPage.title}</span>
                             </h3>
                             <button
@@ -456,7 +456,7 @@ export default function PolicyPagesIndex({
                                         required
                                         value={editTitle}
                                         onChange={(e) => setEditTitle(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     />
                                     {formErrors.title && (
                                         <p className="text-xs text-red-600 mt-1">{formErrors.title}</p>
@@ -471,7 +471,7 @@ export default function PolicyPagesIndex({
                                         value={editSlug}
                                         onChange={(e) => setEditSlug(e.target.value)}
                                         disabled={editingPage.is_protected}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-xs disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-xs disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                                     />
                                     {editingPage.is_protected && (
                                         <p className="text-[11px] text-amber-700 mt-1 flex items-center gap-1">
@@ -503,7 +503,7 @@ export default function PolicyPagesIndex({
                                         type="checkbox"
                                         checked={editIsPublished}
                                         onChange={(e) => setEditIsPublished(e.target.checked)}
-                                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                     />
                                     <span>Published (accessible to customers at /pages/{editSlug})</span>
                                 </label>

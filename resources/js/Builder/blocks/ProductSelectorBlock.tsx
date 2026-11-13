@@ -128,7 +128,7 @@ export function ProductSelectorBlock({
                     </div>
 
                     {/* Products Grid with Guaranteed Equal Height */}
-                    <div className="grid grid-cols-1 @min-[640px]:grid-cols-2 @min-[1024px]:grid-cols-3 gap-6 items-stretch">
+                    <div className="grid grid-cols-1 @min-[640px]:grid-cols-2 @min-[800px]:grid-cols-3 gap-6 items-stretch">
                         {productIds.map((pid, idx) => {
                             const realProd = availableProducts.find((p) => p.id === pid);
                             const hasVariants = Boolean(realProd?.variants && realProd.variants.length > 1);

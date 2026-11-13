@@ -8,8 +8,9 @@ import {
     Info,
     Link2,
     Link2Off,
-    Minus,
-    Plus,
+    Monitor,
+    Smartphone,
+    Tablet,
     type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useId, useState, type ReactNode } from 'react';
@@ -143,22 +144,10 @@ export function NumberUnitInput({
 
     return (
         <div
-            className={`flex h-7 items-stretch overflow-hidden rounded-md border border-gray-300 bg-white transition focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 ${
+            className={`flex h-8 items-stretch overflow-hidden rounded-md border border-gray-300 bg-white transition focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500 ${
                 disabled ? 'opacity-50' : ''
             } ${className}`}
         >
-            <button
-                type="button"
-                tabIndex={-1}
-                disabled={disabled}
-                onClick={() => handleStep(-1)}
-                title="Decrease"
-                aria-label={ariaLabel ? `Decrease ${ariaLabel}` : 'Decrease value'}
-                className="flex w-6 shrink-0 items-center justify-center border-r border-gray-200 text-gray-400 transition hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed"
-            >
-                <Minus className="h-3 w-3" />
-            </button>
-
             <input
                 type="text"
                 inputMode="decimal"
@@ -177,11 +166,11 @@ export function NumberUnitInput({
                         handleStep(-1);
                     }
                 }}
-                className="min-w-0 flex-1 border-0 bg-transparent px-1.5 text-center font-mono text-[11px] text-gray-800 outline-none placeholder:text-gray-300"
+                className="min-w-0 flex-1 border-0 bg-transparent px-2 py-0 text-left font-mono text-xs text-gray-800 outline-none placeholder:text-gray-300"
             />
 
             {forcedUnit !== null && showUnitLabel && units.length <= 1 && (
-                <span className="flex w-6 shrink-0 items-center justify-center border-l border-gray-100 bg-gray-50/70 text-[9px] font-semibold uppercase text-gray-400">
+                <span className="flex shrink-0 items-center justify-center border-l border-gray-100 bg-gray-50/70 px-1.5 text-[9.5px] font-semibold uppercase text-gray-400">
                     {unit}
                 </span>
             )}
@@ -192,7 +181,7 @@ export function NumberUnitInput({
                     disabled={disabled}
                     aria-label={ariaLabel ? `${ariaLabel} unit` : 'Unit'}
                     onChange={(event) => handleUnitChange(event.target.value)}
-                    className="h-full w-[46px] shrink-0 cursor-pointer border-0 border-l border-gray-200 bg-gray-50/70 px-0.5 text-center text-[10px] font-semibold text-gray-500 outline-none"
+                    className="h-full shrink-0 cursor-pointer border-0 border-l border-gray-200 bg-gray-50/70 pl-1.5 pr-5 py-0 text-left text-[10px] font-semibold text-gray-500 outline-none"
                 >
                     {units.map((option) => (
                         <option key={option} value={option}>
@@ -202,17 +191,30 @@ export function NumberUnitInput({
                 </select>
             )}
 
-            <button
-                type="button"
-                tabIndex={-1}
-                disabled={disabled}
-                onClick={() => handleStep(1)}
-                title="Increase"
-                aria-label={ariaLabel ? `Increase ${ariaLabel}` : 'Increase value'}
-                className="flex w-6 shrink-0 items-center justify-center border-l border-gray-200 text-gray-400 transition hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed"
-            >
-                <Plus className="h-3 w-3" />
-            </button>
+            <div className="flex w-5 shrink-0 flex-col border-l border-gray-200 bg-gray-50/60">
+                <button
+                    type="button"
+                    tabIndex={-1}
+                    disabled={disabled}
+                    onClick={() => handleStep(1)}
+                    title="Increase"
+                    aria-label={ariaLabel ? `Increase ${ariaLabel}` : 'Increase value'}
+                    className="flex flex-1 items-center justify-center text-gray-400 transition hover:bg-gray-200/70 hover:text-gray-800 disabled:cursor-not-allowed"
+                >
+                    <ChevronUp className="h-2.5 w-2.5" />
+                </button>
+                <button
+                    type="button"
+                    tabIndex={-1}
+                    disabled={disabled}
+                    onClick={() => handleStep(-1)}
+                    title="Decrease"
+                    aria-label={ariaLabel ? `Decrease ${ariaLabel}` : 'Decrease value'}
+                    className="flex flex-1 items-center justify-center border-t border-gray-200 text-gray-400 transition hover:bg-gray-200/70 hover:text-gray-800 disabled:cursor-not-allowed"
+                >
+                    <ChevronDown className="h-2.5 w-2.5" />
+                </button>
+            </div>
         </div>
     );
 }
@@ -317,7 +319,7 @@ export function SelectControl({ label, value = '', options, onChange, hint }: Se
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="h-7 w-full cursor-pointer rounded-md border border-gray-300 bg-white px-1.5 text-[11px] text-gray-800 outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="h-8 w-full cursor-pointer rounded-md border border-gray-300 bg-white px-2 py-0 text-xs leading-normal text-gray-800 outline-none transition focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             >
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -437,10 +439,12 @@ const ALIGNMENT_OPTIONS = [
 
 export function AlignmentControl({ label, value = 'left', onChange }: AlignmentControlProps) {
     return (
-        <div>
-            {label && <ControlLabel label={label} />}
-            <div className="grid grid-cols-4 gap-0.5 rounded-md bg-gray-100 p-0.5">
-                {ALIGNMENT_OPTIONS.map((option) => {
+        <div className="flex items-center justify-between gap-2">
+            {label && (
+                <span className="truncate text-[11px] font-medium text-gray-700">{label}</span>
+            )}
+            <div className="inline-flex shrink-0 overflow-hidden rounded-md border border-gray-300 bg-white">
+                {ALIGNMENT_OPTIONS.map((option, idx) => {
                     const Icon = option.icon;
                     const active = value === option.value;
 
@@ -452,10 +456,12 @@ export function AlignmentControl({ label, value = 'left', onChange }: AlignmentC
                             aria-label={option.label}
                             aria-pressed={active}
                             onClick={() => onChange(option.value)}
-                            className={`flex h-6 items-center justify-center rounded transition ${
+                            className={`flex h-7 w-8 items-center justify-center transition ${
+                                idx > 0 ? 'border-l border-gray-200' : ''
+                            } ${
                                 active
-                                    ? 'bg-white text-primary-700 shadow-xs'
-                                    : 'text-gray-400 hover:text-gray-700'
+                                    ? 'bg-gray-200/80 text-gray-900'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                             }`}
                         >
                             <Icon className="h-3.5 w-3.5" />
@@ -488,42 +494,169 @@ export function ControlSection({
     const contentId = useId();
 
     return (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-            <div className="flex items-center bg-gray-50/80">
+        <div className="border-b border-gray-200 bg-white">
+            <div className="flex items-center">
                 <button
                     type="button"
                     onClick={() => setIsOpen((current) => !current)}
                     aria-expanded={isOpen}
                     aria-controls={contentId}
-                    className="flex min-w-0 flex-1 cursor-pointer items-center justify-between px-2.5 py-2 text-left transition hover:bg-gray-100/70"
+                    className="flex min-w-0 flex-1 cursor-pointer items-center justify-between px-3 py-2.5 text-left transition hover:bg-gray-50"
                 >
-                    <span className="flex min-w-0 items-center space-x-1.5">
-                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-primary-600" />}
+                    <span className="flex min-w-0 items-center space-x-2">
+                        {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-gray-500" />}
                         <span className="min-w-0">
-                            <span className="block truncate text-[10.5px] font-bold text-gray-800">
+                            <span className="block truncate text-[11.5px] font-bold text-gray-800">
                                 {title}
                             </span>
                             {description && isOpen && (
-                                <span className="mt-0.5 block truncate text-[9px] font-normal text-gray-400">
+                                <span className="mt-0.5 block truncate text-[9.5px] font-normal text-gray-400">
                                     {description}
                                 </span>
                             )}
                         </span>
                     </span>
                     {isOpen ? (
-                        <ChevronUp className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                        <ChevronUp className="h-3.5 w-3.5 shrink-0 text-gray-500" />
                     ) : (
-                        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-gray-500" />
                     )}
                 </button>
-                {action && <div className="pr-1.5">{action}</div>}
+                {action && <div className="pr-2">{action}</div>}
             </div>
 
             {isOpen && (
-                <div id={contentId} className="space-y-2 p-2.5">
+                <div id={contentId} className="space-y-2.5 px-3 pb-3 pt-1">
                     {children}
                 </div>
             )}
+        </div>
+    );
+}
+
+export interface SliderControlProps {
+    label: string;
+    value?: string;
+    onChange: (value: string) => void;
+    min?: number;
+    max?: number;
+    step?: number;
+    unit?: string | null;
+    units?: string[];
+    placeholder?: string;
+    hint?: string;
+}
+
+export function SliderControl({
+    label,
+    value = '',
+    onChange,
+    min = 0,
+    max = 100,
+    step = 1,
+    unit = 'px',
+    units,
+    placeholder,
+    hint,
+}: SliderControlProps) {
+    const defaultUnit = unit === null ? '' : unit || units?.[0] || 'px';
+    const parsed = parseDimension(value, defaultUnit);
+    const numericValue = Number.parseFloat(parsed.number);
+    const sliderValue = Number.isFinite(numericValue)
+        ? Math.min(max, Math.max(min, numericValue))
+        : min;
+
+    return (
+        <div>
+            <ControlLabel label={label} hint={hint} />
+            <div className="flex items-center gap-2">
+                <input
+                    type="range"
+                    min={min}
+                    max={max}
+                    step={step}
+                    value={sliderValue}
+                    onChange={(event) => {
+                        const nextUnit = parsed.unit || defaultUnit;
+                        onChange(`${event.target.value}${nextUnit}`);
+                    }}
+                    aria-label={`${label} slider`}
+                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-200 accent-primary-600"
+                />
+                <NumberUnitInput
+                    value={value}
+                    onChange={onChange}
+                    min={min}
+                    max={max}
+                    step={step}
+                    unit={units ? undefined : unit}
+                    units={units || (unit ? [unit] : ['px'])}
+                    placeholder={placeholder}
+                    ariaLabel={label}
+                    className="w-24 shrink-0"
+                />
+            </div>
+            {hint && <ControlHint>{hint}</ControlHint>}
+        </div>
+    );
+}
+
+export interface ResponsiveDeviceBarProps {
+    viewport: 'desktop' | 'tablet' | 'mobile';
+    onChange: (viewport: 'desktop' | 'tablet' | 'mobile') => void;
+    label?: string;
+}
+
+export function ResponsiveDeviceBar({
+    viewport,
+    onChange,
+    label = 'Editing for',
+}: ResponsiveDeviceBarProps) {
+    const devices: Array<{
+        id: 'desktop' | 'tablet' | 'mobile';
+        label: string;
+        icon: LucideIcon;
+    }> = [
+        { id: 'desktop', label: 'Desktop', icon: Monitor },
+        { id: 'tablet', label: 'Tablet', icon: Tablet },
+        { id: 'mobile', label: 'Mobile', icon: Smartphone },
+    ];
+
+    return (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-indigo-200/80 bg-indigo-50/70 px-2.5 py-1.5">
+            <div className="min-w-0">
+                <span className="block text-[10.5px] font-bold text-indigo-950 capitalize">
+                    {label}: {viewport}
+                </span>
+                <span className="block text-[9.5px] text-indigo-700/90">
+                    {viewport === 'desktop'
+                        ? 'Base styles (all devices)'
+                        : `${viewport} override only`}
+                </span>
+            </div>
+            <div className="flex items-center gap-0.5 rounded-md border border-indigo-200 bg-white p-0.5 shrink-0">
+                {devices.map((device) => {
+                    const Icon = device.icon;
+                    const active = viewport === device.id;
+                    return (
+                        <button
+                            key={device.id}
+                            type="button"
+                            onClick={() => onChange(device.id)}
+                            title={`${device.label} view`}
+                            aria-label={`${device.label} view`}
+                            aria-pressed={active}
+                            className={`flex h-6 w-6 items-center justify-center rounded transition ${
+                                active
+                                    ? 'bg-indigo-600 text-white shadow-xs'
+                                    : 'text-gray-400 hover:bg-indigo-50 hover:text-indigo-700'
+                            }`}
+                        >
+                            <Icon className="h-3.5 w-3.5" />
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 }
@@ -533,8 +666,11 @@ export interface SpacingControlProps {
     values: [string, string, string, string];
     onChange: (values: [string, string, string, string]) => void;
     unit?: string;
+    units?: string[];
     step?: number;
     hint?: string;
+    sides?: readonly [string, string, string, string];
+    defaultLinked?: boolean;
 }
 
 const SPACING_LABELS = ['Top', 'Right', 'Bottom', 'Left'] as const;
@@ -543,66 +679,134 @@ export function SpacingControl({
     label,
     values,
     onChange,
-    unit = 'px',
+    unit: initialUnit = 'px',
+    units = ['px', 'rem', '%'],
     step = 1,
     hint,
+    sides = SPACING_LABELS,
+    defaultLinked = false,
 }: SpacingControlProps) {
-    const [linked, setLinked] = useState(false);
+    const [linked, setLinked] = useState(defaultLinked);
+    const [activeUnit, setActiveUnit] = useState(initialUnit);
 
-    const update = (index: number, value: string) => {
+    const update = (index: number, rawNumber: string) => {
+        const formatted = rawNumber.trim() === '' ? '' : `${rawNumber.trim()}${activeUnit}`;
         if (linked) {
-            onChange([value, value, value, value]);
+            onChange([formatted, formatted, formatted, formatted]);
             return;
         }
 
         const next = [...values] as [string, string, string, string];
-        next[index] = value;
+        next[index] = formatted;
         onChange(next);
     };
 
     return (
         <div>
-            <div className="mb-1 flex items-center justify-between">
-                <span className="text-[10px] font-semibold text-gray-600">
-                    {label}
-                    {unit && <span className="ml-1 font-mono text-[9px] text-gray-400">({unit})</span>}
-                </span>
-                <button
-                    type="button"
-                    onClick={() => setLinked((current) => !current)}
-                    title={linked ? 'Unlink sides' : 'Link all sides'}
-                    aria-pressed={linked}
-                    className={`flex h-5 w-5 items-center justify-center rounded transition ${
-                        linked
-                            ? 'bg-primary-50 text-primary-700'
-                            : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'
-                    }`}
-                >
-                    {linked ? <Link2 className="h-3 w-3" /> : <Link2Off className="h-3 w-3" />}
-                </button>
+            <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-[11px] font-medium text-gray-700">{label}</span>
+                {units.length > 1 && (
+                    <select
+                        value={activeUnit}
+                        aria-label={`${label} unit`}
+                        onChange={(event) => setActiveUnit(event.target.value)}
+                        className="h-5 cursor-pointer border-0 bg-transparent px-1 py-0 text-[10px] font-semibold text-gray-500 outline-none hover:text-gray-800 focus:ring-0"
+                    >
+                        {units.map((u) => (
+                            <option key={u} value={u}>
+                                {u}
+                            </option>
+                        ))}
+                    </select>
+                )}
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5">
-                {SPACING_LABELS.map((side, index) => (
-                    <div key={side} className="flex items-center space-x-1">
-                        <span className="w-2.5 shrink-0 text-[8px] font-bold uppercase text-gray-400">
-                            {side.charAt(0)}
-                        </span>
-                        <NumberUnitInput
-                            value={values[index]}
-                            onChange={(value) => update(index, value)}
-                            units={[unit]}
-                            unit={unit}
-                            step={step}
-                            ariaLabel={`${label} ${side}`}
-                            showUnitLabel={false}
-                            className="flex-1"
-                        />
-                    </div>
-                ))}
+            <div className="flex items-stretch">
+                {sides.map((side, index) => {
+                    const parsed = parseDimension(values[index], activeUnit);
+                    return (
+                        <div key={side} className="flex min-w-0 flex-1 flex-col items-center">
+                            <input
+                                type="number"
+                                step={step}
+                                value={parsed.number}
+                                placeholder="0"
+                                aria-label={`${label} ${side}`}
+                                onChange={(event) => update(index, event.target.value)}
+                                className={`h-8 w-full min-w-0 border border-gray-300 bg-white px-1 py-0 text-center text-xs text-gray-800 outline-none transition placeholder:text-gray-300 focus:z-10 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 ${
+                                    index === 0 ? 'rounded-l-md' : '-ml-px'
+                                }`}
+                            />
+                            <span className="mt-1 text-[9px] font-medium text-gray-400">
+                                {side}
+                            </span>
+                        </div>
+                    );
+                })}
+                <div className="flex flex-col items-center">
+                    <button
+                        type="button"
+                        onClick={() => setLinked((current) => !current)}
+                        title={linked ? 'Unlink values' : 'Link values together'}
+                        aria-pressed={linked}
+                        className={`-ml-px flex h-8 w-8 shrink-0 items-center justify-center rounded-r-md border border-gray-300 transition ${
+                            linked
+                                ? 'bg-gray-200 text-gray-900'
+                                : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                        }`}
+                    >
+                        {linked ? <Link2 className="h-3.5 w-3.5" /> : <Link2Off className="h-3.5 w-3.5" />}
+                    </button>
+                </div>
             </div>
             {hint && <ControlHint>{hint}</ControlHint>}
         </div>
+    );
+}
+
+const RADIUS_CORNER_LABELS = ['TL', 'TR', 'BR', 'BL'] as const;
+
+function parseBorderRadiusParts(raw: string): [string, string, string, string] {
+    const parts = raw.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return ['', '', '', ''];
+    if (parts.length === 1) return [parts[0], parts[0], parts[0], parts[0]];
+    if (parts.length === 2) return [parts[0], parts[1], parts[0], parts[1]];
+    if (parts.length === 3) return [parts[0], parts[1], parts[2], parts[1]];
+    return [parts[0], parts[1], parts[2], parts[3]];
+}
+
+function serializeBorderRadiusParts(values: [string, string, string, string]): string {
+    const normalized = values.map((v) => v.trim());
+    if (normalized.every((v) => v === '')) return '';
+    const filled = normalized.map((v) => v || '0px');
+    if (filled.every((v) => v === filled[0])) return filled[0];
+    return filled.join(' ');
+}
+
+export function BorderRadiusControl({
+    label = 'Border Radius',
+    value = '',
+    onChange,
+    hint,
+}: {
+    label?: string;
+    value?: string;
+    onChange: (value: string) => void;
+    hint?: string;
+}) {
+    const parts = parseBorderRadiusParts(value);
+    const allEqual = parts[0] === parts[1] && parts[1] === parts[2] && parts[2] === parts[3];
+
+    return (
+        <SpacingControl
+            label={label}
+            values={parts}
+            sides={RADIUS_CORNER_LABELS}
+            units={['px', '%']}
+            defaultLinked={allEqual}
+            hint={hint}
+            onChange={(next) => onChange(serializeBorderRadiusParts(next))}
+        />
     );
 }
 

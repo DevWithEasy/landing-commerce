@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowRight, Lock, Mail, Phone, ShieldCheck, User as UserIcon, UserPlus } from 'lucide-react';
-import React from 'react';
+import { Eye, EyeOff, Gift, Heart, Lock, Mail, Phone, ShoppingBag, User as UserIcon } from 'lucide-react';
+import React, { useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import type { Category } from '@/types';
 import type { StorefrontTheme } from '@/types/storefront';
@@ -11,6 +11,8 @@ interface RegisterProps {
 }
 
 export default function CustomerRegister({ theme, categories }: RegisterProps) {
+    const [showPassword, setShowPassword] = useState(false);
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
@@ -25,180 +27,242 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
     };
 
     return (
-        <StorefrontLayout theme={theme} categories={categories} title="নতুন গ্রাহক নিবন্ধন | Register">
+        <StorefrontLayout theme={theme} categories={categories} title={`Sign Up - ${theme.store_name}`}>
             <Head>
-                <title>নতুন গ্রাহক নিবন্ধন | Register</title>
+                <title>{`Sign Up - ${theme.store_name}`}</title>
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
 
-            <div className="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full bg-white rounded-3xl shadow-sm border border-gray-200 p-8 sm:p-10">
-                    <div className="text-center mb-8">
-                        <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center mx-auto text-indigo-600 mb-4">
-                            <UserPlus className="w-6 h-6" />
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            নতুন একাউন্ট খুলুন
-                        </h2>
-                        <p className="text-sm text-gray-500 mt-1">
-                            এক ক্লিকে অর্ডার হিস্ট্রি এবং পছন্দের উইশলিস্ট সংরক্ষণ করুন
-                        </p>
-                    </div>
+            <div className="min-h-[calc(100vh-140px)] flex flex-col lg:flex-row">
+                {/* Left Brand Panel (Deep Forest Green) */}
+                <div className="lg:w-1/2 bg-[#0B3B2E] text-white relative overflow-hidden flex items-center py-12 px-6 sm:px-12 lg:px-16">
+                    {/* Right warm cream curved arch accent */}
+                    <div
+                        className="hidden lg:block absolute right-0 top-0 bottom-0 w-24 bg-[#FAF7F2]"
+                        style={{ clipPath: 'ellipse(100% 70% at 100% 50%)' }}
+                    />
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Name Input */}
+                    <div className="relative z-10 max-w-md mx-auto lg:mx-0 space-y-8">
                         <div>
-                            <label htmlFor="customer_reg_name" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                আপনার নাম (Full Name) *
-                            </label>
-                            <div className="relative">
-                                <UserIcon className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
-                                <input
-                                    id="customer_reg_name"
-                                    type="text"
-                                    aria-required="true"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    required
-                                    placeholder="আপনার নাম লিখুন"
-                                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition ${
-                                        errors.name ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:bg-white'
-                                    }`}
-                                />
-                            </div>
-                            {errors.name && (
-                                <p className="text-xs text-red-500 font-medium mt-1">{errors.name}</p>
-                            )}
-                        </div>
-
-                        {/* Email Input */}
-                        <div>
-                            <label htmlFor="customer_reg_email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                ইমেইল এড্রেস (Email Address) *
-                            </label>
-                            <div className="relative">
-                                <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
-                                <input
-                                    id="customer_reg_email"
-                                    type="email"
-                                    aria-required="true"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    required
-                                    placeholder="your@email.com"
-                                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition ${
-                                        errors.email ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:bg-white'
-                                    }`}
-                                />
-                            </div>
-                            {errors.email && (
-                                <p className="text-xs text-red-500 font-medium mt-1">{errors.email}</p>
-                            )}
-                        </div>
-
-                        {/* Phone Input (Optional) */}
-                        <div>
-                            <label htmlFor="customer_reg_phone" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                মোবাইল নম্বর (Phone Number)
-                            </label>
-                            <div className="relative">
-                                <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
-                                <input
-                                    id="customer_reg_phone"
-                                    type="tel"
-                                    value={data.phone}
-                                    onChange={(e) => setData('phone', e.target.value)}
-                                    placeholder="017XXXXXXXX"
-                                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition ${
-                                        errors.phone ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:bg-white'
-                                    }`}
-                                />
-                            </div>
-                            {errors.phone && (
-                                <p className="text-xs text-red-500 font-medium mt-1">{errors.phone}</p>
-                            )}
-                        </div>
-
-                        {/* Password Input */}
-                        <div>
-                            <label htmlFor="customer_reg_password" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                পাসওয়ার্ড (Password) *
-                            </label>
-                            <div className="relative">
-                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
-                                <input
-                                    id="customer_reg_password"
-                                    type="password"
-                                    aria-required="true"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                    placeholder="কমপক্ষে ৮ অক্ষর"
-                                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition ${
-                                        errors.password ? 'border-red-400 bg-red-50/50' : 'border-gray-200 focus:bg-white'
-                                    }`}
-                                />
-                            </div>
-                            {errors.password && (
-                                <p className="text-xs text-red-500 font-medium mt-1">{errors.password}</p>
-                            )}
-                        </div>
-
-                        {/* Password Confirmation */}
-                        <div>
-                            <label htmlFor="customer_reg_password_confirmation" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                পাসওয়ার্ড নিশ্চিত করুন (Confirm Password) *
-                            </label>
-                            <div className="relative">
-                                <Lock className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" aria-hidden="true" />
-                                <input
-                                    id="customer_reg_password_confirmation"
-                                    type="password"
-                                    aria-required="true"
-                                    value={data.password_confirmation}
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    required
-                                    placeholder="পুনরায় পাসওয়ার্ড লিখুন"
-                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <div className="pt-2">
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-100 flex items-center justify-center gap-2 transition disabled:opacity-50"
-                            >
-                                {processing ? (
-                                    <span>নিবন্ধন হচ্ছে...</span>
-                                ) : (
-                                    <>
-                                        <span>রেজিস্ট্রেশন সম্পন্ন করুন</span>
-                                        <ArrowRight className="w-4 h-4" />
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                        {/* Login Link */}
-                        <div className="text-center pt-2">
-                            <p className="text-xs text-gray-500">
-                                ইতিমধ্যে একাউন্ট আছে?{' '}
-                                <Link
-                                    href="/customer/login"
-                                    className="font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-2"
-                                >
-                                    লগইন করুন (Login)
-                                </Link>
+                            <p className="font-serif text-3xl font-bold tracking-tight text-white">
+                                {theme.store_name}
+                            </p>
+                            <p className="text-[11px] uppercase tracking-[0.25em] text-emerald-200/80 mt-0.5">
+                                Online Store
                             </p>
                         </div>
-                    </form>
 
-                    <div className="mt-6 pt-5 border-t border-gray-100 flex items-center justify-center gap-2 text-xs text-gray-400">
-                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                        <span>১০০% নিরাপদ শপিং এবং দ্রুত ডেলিভারি নিশ্চয়তা</span>
+                        <div>
+                            <h1 className="font-serif text-4xl sm:text-5xl font-bold leading-tight text-white">
+                                Join Us Today
+                            </h1>
+                            <p className="text-sm text-emerald-100/85 mt-3 leading-relaxed">
+                                Create your {theme.store_name} account for faster checkout, order tracking, and exclusive member offers.
+                            </p>
+                        </div>
+
+                        <div className="space-y-4 pt-2">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full border border-emerald-200/30 bg-white/5 flex items-center justify-center shrink-0">
+                                    <ShoppingBag className="w-4 h-4 text-emerald-100" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-white">Track Your Orders</p>
+                                    <p className="text-xs text-emerald-100/75">Real-time order updates anytime</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full border border-emerald-200/30 bg-white/5 flex items-center justify-center shrink-0">
+                                    <Heart className="w-4 h-4 text-emerald-100" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-white">Save Your Favorites</p>
+                                    <p className="text-xs text-emerald-100/75">Keep your wishlist synced</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full border border-emerald-200/30 bg-white/5 flex items-center justify-center shrink-0">
+                                    <Gift className="w-4 h-4 text-emerald-100" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-white">Exclusive Offers</p>
+                                    <p className="text-xs text-emerald-100/75">Get special deals &amp; early access</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Form Panel (Warm Cream + White Card) */}
+                <div className="lg:w-1/2 bg-[#FAF7F2] flex items-center justify-center py-12 px-4 sm:px-8">
+                    <div className="max-w-md w-full bg-white rounded-3xl shadow-[0_8px_32px_rgba(15,23,42,0.06)] border border-stone-200/70 p-8 sm:p-10">
+                        <div className="text-center mb-6">
+                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+                                Create Your Account
+                            </h2>
+                            <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
+                                Sign up to track orders and save your favorite items.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-3.5">
+                            {/* Name Input */}
+                            <div>
+                                <div className="relative">
+                                    <UserIcon
+                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        aria-hidden="true"
+                                    />
+                                    <input
+                                        id="customer_reg_name"
+                                        type="text"
+                                        aria-label="Full Name"
+                                        aria-required="true"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        required
+                                        placeholder="Full Name"
+                                        className={`w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                            errors.name ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        }`}
+                                    />
+                                </div>
+                                {errors.name && (
+                                    <p className="text-xs text-rose-600 font-medium mt-1">{errors.name}</p>
+                                )}
+                            </div>
+
+                            {/* Email Input */}
+                            <div>
+                                <div className="relative">
+                                    <Mail
+                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        aria-hidden="true"
+                                    />
+                                    <input
+                                        id="customer_reg_email"
+                                        type="email"
+                                        aria-label="Email address"
+                                        aria-required="true"
+                                        value={data.email}
+                                        onChange={(e) => setData('email', e.target.value)}
+                                        required
+                                        placeholder="Email address"
+                                        className={`w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                            errors.email ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        }`}
+                                    />
+                                </div>
+                                {errors.email && (
+                                    <p className="text-xs text-rose-600 font-medium mt-1">{errors.email}</p>
+                                )}
+                            </div>
+
+                            {/* Phone Input */}
+                            <div>
+                                <div className="relative">
+                                    <Phone
+                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        aria-hidden="true"
+                                    />
+                                    <input
+                                        id="customer_reg_phone"
+                                        type="tel"
+                                        aria-label="Phone Number"
+                                        value={data.phone}
+                                        onChange={(e) => setData('phone', e.target.value)}
+                                        placeholder="Phone Number (Optional)"
+                                        className={`w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                            errors.phone ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        }`}
+                                    />
+                                </div>
+                                {errors.phone && (
+                                    <p className="text-xs text-rose-600 font-medium mt-1">{errors.phone}</p>
+                                )}
+                            </div>
+
+                            {/* Password Input */}
+                            <div>
+                                <div className="relative">
+                                    <Lock
+                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        aria-hidden="true"
+                                    />
+                                    <input
+                                        id="customer_reg_password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        aria-label="Password"
+                                        aria-required="true"
+                                        value={data.password}
+                                        onChange={(e) => setData('password', e.target.value)}
+                                        required
+                                        placeholder="Password (min. 8 characters)"
+                                        className={`w-full pl-10 pr-10 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                            errors.password ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        }`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                {errors.password && (
+                                    <p className="text-xs text-rose-600 font-medium mt-1">{errors.password}</p>
+                                )}
+                            </div>
+
+                            {/* Confirm Password Input */}
+                            <div>
+                                <div className="relative">
+                                    <Lock
+                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        aria-hidden="true"
+                                    />
+                                    <input
+                                        id="customer_reg_password_confirmation"
+                                        type={showPassword ? 'text' : 'password'}
+                                        aria-label="Confirm Password"
+                                        aria-required="true"
+                                        value={data.password_confirmation}
+                                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                                        required
+                                        placeholder="Confirm Password"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border border-stone-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full py-3 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-xl text-sm font-bold shadow-sm transition disabled:opacity-50"
+                                >
+                                    {processing ? 'Creating account...' : 'Create Account'}
+                                </button>
+                            </div>
+
+                            {/* Login Link */}
+                            <div className="text-center pt-4 border-t border-stone-100">
+                                <p className="text-xs sm:text-sm text-gray-500">
+                                    Already have an account?{' '}
+                                    <Link
+                                        href="/customer/login"
+                                        className="font-bold text-[#EA580C] hover:underline"
+                                    >
+                                        Login
+                                    </Link>
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

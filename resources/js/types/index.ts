@@ -30,6 +30,8 @@ export interface SharedProps extends Record<string, unknown> {
         error?: string | null;
     };
     cart?: CartSummary | null;
+    navCategories?: Category[];
+    storefrontTheme?: StorefrontTheme | null;
     errors: Record<string, string>;
 }
 
@@ -444,8 +446,23 @@ export interface Slider {
     updated_at?: string;
 }
 
+export interface DefaultHeroConfig {
+    badge_text: string;
+    title: string;
+    description: string;
+    primary_button_text: string;
+    primary_button_url: string;
+    secondary_button_text: string;
+    secondary_button_url: string;
+    card_title: string;
+    card_subtitle: string;
+    image_path: string;
+    image_url: string;
+}
+
 export interface SliderIndexProps extends SharedProps {
     sliders: PaginatedData<Slider>;
+    defaultHero: DefaultHeroConfig;
     filters: {
         search: string;
     };

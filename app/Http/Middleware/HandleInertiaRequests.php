@@ -3,8 +3,11 @@
 namespace App\Http\Middleware;
 
 use App\Modules\Cart\Services\CartManagerService;
+use App\Modules\Catalog\Models\Category;
+use App\Modules\Settings\Services\SettingsService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Throwable;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -69,6 +72,40 @@ class HandleInertiaRequests extends Middleware
                     'items' => [],
                     'is_empty' => true,
                 ];
+            },
+            'navCategories' => function () use ($request) {
+                if ($request->is('admin*')) {
+                    return [];
+                }
+                try {
+                    return Category::toTree(true);
+                } catch (Throwable) {
+                    return [];
+                }
+            },
+            'storefrontTheme' => function () use ($request) {
+                if ($request->is('admin*')) {
+                    return null;
+                }
+                try {
+                    /** @var SettingsService $settings */
+                    $settings = app(SettingsService::class);
+
+                    return [
+                        'store_name' => (string) $settings->get('store.name', config('app.name', 'Landing Commerce')),
+                        'store_phone' => (string) $settings->get('store.phone', ''),
+                        'store_whatsapp' => (string) $settings->get('store.whatsapp', ''),
+                        'logo_url' => (string) $settings->get('store.logo_url', ''),
+                        'favicon_url' => (string) $settings->get('store.favicon_url', ''),
+                        'primary_color' => (string) $settings->get('theme.primary_color', '#4f46e5'),
+                        'secondary_color' => (string) $settings->get('theme.secondary_color', '#06b6d4'),
+                        'accent_color' => (string) $settings->get('theme.accent_color', '#f59e0b'),
+                        'font_family' => (string) $settings->get('theme.font_family', 'Hind Siliguri, Inter, sans-serif'),
+                        'custom_css' => (string) $settings->get('theme.custom_css', ''),
+                    ];
+                } catch (Throwable) {
+                    return null;
+                }
             },
         ];
     }

@@ -178,7 +178,7 @@ const SECTIONS: CheckoutSection[] = [
                 min: 240,
                 max: 1600,
                 step: 8,
-                placeholder: '672',
+                placeholder: '1080',
                 width: 'half',
             },
             {
@@ -1528,7 +1528,7 @@ export function CodCheckoutDesignSettings({
                     title={section.title}
                     description={section.description}
                     icon={section.icon}
-                    defaultOpen={section.id === 'content' || section.id === 'layout'}
+                    defaultOpen={section.id === 'content' || section.id === 'layout' || section.id === 'card'}
                 >
                     <ControlGrid>
                         {section.fields.map((field) => (

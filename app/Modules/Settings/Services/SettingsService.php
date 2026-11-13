@@ -335,4 +335,31 @@ class SettingsService
             'custom_css' => (string) $this->get('theme.custom_css', ''),
         ];
     }
+
+    /**
+     * Get the default fallback hero configuration (shown when no active sliders exist).
+     *
+     * @return array<string, string>
+     */
+    public function getDefaultHeroConfig(): array
+    {
+        $storeName = (string) $this->get('store.name', config('app.name', 'Landing Commerce'));
+
+        return [
+            'badge_text' => (string) $this->get('homepage.default_hero.badge_text', 'NEW COLLECTION'),
+            'title' => (string) $this->get('homepage.default_hero.title', 'Modern Fashion for Everyday Life'),
+            'description' => (string) $this->get(
+                'homepage.default_hero.description',
+                "Discover premium clothing, shoes, watches and accessories curated by {$storeName} for a stylish lifestyle."
+            ),
+            'primary_button_text' => (string) $this->get('homepage.default_hero.primary_button_text', 'Shop Now'),
+            'primary_button_url' => (string) $this->get('homepage.default_hero.primary_button_url', '/shop'),
+            'secondary_button_text' => (string) $this->get('homepage.default_hero.secondary_button_text', 'Explore Collection'),
+            'secondary_button_url' => (string) $this->get('homepage.default_hero.secondary_button_url', '/shop?sort=latest'),
+            'card_title' => (string) $this->get('homepage.default_hero.card_title', 'Curated Essentials'),
+            'card_subtitle' => (string) $this->get('homepage.default_hero.card_subtitle', '100% Authentic · Fast Cash on Delivery'),
+            'image_path' => (string) $this->get('homepage.default_hero.image_path', ''),
+            'image_url' => (string) $this->get('homepage.default_hero.image_url', ''),
+        ];
+    }
 }

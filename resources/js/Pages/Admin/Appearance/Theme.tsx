@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+﻿import { Head, router } from '@inertiajs/react';
 import {
     Globe,
     Layers,
@@ -108,7 +108,7 @@ export default function ThemeSettingsPage({
                 {/* 1. Storefront Mode */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                        <div className="w-9 h-9 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center font-bold">
                             <LayoutTemplate className="w-5 h-5" />
                         </div>
                         <div>
@@ -123,13 +123,13 @@ export default function ThemeSettingsPage({
                         <label
                             className={`flex flex-col p-5 rounded-xl border-2 cursor-pointer transition ${
                                 storefrontMode === 'full_storefront'
-                                    ? 'border-indigo-600 bg-indigo-50/30'
+                                    ? 'border-primary-600 bg-primary-50/30'
                                     : 'border-gray-200 hover:border-gray-300'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <Globe className="w-5 h-5 text-indigo-600" />
+                                    <Globe className="w-5 h-5 text-primary-600" />
                                     <span className="font-bold text-gray-900 text-sm">Full E-Commerce Website</span>
                                 </div>
                                 <input
@@ -138,7 +138,7 @@ export default function ThemeSettingsPage({
                                     value="full_storefront"
                                     checked={storefrontMode === 'full_storefront'}
                                     onChange={() => setStorefrontMode('full_storefront')}
-                                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                                 />
                             </div>
                             <p className="text-xs text-gray-600 leading-relaxed">
@@ -149,13 +149,13 @@ export default function ThemeSettingsPage({
                         <label
                             className={`flex flex-col p-5 rounded-xl border-2 cursor-pointer transition ${
                                 storefrontMode === 'landing_page_home'
-                                    ? 'border-indigo-600 bg-indigo-50/30'
+                                    ? 'border-primary-600 bg-primary-50/30'
                                     : 'border-gray-200 hover:border-gray-300'
                             }`}
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <Layers className="w-5 h-5 text-indigo-600" />
+                                    <Layers className="w-5 h-5 text-primary-600" />
                                     <span className="font-bold text-gray-900 text-sm">Landing Page Homepage</span>
                                 </div>
                                 <input
@@ -164,7 +164,7 @@ export default function ThemeSettingsPage({
                                     value="landing_page_home"
                                     checked={storefrontMode === 'landing_page_home'}
                                     onChange={() => setStorefrontMode('landing_page_home')}
-                                    className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                                 />
                             </div>
                             <p className="text-xs text-gray-600 leading-relaxed">
@@ -174,14 +174,14 @@ export default function ThemeSettingsPage({
                     </div>
 
                     {storefrontMode === 'landing_page_home' && (
-                        <div className="mt-5 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                        <div className="mt-5 p-4 bg-primary-50/50 rounded-xl border border-primary-100">
                             <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
                                 Select Homepage Landing Page *
                             </label>
                             <select
                                 value={homeLandingPageId}
                                 onChange={(e) => setHomeLandingPageId(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             >
                                 <option value="">Default (First Published Landing Page)</option>
                                 {landingPages.map((lp) => (
@@ -221,7 +221,7 @@ export default function ThemeSettingsPage({
                                 required
                                 value={storeName}
                                 onChange={(e) => setStoreName(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             />
                             {formErrors.store_name && (
                                 <p className="text-xs text-red-600 mt-1">{formErrors.store_name}</p>
@@ -237,7 +237,7 @@ export default function ThemeSettingsPage({
                                 value={supportPhone}
                                 onChange={(e) => setSupportPhone(e.target.value)}
                                 placeholder="+880 1XXXXXXXXX"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
 
@@ -250,7 +250,7 @@ export default function ThemeSettingsPage({
                                 value={supportWhatsapp}
                                 onChange={(e) => setSupportWhatsapp(e.target.value)}
                                 placeholder="01XXXXXXXXX"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             />
                         </div>
                     </div>
@@ -419,7 +419,7 @@ export default function ThemeSettingsPage({
                         <select
                             value={fontFamily}
                             onChange={(e) => setFontFamily(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         >
                             <option value="Hind Siliguri, Inter, sans-serif">Hind Siliguri (Bengali + English Modern Sans)</option>
                             <option value="Tiro Bangla, serif">Tiro Bangla (Bengali Serif Elegance)</option>
@@ -437,7 +437,7 @@ export default function ThemeSettingsPage({
                             value={customCss}
                             onChange={(e) => setCustomCss(e.target.value)}
                             placeholder=":root { --store-header-height: 80px; }"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs font-mono leading-relaxed focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         />
                     </div>
                 </div>

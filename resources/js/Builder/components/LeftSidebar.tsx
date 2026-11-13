@@ -19,6 +19,8 @@ import {
     Package,
     Plus,
     Quote,
+    Search,
+    Settings,
     ShieldCheck,
     ShoppingBag,
     Sparkles,
@@ -31,9 +33,11 @@ import {
 } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import type { ComponentType, MouseEvent } from 'react';
-import { useRef, useState } from 'react';
-import { useBuilderStore } from '../stores/useBuilderStore';
+import { useEffect, useRef, useState } from 'react';
+import { findBlockInTree, useBuilderStore } from '../stores/useBuilderStore';
 import type { Block, BlockDefinition, BlockType } from '@/types';
+import { Inspector } from './Inspector';
+import { PageSettingsInspector } from './PageSettingsInspector';
 
 // Map icon strings to Lucide icon components safely
 const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
@@ -67,29 +71,61 @@ function countAllBlocks(blocks: Block[]): number {
 
 export interface LeftSidebarProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
+    products: Array<{
+        id: number;
+        title: string;
+        slug: string;
+        regular_price: string | number;
+        sale_price: string | number | null;
+    }>;
     onAddBlock: (blockType: BlockType, targetParentId?: string | null) => void;
     width?: number;
     targetContainerId?: string | null;
     onClearTargetContainer?: () => void;
 }
 
+type PanelMode = 'palette' | 'layers' | 'inspector' | 'page_settings';
+
 export function LeftSidebar({
     blockDefinitions,
+    products,
     onAddBlock,
     width,
     targetContainerId,
     onClearTargetContainer,
 }: LeftSidebarProps) {
-    const [activeTab, setActiveTab] = useState<'palette' | 'layers'>('palette');
+    const [panelMode, setPanelMode] = useState<PanelMode>('palette');
+    const [widgetSearch, setWidgetSearch] = useState('');
     const { ast, selectedBlockId, setSelectedBlockId, removeBlock, reorderBlocks } =
         useBuilderStore();
 
     const blocks = ast.blocks || [];
     const totalCount = countAllBlocks(blocks);
+    const selectedBlock = selectedBlockId ? findBlockInTree(blocks, selectedBlockId) : null;
+    const selectedDef = selectedBlock ? blockDefinitions[selectedBlock.type] : null;
 
-    // Group available blocks by category
+    // Automatically open widget controls in the left panel when a widget is selected on canvas
+    const prevSelectedIdRef = useRef<string | null>(selectedBlockId);
+    useEffect(() => {
+        if (selectedBlockId && selectedBlockId !== prevSelectedIdRef.current) {
+            setPanelMode('inspector');
+        } else if (!selectedBlockId && prevSelectedIdRef.current) {
+            setPanelMode((prev) => (prev === 'inspector' ? 'palette' : prev));
+        }
+        prevSelectedIdRef.current = selectedBlockId;
+    }, [selectedBlockId]);
+
+    // Group available blocks by category (with optional search filter)
+    const normalizedSearch = widgetSearch.trim().toLowerCase();
     const categorizedBlocks: Record<string, BlockDefinition[]> = {};
     Object.values(blockDefinitions).forEach((def) => {
+        if (
+            normalizedSearch &&
+            !def.name.toLowerCase().includes(normalizedSearch) &&
+            !(def.category || '').toLowerCase().includes(normalizedSearch)
+        ) {
+            return;
+        }
         const cat = def.category || 'General';
         if (!categorizedBlocks[cat]) {
             categorizedBlocks[cat] = [];
@@ -97,42 +133,106 @@ export function LeftSidebar({
         categorizedBlocks[cat].push(def);
     });
 
+    const CATEGORY_PRIORITY: Record<string, number> = {
+        layout: 0,
+        basic: 1,
+    };
+
+    const orderedCategories = Object.entries(categorizedBlocks).sort(([a], [b]) => {
+        const pa = CATEGORY_PRIORITY[a.toLowerCase()] ?? 99;
+        const pb = CATEGORY_PRIORITY[b.toLowerCase()] ?? 99;
+        return pa - pb;
+    });
+
+    const headerTitle =
+        panelMode === 'inspector' && selectedBlock
+            ? `Edit ${selectedDef?.name || selectedBlock.type}`
+            : panelMode === 'layers'
+              ? `Navigator (${totalCount})`
+              : panelMode === 'page_settings'
+                ? 'Page Settings'
+                : 'Elements';
+
     return (
         <aside
             style={{ width: width ? `${width}px` : undefined }}
-            className="w-72 sm:w-80 shrink-0 bg-white border-r border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none transition-[width] duration-75"
+            className="w-80 sm:w-88 shrink-0 bg-white border-r border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none transition-[width] duration-75"
         >
-            {/* Sidebar Tabs */}
-            <div className="flex border-b border-gray-200 bg-gray-50/70 p-1">
+            {/* Elementor-Style Unified Left Panel Header */}
+            <div className="flex items-center justify-between border-b border-gray-200 bg-slate-900 text-white px-2.5 py-2 shrink-0">
                 <button
                     type="button"
-                    onClick={() => setActiveTab('palette')}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 transition ${
-                        activeTab === 'palette'
-                            ? 'bg-white text-primary-700 shadow-xs'
-                            : 'text-gray-500 hover:text-gray-900'
+                    onClick={() => setPanelMode('palette')}
+                    title="Elements / Widgets"
+                    className={`p-1.5 rounded-md transition-colors ${
+                        panelMode === 'palette'
+                            ? 'bg-white/15 text-white'
+                            : 'text-slate-300 hover:text-white hover:bg-white/10'
                     }`}
                 >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add Blocks</span>
+                    <LayoutGrid className="w-4 h-4" />
                 </button>
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('layers')}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 transition ${
-                        activeTab === 'layers'
-                            ? 'bg-white text-primary-700 shadow-xs'
-                            : 'text-gray-500 hover:text-gray-900'
-                    }`}
-                >
-                    <Layers className="w-3.5 h-3.5" />
-                    <span>Layers ({totalCount})</span>
-                </button>
+
+                <div className="min-w-0 flex-1 px-2 text-center">
+                    <span className="block truncate text-xs font-bold tracking-wide">
+                        {headerTitle}
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-0.5">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setPanelMode(panelMode === 'layers' ? 'palette' : 'layers')
+                        }
+                        title={`Navigator (${totalCount})`}
+                        className={`p-1.5 rounded-md transition-colors ${
+                            panelMode === 'layers'
+                                ? 'bg-white/15 text-white'
+                                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                        }`}
+                    >
+                        <Layers className="w-4 h-4" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setPanelMode(
+                                panelMode === 'page_settings'
+                                    ? selectedBlock
+                                        ? 'inspector'
+                                        : 'palette'
+                                    : 'page_settings'
+                            )
+                        }
+                        title="Page Settings"
+                        className={`p-1.5 rounded-md transition-colors ${
+                            panelMode === 'page_settings'
+                                ? 'bg-white/15 text-white'
+                                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                        }`}
+                    >
+                        <Settings className="w-4 h-4" />
+                    </button>
+                    {panelMode === 'inspector' && selectedBlock && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSelectedBlockId(null);
+                                setPanelMode('palette');
+                            }}
+                            title="Deselect Widget"
+                            className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Target Container Banner if selected */}
-            {targetContainerId && (
-                <div className="bg-primary-50 border-b border-primary-200 px-3.5 py-2 flex items-center justify-between text-xs">
+            {targetContainerId && panelMode === 'palette' && (
+                <div className="bg-primary-50 border-b border-primary-200 px-3.5 py-2 flex items-center justify-between text-xs shrink-0">
                     <div className="flex items-center space-x-1.5 text-primary-900 font-semibold truncate">
                         <Box className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                         <span className="truncate">Adding into #{targetContainerId.slice(-4)}</span>
@@ -150,42 +250,73 @@ export function LeftSidebar({
                 </div>
             )}
 
-            {/* Tab 1: Block Palette */}
-            {activeTab === 'palette' && (
-                <div className="flex-1 overflow-y-auto p-3 space-y-4">
-                    <p className="rounded-lg bg-primary-50/70 px-2.5 py-2 text-[10px] font-medium leading-snug text-primary-800">
-                        Drag a block onto the canvas to place it exactly where you want, or click to
-                        insert it after the selected block.
-                    </p>
-                    {Object.entries(categorizedBlocks).map(([category, defs]) => (
-                        <div key={category} className="space-y-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                                {category}
-                            </span>
-                            <div className="grid grid-cols-1 gap-1">
-                                {defs.map((def) => (
-                                    <PaletteItem
-                                        key={def.type}
-                                        definition={def}
-                                        targetContainerId={targetContainerId}
-                                        onAddBlock={onAddBlock}
-                                    />
-                                ))}
-                            </div>
+            {/* Mode 1: Block Palette (Elements) */}
+            {panelMode === 'palette' && (
+                <div className="flex-1 flex flex-col min-h-0">
+                    <div className="p-2.5 border-b border-gray-100 bg-gray-50/70 shrink-0">
+                        <div className="relative">
+                            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <input
+                                type="text"
+                                value={widgetSearch}
+                                onChange={(e) => setWidgetSearch(e.target.value)}
+                                placeholder="Search widgets..."
+                                className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500"
+                            />
+                            {widgetSearch && (
+                                <button
+                                    type="button"
+                                    onClick={() => setWidgetSearch('')}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    title="Clear search"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
                         </div>
-                    ))}
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-3 space-y-4">
+                        <p className="rounded-lg bg-primary-50/70 px-2.5 py-2 text-[10px] font-medium leading-snug text-primary-800">
+                            Drag a block onto the canvas to place it exactly where you want, or
+                            click to insert it after the selected block.
+                        </p>
+                        {orderedCategories.length === 0 ? (
+                            <div className="text-center py-8 text-xs text-gray-400">
+                                No widgets match "{widgetSearch}".
+                            </div>
+                        ) : (
+                            orderedCategories.map(([category, defs]) => (
+                                <div key={category} className="space-y-1.5">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                        {category}
+                                    </span>
+                                    <div className="grid grid-cols-1 gap-1">
+                                        {defs.map((def) => (
+                                            <PaletteItem
+                                                key={def.type}
+                                                definition={def}
+                                                targetContainerId={targetContainerId}
+                                                onAddBlock={onAddBlock}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             )}
 
-            {/* Tab 2: Layers Tree */}
-            {activeTab === 'layers' && (
+            {/* Mode 2: Navigator (Layers Tree) */}
+            {panelMode === 'layers' && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-1">
                     {blocks.length === 0 ? (
                         <div className="text-center py-12 px-4 text-gray-400">
                             <Layers className="w-8 h-8 mx-auto mb-2 opacity-50" />
                             <p className="text-xs font-semibold">No blocks added yet.</p>
                             <p className="text-[11px] text-gray-400 mt-1">
-                                Click on "Add Blocks" above to insert sections into your page.
+                                Click the grid icon above to insert widgets into your page.
                             </p>
                         </div>
                     ) : (
@@ -199,7 +330,10 @@ export function LeftSidebar({
                                 depth={0}
                                 selectedBlockId={selectedBlockId}
                                 blockDefinitions={blockDefinitions}
-                                onSelect={(id) => setSelectedBlockId(id)}
+                                onSelect={(id) => {
+                                    setSelectedBlockId(id);
+                                    setPanelMode('inspector');
+                                }}
                                 onRemove={(id) => removeBlock(id)}
                                 onMoveUp={(i, pId) => i > 0 && reorderBlocks(i, i - 1, pId)}
                                 onMoveDown={(i, total, pId) =>
@@ -207,12 +341,32 @@ export function LeftSidebar({
                                 }
                                 onAddChild={(containerId) => {
                                     setSelectedBlockId(containerId);
-                                    setActiveTab('palette');
+                                    setPanelMode('palette');
                                 }}
                             />
                         ))
                     )}
                 </div>
+            )}
+
+            {/* Mode 3: Active Widget Inspector */}
+            {panelMode === 'inspector' && selectedBlock && (
+                <Inspector
+                    embedded
+                    blockDefinitions={blockDefinitions}
+                    products={products}
+                />
+            )}
+
+            {/* Mode 4: Global Page Settings */}
+            {panelMode === 'page_settings' && (
+                <PageSettingsInspector
+                    embedded
+                    hasSelectedBlock={!!selectedBlock}
+                    onBackToBlock={() =>
+                        setPanelMode(selectedBlock ? 'inspector' : 'palette')
+                    }
+                />
             )}
         </aside>
     );

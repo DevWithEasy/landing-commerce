@@ -1,7 +1,16 @@
 import { useDndMonitor, useDroppable } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Box, ChevronDown, ChevronUp, GripVertical, Layers, Plus, Trash2 } from 'lucide-react';
+import {
+    Box,
+    ChevronDown,
+    ChevronUp,
+    Copy,
+    GripVertical,
+    Layers,
+    Plus,
+    Trash2,
+} from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import { ContainerBlock } from '../blocks/ContainerBlock';
@@ -29,8 +38,15 @@ export interface CanvasProps {
 }
 
 export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps) {
-    const { ast, viewport, selectedBlockId, setSelectedBlockId, removeBlock, reorderBlocks } =
-        useBuilderStore();
+    const {
+        ast,
+        viewport,
+        selectedBlockId,
+        setSelectedBlockId,
+        removeBlock,
+        duplicateBlock,
+        reorderBlocks,
+    } = useBuilderStore();
     const { setNodeRef: setEndDropRef, isOver: isEndDropOver } = useDroppable({
         id: 'canvas_end_drop',
     });
@@ -89,8 +105,13 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
     const pageBgColor = settings.backgroundColor || '#ffffff';
 
     const designWidth = DEVICE_DESIGN_WIDTHS[viewport];
-    const scale =
-        availableWidth > 0 ? Math.min(1, Math.max(0.2, availableWidth / designWidth)) : 1;
+    const isDesktop = viewport === 'desktop';
+    const scale = isDesktop
+        ? 1
+        : availableWidth > 0
+          ? Math.min(1, Math.max(0.2, availableWidth / designWidth))
+          : 1;
+    const isScaledDown = !isDesktop && scale < 1;
     const scaledHeight = surfaceHeight > 0 ? surfaceHeight * scale : 0;
 
     const viewportClasses = {
@@ -103,14 +124,22 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
         fontFamily: pageFontFamily,
         backgroundColor: pageBgColor,
         containerType: 'inline-size',
-        width: `${designWidth}px`,
-        position: 'absolute',
-        top: 0,
-        left: '50%',
-        marginLeft: `-${designWidth / 2}px`,
-        transform: `scale(${scale})`,
-        transformOrigin: 'top center',
-        minHeight: viewport === 'desktop' ? 'calc(100vh - 8rem)' : undefined,
+        width: isDesktop ? '100%' : `${designWidth}px`,
+        minHeight: isDesktop ? 'calc(100vh - 8rem)' : undefined,
+        ...(isScaledDown
+            ? {
+                  position: 'absolute',
+                  top: 0,
+                  left: '50%',
+                  marginLeft: `-${designWidth / 2}px`,
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top center',
+              }
+            : {
+                  position: 'relative',
+                  marginLeft: 'auto',
+                  marginRight: 'auto',
+              }),
     };
 
     return (
@@ -122,8 +151,8 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
                 ref={viewportMeasureRef}
                 className="relative w-full"
                 style={{
-                    height: scaledHeight > 0 ? `${scaledHeight}px` : undefined,
-                    minHeight: scaledHeight > 0 ? undefined : 'calc(100vh - 8rem)',
+                    height: isScaledDown && scaledHeight > 0 ? `${scaledHeight}px` : undefined,
+                    minHeight: isDesktop ? 'calc(100vh - 8rem)' : undefined,
                 }}
             >
                 <div
@@ -174,6 +203,7 @@ export function Canvas({ blockDefinitions, onAddBlockToContainer }: CanvasProps)
                                         blockDefinitions={blockDefinitions}
                                         onSelect={(id) => setSelectedBlockId(id)}
                                         onRemove={(id) => removeBlock(id)}
+                                        onDuplicate={(id) => duplicateBlock(id)}
                                         onMoveUp={(idx, pId) =>
                                             idx > 0 && reorderBlocks(idx, idx - 1, pId)
                                         }
@@ -224,6 +254,7 @@ interface SortableBlockWrapperProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
     onSelect: (id: string) => void;
     onRemove: (id: string) => void;
+    onDuplicate: (id: string) => void;
     onMoveUp: (index: number, parentId: string | null) => void;
     onMoveDown: (index: number, total: number, parentId: string | null) => void;
     onAddBlockToContainer?: (containerId: string) => void;
@@ -241,6 +272,7 @@ function SortableBlockWrapper({
     blockDefinitions,
     onSelect,
     onRemove,
+    onDuplicate,
     onMoveUp,
     onMoveDown,
     onAddBlockToContainer,
@@ -285,24 +317,32 @@ function SortableBlockWrapper({
             } ${isContainer ? 'p-1.5 rounded-xl border border-dashed border-gray-200 hover:border-primary-400' : ''}`}
         >
             {elementStyleCss && <style>{elementStyleCss}</style>}
+
+            {/* Elementor-style Hover Label for Unselected Blocks */}
+            {!isSelected && (
+                <div className="pointer-events-none absolute -top-2.5 left-3 z-20 rounded bg-slate-800/90 px-2 py-0.5 text-[10px] font-semibold text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+                    {blockDefinition?.name || block.type}
+                </div>
+            )}
+
             {/* Quick Action Floating Toolbar for Selected Block */}
             {isSelected && (
                 <div
-                    className="absolute -top-3.5 right-4 z-30 bg-primary-900 text-white px-2.5 py-1 rounded-md shadow-lg flex items-center space-x-1 text-xs select-none"
+                    className="absolute -top-3.5 right-3 z-30 flex select-none items-center space-x-0.5 rounded-lg bg-slate-900 px-2 py-1 text-xs text-white shadow-xl ring-1 ring-white/15"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button
                         type="button"
                         {...attributes}
                         {...listeners}
-                        className="cursor-grab active:cursor-grabbing p-1 text-primary-200 hover:text-white"
+                        className="cursor-grab rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white active:cursor-grabbing"
                         title="Drag to Reorder"
                     >
-                        <GripVertical className="w-3.5 h-3.5" />
+                        <GripVertical className="h-3.5 w-3.5" />
                     </button>
 
-                    <span className="font-bold text-[11px] px-1 text-primary-100 flex items-center gap-1">
-                        {isContainer && <Box className="w-3 h-3 text-primary-300" />}
+                    <span className="flex items-center gap-1 px-1.5 text-[11px] font-semibold text-slate-100">
+                        {isContainer && <Box className="h-3 w-3 text-primary-400" />}
                         {blockDefinition?.name || block.type}
                     </span>
 
@@ -312,24 +352,33 @@ function SortableBlockWrapper({
                             onClick={(e) =>
                                 handleActionClick(e, () => onAddBlockToContainer(block.id))
                             }
-                            className="p-1 rounded text-primary-200 hover:text-white hover:bg-primary-800 flex items-center gap-0.5 text-[10px] font-semibold"
+                            className="flex items-center gap-0.5 rounded px-1.5 py-1 text-[10px] font-semibold text-primary-300 hover:bg-slate-800 hover:text-white"
                             title="Add Child Block to Container"
                         >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="h-3 w-3" />
                             <span>Add</span>
                         </button>
                     )}
 
-                    <div className="h-3 w-px bg-primary-700 mx-0.5" />
+                    <div className="mx-0.5 h-3.5 w-px bg-slate-700" />
+
+                    <button
+                        type="button"
+                        onClick={(e) => handleActionClick(e, () => onDuplicate(block.id))}
+                        className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white"
+                        title="Duplicate Block"
+                    >
+                        <Copy className="h-3.5 w-3.5" />
+                    </button>
 
                     <button
                         type="button"
                         onClick={(e) => handleActionClick(e, () => onMoveUp(index, parentId))}
                         disabled={index === 0}
-                        className="p-1 rounded text-primary-200 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
                         title="Move Up"
                     >
-                        <ChevronUp className="w-3.5 h-3.5" />
+                        <ChevronUp className="h-3.5 w-3.5" />
                     </button>
 
                     <button
@@ -338,19 +387,19 @@ function SortableBlockWrapper({
                             handleActionClick(e, () => onMoveDown(index, totalBlocks, parentId))
                         }
                         disabled={index === totalBlocks - 1}
-                        className="p-1 rounded text-primary-200 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="rounded p-1 text-slate-300 hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
                         title="Move Down"
                     >
-                        <ChevronDown className="w-3.5 h-3.5" />
+                        <ChevronDown className="h-3.5 w-3.5" />
                     </button>
 
                     <button
                         type="button"
                         onClick={(e) => handleActionClick(e, () => onRemove(block.id))}
-                        className="p-1 rounded text-rose-300 hover:text-rose-100 hover:bg-rose-900/40"
+                        className="rounded p-1 text-rose-300 hover:bg-rose-900/50 hover:text-rose-100"
                         title="Delete Block"
                     >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" />
                     </button>
                 </div>
             )}
@@ -366,6 +415,7 @@ function SortableBlockWrapper({
                     blockDefinitions={blockDefinitions}
                     onSelect={onSelect}
                     onRemove={onRemove}
+                    onDuplicate={onDuplicate}
                     onMoveUp={onMoveUp}
                     onMoveDown={onMoveDown}
                     onAddBlockToContainer={onAddBlockToContainer}
@@ -386,6 +436,7 @@ interface ContainerWrapperProps {
     blockDefinitions: Record<BlockType, BlockDefinition>;
     onSelect: (id: string) => void;
     onRemove: (id: string) => void;
+    onDuplicate: (id: string) => void;
     onMoveUp: (index: number, parentId: string | null) => void;
     onMoveDown: (index: number, total: number, parentId: string | null) => void;
     onAddBlockToContainer?: (containerId: string) => void;
@@ -400,6 +451,7 @@ function ContainerWrapper({
     blockDefinitions,
     onSelect,
     onRemove,
+    onDuplicate,
     onMoveUp,
     onMoveDown,
     onAddBlockToContainer,
@@ -426,6 +478,7 @@ function ContainerWrapper({
             blockDefinitions={blockDefinitions}
             onSelect={onSelect}
             onRemove={onRemove}
+            onDuplicate={onDuplicate}
             onMoveUp={onMoveUp}
             onMoveDown={onMoveDown}
             onAddBlockToContainer={onAddBlockToContainer}

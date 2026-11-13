@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { Eye, ShoppingBag, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { Product } from '@/types';
 import { SafeImage } from './SafeImage';
@@ -37,10 +37,6 @@ export function ProductCard({ product }: ProductCardProps) {
     }, [product.variants]);
 
     const primaryVariant = product.variants?.[0];
-    const quickOrderUrl = primaryVariant
-        ? `/checkout/${product.slug}?variant=${primaryVariant.id}&quantity=1`
-        : `/checkout/${product.slug}`;
-
     const [isAdding, setIsAdding] = useState(false);
 
     const handleQuickAddToCart = async (e: React.MouseEvent) => {
@@ -87,9 +83,9 @@ export function ProductCard({ product }: ProductCardProps) {
     };
 
     return (
-        <div className="group relative bg-white border border-gray-200/90 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
-            {/* Image & Badges */}
-            <div className="relative aspect-square bg-gray-100 overflow-hidden">
+        <div className="group relative bg-white rounded-2xl overflow-hidden border border-stone-200/60 shadow-[0_2px_10px_rgba(15,23,42,0.05)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.10)] transition-all duration-200 flex flex-col justify-between">
+            {/* Flush Top Image & Badges */}
+            <div className="relative aspect-[4/3.8] bg-[#F6EDE3] overflow-hidden">
                 <Link href={`/product/${product.slug}`} className="block w-full h-full">
                     <SafeImage
                         src={imageUrl}
@@ -103,82 +99,66 @@ export function ProductCard({ product }: ProductCardProps) {
 
                 {/* Discount Badge */}
                 {discountPercent > 0 && (
-                    <div className="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-                        {discountPercent}% ছাড়
+                    <div className="absolute top-2.5 left-2.5 bg-[#F96D16] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                        -{discountPercent}%
                     </div>
                 )}
+
+                {/* Wishlist Heart Icon (Top Right, clean outline matching reference) */}
+                <Link
+                    href="/customer/wishlist"
+                    title="Add to Wishlist"
+                    aria-label="Add to Wishlist"
+                    className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full text-gray-800 hover:text-[#F96D16] hover:bg-white/60 flex items-center justify-center transition"
+                >
+                    <Heart className="w-[17px] h-[17px] stroke-[1.8]" />
+                </Link>
 
                 {/* Stock Badge */}
                 {!isInStock && (
-                    <div className="absolute top-2.5 right-2.5 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        স্টক আউট
+                    <div className="absolute bottom-2 left-2 bg-gray-900/85 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        Stock Out
                     </div>
-                )}
-
-                {/* Quick Add To Cart Floating Button on Hover */}
-                {isInStock && (
-                    <button
-                        type="button"
-                        onClick={handleQuickAddToCart}
-                        disabled={isAdding}
-                        className="absolute bottom-2.5 right-2.5 w-9 h-9 bg-white/95 hover:bg-indigo-600 text-gray-700 hover:text-white rounded-full shadow-md flex items-center justify-center transition duration-200 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-                        title="কার্টে যোগ করুন"
-                        aria-label={`${product.title} কার্টে যোগ করুন`}
-                    >
-                        <ShoppingBag className="w-4 h-4" />
-                    </button>
                 )}
             </div>
 
             {/* Content Area */}
-            <div className="p-4 flex flex-col flex-1 justify-between">
-                <div>
-                    <Link
-                        href={`/product/${product.slug}`}
-                        className="block font-semibold text-gray-900 text-sm hover:text-indigo-600 transition line-clamp-2 mb-2"
-                        title={product.title}
-                    >
-                        {product.title}
-                    </Link>
+            <div className="px-3 pt-2.5 pb-3 flex flex-col flex-1 justify-between bg-white">
+                <Link
+                    href={`/product/${product.slug}`}
+                    className="block font-medium text-gray-900 text-xs sm:text-[13px] hover:text-[#0B3B2E] transition line-clamp-1 mb-1.5"
+                    title={product.title}
+                >
+                    {product.title}
+                </Link>
 
-                    {/* Price Block */}
-                    <div className="flex items-baseline gap-2 mb-4">
-                        <span className="text-base sm:text-lg font-black text-indigo-600">
+                {/* Price + Orange Add-to-Cart Button Row */}
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-baseline gap-1.5 min-w-0">
+                        <span className="text-sm sm:text-[15px] font-bold text-[#EA580C] truncate">
                             {formatBdt(currentPrice)}
                         </span>
                         {sale !== null && sale < regular && (
-                            <span className="text-xs text-gray-400 line-through">
+                            <span className="text-[11px] text-gray-400 line-through truncate">
                                 {formatBdt(regular)}
                             </span>
                         )}
                     </div>
-                </div>
 
-                {/* Quick Order / View Buttons */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
-                    <Link
-                        href={quickOrderUrl}
-                        className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition shadow-sm ${
+                    <button
+                        type="button"
+                        onClick={handleQuickAddToCart}
+                        disabled={!isInStock || isAdding}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 transition shadow-xs ${
                             isInStock
-                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                                : 'bg-gray-200 text-gray-500 pointer-events-none'
+                                ? 'bg-[#F96D16] hover:bg-[#EA580C] text-white cursor-pointer'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}
-                        title="সরাসরি অর্ডার করুন"
-                        aria-label={`${product.title} সরাসরি অর্ডার করুন`}
+                        title="Add to Cart"
+                        aria-label={`Add ${product.title} to cart`}
                     >
-                        <ShoppingCart className="w-3.5 h-3.5" />
-                        <span>অর্ডার</span>
-                    </Link>
-
-                    <Link
-                        href={`/product/${product.slug}`}
-                        className="flex items-center justify-center gap-1 py-2 px-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border border-gray-200 transition"
-                        title="বিস্তারিত দেখুন"
-                        aria-label={`${product.title} এর বিস্তারিত বিবরণ দেখুন`}
-                    >
-                        <Eye className="w-3.5 h-3.5 text-gray-500" />
-                        <span>বিস্তারিত</span>
-                    </Link>
+                        <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </button>
                 </div>
             </div>
         </div>

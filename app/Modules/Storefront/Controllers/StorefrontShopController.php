@@ -29,6 +29,8 @@ class StorefrontShopController extends Controller
             'category' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'in:latest,price_low_high,price_high_low,popular'],
             'in_stock' => ['nullable', 'boolean'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => ['nullable', 'numeric', 'min:0'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
@@ -36,6 +38,8 @@ class StorefrontShopController extends Controller
         $categorySlug = $validated['category'] ?? null;
         $sort = $validated['sort'] ?? 'latest';
         $inStockOnly = ! empty($validated['in_stock']);
+        $minPrice = isset($validated['min_price']) && $validated['min_price'] !== '' ? (float) $validated['min_price'] : null;
+        $maxPrice = isset($validated['max_price']) && $validated['max_price'] !== '' ? (float) $validated['max_price'] : null;
 
         $selectedCategory = null;
         if ($categorySlug) {
@@ -87,6 +91,14 @@ class StorefrontShopController extends Controller
             $query->inStock();
         }
 
+        // Price Range Filter
+        if ($minPrice !== null) {
+            $query->whereRaw('COALESCE(sale_price, regular_price) >= ?', [$minPrice]);
+        }
+        if ($maxPrice !== null) {
+            $query->whereRaw('COALESCE(sale_price, regular_price) <= ?', [$maxPrice]);
+        }
+
         // Sorting
         match ($sort) {
             'price_low_high' => $query->orderByRaw('COALESCE(sale_price, regular_price) ASC'),
@@ -122,6 +134,8 @@ class StorefrontShopController extends Controller
                 'category' => $categorySlug ?? '',
                 'sort' => $sort,
                 'in_stock' => $inStockOnly,
+                'min_price' => $minPrice !== null ? (string) $minPrice : '',
+                'max_price' => $maxPrice !== null ? (string) $maxPrice : '',
             ],
             'theme' => $theme,
         ]);

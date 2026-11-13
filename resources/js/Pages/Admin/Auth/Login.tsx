@@ -18,15 +18,15 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-[#0B3B2E] via-[#092E24] to-[#061F18] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <Head title="Sign In - Landing Commerce" />
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-600 text-white shadow-lg shadow-primary-600/30 mb-4">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#F96D16] text-white shadow-lg shadow-[#F96D16]/30 mb-4">
                     <Store className="w-7 h-7" />
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">Landing Commerce</h1>
-                <p className="mt-1.5 text-sm text-slate-400">
+                <h1 className="font-serif text-3xl font-bold tracking-tight text-white">Landing Commerce</h1>
+                <p className="mt-1.5 text-sm text-emerald-100/80">
                     Sign in to your merchant administrative dashboard
                 </p>
             </div>

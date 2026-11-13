@@ -111,7 +111,7 @@ export function ReviewsBlock({ props, styles = {} }: ReviewsBlockComponentProps)
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 @min-[768px]:grid-cols-2 @min-[1024px]:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 @min-[768px]:grid-cols-2 @min-[800px]:grid-cols-3 gap-6">
                     {props.items?.map((review) => (
                         <div
                             key={review.id}

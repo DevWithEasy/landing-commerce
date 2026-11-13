@@ -1,4 +1,4 @@
-import { CheckCircle2, MapPin, Phone, ShieldCheck, ShoppingCart, User } from 'lucide-react';
+import { CheckCircle2, MapPin, Minus, Phone, Plus, ShieldCheck, ShoppingCart, User } from 'lucide-react';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { SafeImage } from '@/Shared/SafeImage';
 import { useBuilderStore } from '../stores/useBuilderStore';
@@ -22,6 +22,8 @@ export function CodCheckoutBlock({
 }: CodCheckoutBlockComponentProps) {
     const availableProducts = useBuilderStore((state) => state.availableProducts);
     const [selectedVariantMap, setSelectedVariantMap] = useState<Record<number, number>>({});
+    const [quantities, setQuantities] = useState<Record<number, number>>({});
+    const [selectedShipping, setSelectedShipping] = useState<'inside' | 'outside'>('inside');
 
     const productIds = props.productIds && props.productIds.length > 0
         ? props.productIds
@@ -57,6 +59,14 @@ export function CodCheckoutBlock({
         }
     };
 
+    const getQty = (pid: number) => quantities[pid] ?? 1;
+    const updateQty = (pid: number, delta: number) => {
+        setQuantities((prev) => ({
+            ...prev,
+            [pid]: Math.max(1, (prev[pid] ?? 1) + delta),
+        }));
+    };
+
     const accentColor = safeCheckoutCss(props.accentColor || props.highlightColor) || '#059669';
     const requiredMarkColor = safeCheckoutCss(props.requiredMarkColor) || '#f43f5e';
 
@@ -88,8 +98,12 @@ export function CodCheckoutBlock({
         ...buildCheckoutCssVariables(props),
     };
 
+    const rawContainerMaxWidth = safeCheckoutCss(props.containerMaxWidth);
     const containerStyle: CSSProperties = {
-        maxWidth: safeCheckoutCss(props.containerMaxWidth) || '672px',
+        maxWidth:
+            rawContainerMaxWidth && rawContainerMaxWidth !== '672px'
+                ? rawContainerMaxWidth
+                : '1080px',
         paddingTop: safeCheckoutCss(props.containerPaddingX) || '16px',
         paddingBottom: safeCheckoutCss(props.containerPaddingX) || '16px',
         paddingLeft: safeCheckoutCss(props.containerPaddingX) || '16px',
@@ -333,6 +347,42 @@ export function CodCheckoutBlock({
     const productBadges = props.productBadges || {};
     const showRequiredMark = props.showRequiredMark !== false;
 
+    const selectedOrderItems = selectedProductIds.map((pid) => {
+        const realProd = availableProducts.find((p) => p.id === pid);
+        const activeVariantId = selectedVariantMap[pid] || realProd?.variants?.[0]?.id || 0;
+        const activeVariant =
+            realProd?.variants?.find((v) => v.id === activeVariantId) || realProd?.variants?.[0];
+        const regPrice = activeVariant
+            ? Number(activeVariant.regular_price)
+            : realProd
+              ? Number(realProd.regular_price)
+              : 1500;
+        const salePrice = activeVariant?.sale_price
+            ? Number(activeVariant.sale_price)
+            : realProd?.sale_price
+              ? Number(realProd.sale_price)
+              : 1250;
+        const effPrice = salePrice || regPrice;
+        const imgUrl =
+            activeVariant?.images?.[0]?.url ||
+            realProd?.primaryImage?.url ||
+            realProd?.images?.[0]?.url;
+        const qty = getQty(pid);
+
+        return {
+            pid,
+            title: realProd?.title || `Product #${pid}`,
+            imgUrl,
+            unitPrice: effPrice,
+            qty,
+            lineTotal: effPrice * qty,
+        };
+    });
+
+    const itemsSubtotal = selectedOrderItems.reduce((sum, item) => sum + item.lineTotal, 0);
+    const shippingFee = selectedShipping === 'inside' ? 70 : 130;
+    const grandTotal = itemsSubtotal + shippingFee;
+
     return (
         <section id="cod-checkout" style={sectionStyle} data-lc-el="section" className="w-full">
             <style>{COD_CHECKOUT_STATIC_CSS}</style>
@@ -364,25 +414,26 @@ export function CodCheckoutBlock({
                             paddingTop: safeCheckoutCss(props.bodyPaddingTop) || '24px',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: safeCheckoutCss(props.fieldGap) || '16px',
+                            gap: safeCheckoutCss(props.fieldGap) || '24px',
                         }}
                     >
+                        {/* Top Full-Width Products Selector */}
                         {productIds.length > 0 && props.showProductSelector !== false && (
                             <div style={productPanelStyle}>
                                 <div
                                     className="flex items-center justify-between"
                                     style={{
-                                        marginBottom: '8px',
-                                        color: safeCheckoutCss(props.productPanelTitleColor) || '#334155',
-                                        fontSize: '11px',
+                                        marginBottom: '10px',
+                                        color: safeCheckoutCss(props.productPanelTitleColor) || '#0f172a',
+                                        fontSize: '15px',
                                         fontWeight: 700,
                                     }}
                                 >
-                                    <span>Selected Products:</span>
-                                    <span style={{ color: accentColor, fontWeight: 600 }}>
+                                    <span>Your Products</span>
+                                    <span className="text-xs font-semibold" style={{ color: accentColor }}>
                                         {props.selectionMode === 'multiple'
-                                            ? 'Multiple Selection (Checkbox)'
-                                            : 'Single Selection (Radio)'}
+                                            ? 'Multiple Selection'
+                                            : 'Select Product'}
                                     </span>
                                 </div>
                                 <div
@@ -394,6 +445,7 @@ export function CodCheckoutBlock({
                                     {productIds.map((pid, idx) => {
                                         const realProd = availableProducts.find((p) => p.id === pid);
                                         const isSelected = selectedProductIds.includes(pid);
+                                        const qty = getQty(pid);
 
                                         const activeVariantId =
                                             selectedVariantMap[pid] || realProd?.variants?.[0]?.id || 0;
@@ -453,8 +505,8 @@ export function CodCheckoutBlock({
                                                     isSelected ? 'cod-card-selected' : ''
                                                 } flex cursor-pointer select-none flex-col`}
                                             >
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex min-w-0 items-center space-x-2.5">
+                                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                                    <div className="flex min-w-0 flex-1 items-center space-x-2.5">
                                                         <span
                                                             className={`flex ${
                                                                 props.selectionMode === 'multiple'
@@ -519,12 +571,39 @@ export function CodCheckoutBlock({
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    <div className="shrink-0 pl-2 text-right">
+
+                                                    {/* Quantity Stepper (desktop inline, compact on mobile) */}
+                                                    <div
+                                                        className="flex items-center rounded-md border border-slate-200 bg-white"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateQty(pid, -1)}
+                                                            className="px-2 py-1 text-slate-600 hover:bg-slate-100"
+                                                            aria-label="Decrease quantity"
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </button>
+                                                        <span className="min-w-[26px] text-center text-xs font-bold text-slate-800">
+                                                            {qty}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateQty(pid, 1)}
+                                                            className="px-2 py-1 text-slate-600 hover:bg-slate-100"
+                                                            aria-label="Increase quantity"
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="shrink-0 pl-2 text-right min-w-[74px]">
                                                         <div
                                                             className="font-extrabold"
                                                             style={productPriceStyle}
                                                         >
-                                                            ৳{effPrice.toLocaleString()}
+                                                            ৳{(effPrice * qty).toLocaleString()}
                                                         </div>
                                                         <div className="flex items-center justify-end space-x-1">
                                                             {hasDiscount && (
@@ -636,153 +715,299 @@ export function CodCheckoutBlock({
                             </div>
                         )}
 
-                        {/* 1. Customer Name */}
-                        <div>
-                            <label style={labelStyle} data-lc-el="label">
-                                {nameLabel}{' '}
-                                {showRequiredMark && (
-                                    <span style={{ color: requiredMarkColor }}>*</span>
-                                )}
-                            </label>
-                            <div className="relative">
-                                <User
-                                    className="absolute left-3 top-3 h-4 w-4"
-                                    style={inputIconStyle}
-                                />
-                                <input
-                                    type="text"
-                                    disabled={isEditor}
-                                    placeholder={namePlaceholder}
-                                    data-lc-el="input"
-                                    style={inputStyle}
-                                />
-                            </div>
-                        </div>
+                        {/* Bottom 2-Column Layout on PC (Mobile stays single-column) */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                            {/* Left Column: Billing Details & Shipping */}
+                            <div className="lg:col-span-6 space-y-4">
+                                <h3 className="text-base font-bold text-slate-900">
+                                    Billing details
+                                </h3>
 
-                        {/* 2. Customer Phone */}
-                        <div>
-                            <label style={labelStyle} data-lc-el="label">
-                                {phoneLabel}{' '}
-                                {showRequiredMark && (
-                                    <span style={{ color: requiredMarkColor }}>*</span>
-                                )}
-                            </label>
-                            <div className="relative">
-                                <Phone
-                                    className="absolute left-3 top-3 h-4 w-4"
-                                    style={inputIconStyle}
-                                />
-                                <input
-                                    type="tel"
-                                    disabled={isEditor}
-                                    placeholder={phonePlaceholder}
-                                    data-lc-el="input"
-                                    style={{ ...inputStyle, fontFamily: 'monospace' }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* 3. Detailed Address */}
-                        <div>
-                            <label style={labelStyle} data-lc-el="label">
-                                {addressLabel}{' '}
-                                {showRequiredMark && (
-                                    <span style={{ color: requiredMarkColor }}>*</span>
-                                )}
-                            </label>
-                            <div className="relative">
-                                <MapPin
-                                    className="absolute left-3 top-3 h-4 w-4"
-                                    style={inputIconStyle}
-                                />
-                                <textarea
-                                    rows={2}
-                                    disabled={isEditor}
-                                    placeholder={addressPlaceholder}
-                                    data-lc-el="input"
-                                    style={{
-                                        ...inputStyle,
-                                        paddingTop: '8px',
-                                        paddingBottom: '8px',
-                                    }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* 4. Shipping Method Dropdown */}
-                        <div>
-                            <label style={labelStyle} data-lc-el="label">
-                                {shippingLabel}{' '}
-                                {showRequiredMark && (
-                                    <span style={{ color: requiredMarkColor }}>*</span>
-                                )}
-                            </label>
-                            <select disabled={isEditor} style={shippingStyle}>
-                                <option>ঢাকার ভিতরে (Inside Dhaka) — ৳70.00</option>
-                                <option>ঢাকার বাইরে (Outside Dhaka) — ৳130.00</option>
-                            </select>
-                        </div>
-
-                        {/* 5. Live Summary */}
-                        {props.showSummary !== false && (
-                            <div style={summaryStyle} data-lc-el="summary">
-                                <div className="flex justify-between">
-                                    <span>Items Subtotal:</span>
-                                    <span className="font-bold" style={summaryValueStyle}>
-                                        ৳0
-                                    </span>
+                                {/* 1. Customer Name */}
+                                <div>
+                                    <label style={labelStyle} data-lc-el="label">
+                                        {nameLabel}{' '}
+                                        {showRequiredMark && (
+                                            <span style={{ color: requiredMarkColor }}>*</span>
+                                        )}
+                                    </label>
+                                    <div className="relative">
+                                        <User
+                                            className="absolute left-3 top-3 h-4 w-4"
+                                            style={inputIconStyle}
+                                        />
+                                        <input
+                                            type="text"
+                                            disabled={isEditor}
+                                            placeholder={namePlaceholder}
+                                            data-lc-el="input"
+                                            style={inputStyle}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>Delivery Charge:</span>
-                                    <span className="font-bold" style={{ color: accentColor }}>
-                                        ৳70
-                                    </span>
+
+                                {/* 2. Detailed Address */}
+                                <div>
+                                    <label style={labelStyle} data-lc-el="label">
+                                        {addressLabel}{' '}
+                                        {showRequiredMark && (
+                                            <span style={{ color: requiredMarkColor }}>*</span>
+                                        )}
+                                    </label>
+                                    <div className="relative">
+                                        <MapPin
+                                            className="absolute left-3 top-3 h-4 w-4"
+                                            style={inputIconStyle}
+                                        />
+                                        <textarea
+                                            rows={2}
+                                            disabled={isEditor}
+                                            placeholder={addressPlaceholder}
+                                            data-lc-el="input"
+                                            style={{
+                                                ...inputStyle,
+                                                paddingTop: '8px',
+                                                paddingBottom: '8px',
+                                            }}
+                                        />
+                                    </div>
                                 </div>
-                                <div
-                                    className="flex justify-between border-t pt-2 font-extrabold"
-                                    style={{
-                                        borderColor:
-                                            safeCheckoutCss(props.summaryBorderColor) || '#e2e8f0',
-                                    }}
-                                >
-                                    <span>Total Payable:</span>
-                                    <span className="font-black" style={summaryTotalStyle}>
-                                        ৳0
-                                    </span>
+
+                                {/* 3. Customer Phone */}
+                                <div>
+                                    <label style={labelStyle} data-lc-el="label">
+                                        {phoneLabel}{' '}
+                                        {showRequiredMark && (
+                                            <span style={{ color: requiredMarkColor }}>*</span>
+                                        )}
+                                    </label>
+                                    <div className="relative">
+                                        <Phone
+                                            className="absolute left-3 top-3 h-4 w-4"
+                                            style={inputIconStyle}
+                                        />
+                                        <input
+                                            type="tel"
+                                            disabled={isEditor}
+                                            placeholder={phonePlaceholder}
+                                            data-lc-el="input"
+                                            style={{ ...inputStyle, fontFamily: 'monospace' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* 4. Shipping Method */}
+                                <div className="pt-2">
+                                    <h3 className="text-base font-bold text-slate-900 mb-2.5">
+                                        {shippingLabel}
+                                    </h3>
+                                    <div className="space-y-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedShipping('inside')}
+                                            style={
+                                                selectedShipping === 'inside'
+                                                    ? shippingStyle
+                                                    : {
+                                                          ...shippingStyle,
+                                                          backgroundColor: '#ffffff',
+                                                          borderColor: '#e2e8f0',
+                                                          borderWidth: '1px',
+                                                      }
+                                            }
+                                            className="flex w-full items-center justify-between text-left transition"
+                                        >
+                                            <span className="flex items-center gap-2.5">
+                                                <span
+                                                    className="h-4 w-4 rounded-full border-2 flex items-center justify-center"
+                                                    style={{
+                                                        borderColor:
+                                                            selectedShipping === 'inside'
+                                                                ? accentColor
+                                                                : '#cbd5e1',
+                                                    }}
+                                                >
+                                                    {selectedShipping === 'inside' && (
+                                                        <span
+                                                            className="h-2 w-2 rounded-full"
+                                                            style={{ backgroundColor: accentColor }}
+                                                        />
+                                                    )}
+                                                </span>
+                                                <span>ঢাকার ভিতরে (Inside Dhaka)</span>
+                                            </span>
+                                            <span className="font-bold">৳70</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedShipping('outside')}
+                                            style={
+                                                selectedShipping === 'outside'
+                                                    ? shippingStyle
+                                                    : {
+                                                          ...shippingStyle,
+                                                          backgroundColor: '#ffffff',
+                                                          borderColor: '#e2e8f0',
+                                                          borderWidth: '1px',
+                                                      }
+                                            }
+                                            className="flex w-full items-center justify-between text-left transition"
+                                        >
+                                            <span className="flex items-center gap-2.5">
+                                                <span
+                                                    className="h-4 w-4 rounded-full border-2 flex items-center justify-center"
+                                                    style={{
+                                                        borderColor:
+                                                            selectedShipping === 'outside'
+                                                                ? accentColor
+                                                                : '#cbd5e1',
+                                                    }}
+                                                >
+                                                    {selectedShipping === 'outside' && (
+                                                        <span
+                                                            className="h-2 w-2 rounded-full"
+                                                            style={{ backgroundColor: accentColor }}
+                                                        />
+                                                    )}
+                                                </span>
+                                                <span>ঢাকার বাইরে (Outside Dhaka)</span>
+                                            </span>
+                                            <span className="font-bold">৳130</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        )}
 
-                        {/* 6. Submit Button */}
-                        <div>
-                            <button
-                                type="button"
-                                disabled={isEditor}
-                                style={buttonStyle}
-                                data-lc-el="button"
-                                className={`cod-submit-btn flex cursor-pointer items-center justify-center space-x-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonPulseClass}`}
-                            >
-                                <ShoppingCart className="h-5 w-5" />
-                                <span>{buttonText}</span>
-                            </button>
+                            {/* Right Column: Your Order Summary, Payment Method & Submit */}
+                            <div className="lg:col-span-6 space-y-4">
+                                <h3 className="text-base font-bold text-slate-900">
+                                    Your order
+                                </h3>
+
+                                {/* Live Summary */}
+                                {props.showSummary !== false && (
+                                    <div style={summaryStyle} data-lc-el="summary">
+                                        <div className="flex justify-between pb-2 border-b border-slate-200 font-bold text-slate-700">
+                                            <span>Product</span>
+                                            <span>Subtotal</span>
+                                        </div>
+
+                                        {selectedOrderItems.length > 0 ? (
+                                            <div className="space-y-2 py-1 border-b border-slate-200">
+                                                {selectedOrderItems.map((item) => (
+                                                    <div
+                                                        key={item.pid}
+                                                        className="flex items-center justify-between gap-2"
+                                                    >
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <div className="h-8 w-8 rounded border border-slate-200 bg-white overflow-hidden shrink-0">
+                                                                <SafeImage
+                                                                    src={item.imgUrl}
+                                                                    alt={item.title}
+                                                                    className="h-full w-full object-cover"
+                                                                    fallbackIconSize="w-4 h-4"
+                                                                    fallbackText=""
+                                                                />
+                                                            </div>
+                                                            <span className="truncate font-medium text-slate-700">
+                                                                {item.title}
+                                                            </span>
+                                                        </div>
+                                                        <div className="shrink-0 flex items-center gap-3">
+                                                            <span className="text-slate-500">
+                                                                × {item.qty}
+                                                            </span>
+                                                            <span
+                                                                className="font-bold"
+                                                                style={summaryValueStyle}
+                                                            >
+                                                                ৳{item.lineTotal.toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : null}
+
+                                        <div className="flex justify-between">
+                                            <span>Subtotal</span>
+                                            <span className="font-bold" style={summaryValueStyle}>
+                                                ৳{itemsSubtotal.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Shipment</span>
+                                            <span className="font-bold" style={{ color: accentColor }}>
+                                                ৳{shippingFee.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div
+                                            className="flex justify-between border-t pt-2 font-extrabold"
+                                            style={{
+                                                borderColor:
+                                                    safeCheckoutCss(props.summaryBorderColor) ||
+                                                    '#e2e8f0',
+                                            }}
+                                        >
+                                            <span>Total</span>
+                                            <span className="font-black" style={summaryTotalStyle}>
+                                                ৳{grandTotal.toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Payment Method Box */}
+                                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2.5">
+                                    <div className="text-sm font-bold text-slate-800">
+                                        Cash on delivery
+                                    </div>
+                                    <div className="rounded-lg bg-slate-200/70 px-3.5 py-2.5 text-xs text-slate-600">
+                                        Pay with cash upon delivery.
+                                    </div>
+                                </div>
+
+                                <p className="text-[11px] leading-relaxed text-slate-500">
+                                    Your personal data will be used to process your order, support your
+                                    experience throughout this website, and for other purposes described in
+                                    our privacy policy.
+                                </p>
+
+                                {/* Submit Button */}
+                                <div>
+                                    <button
+                                        type="button"
+                                        disabled={isEditor}
+                                        style={buttonStyle}
+                                        data-lc-el="button"
+                                        className={`cod-submit-btn flex cursor-pointer items-center justify-center space-x-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonPulseClass}`}
+                                    >
+                                        <ShoppingCart className="h-5 w-5" />
+                                        <span>
+                                            {buttonText} — ৳{grandTotal.toLocaleString()}
+                                        </span>
+                                    </button>
+                                </div>
+
+                                {props.showTrustBadges !== false && (
+                                    <div
+                                        data-lc-el="trust"
+                                        className="flex flex-wrap items-center justify-center text-center"
+                                        style={trustRowStyle}
+                                    >
+                                        <span className="inline-flex items-center">
+                                            <CheckCircle2 style={trustIconStyle} />
+                                            {trustText1}
+                                        </span>
+                                        <span className="inline-flex items-center">
+                                            <CheckCircle2 style={trustIconStyle} />
+                                            {trustText2}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-
-                        {props.showTrustBadges !== false && (
-                            <div
-                                data-lc-el="trust"
-                                className="flex flex-wrap items-center justify-center text-center"
-                                style={trustRowStyle}
-                            >
-                                <span className="inline-flex items-center">
-                                    <CheckCircle2 style={trustIconStyle} />
-                                    {trustText1}
-                                </span>
-                                <span className="inline-flex items-center">
-                                    <CheckCircle2 style={trustIconStyle} />
-                                    {trustText2}
-                                </span>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

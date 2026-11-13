@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+﻿import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Check, FolderTree, Layers, Package, Tag, UploadCloud } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
@@ -253,7 +253,7 @@ export default function Create({
                                         key={cat.id}
                                         className={`flex items-center gap-2.5 p-3 rounded-xl border cursor-pointer text-sm transition ${
                                             isChecked
-                                                ? 'border-indigo-500 bg-indigo-50/40 text-indigo-900 font-semibold'
+                                                ? 'border-primary-500 bg-primary-50/40 text-primary-900 font-semibold'
                                                 : 'border-gray-200 text-gray-700 hover:border-gray-300'
                                         }`}
                                     >
@@ -270,7 +270,7 @@ export default function Create({
                                                     );
                                                 }
                                             }}
-                                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                         />
                                         <span className="truncate">
                                             {cat.parent_id ? `↳ ${cat.name}` : cat.name}

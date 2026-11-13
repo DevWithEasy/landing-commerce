@@ -1,4 +1,12 @@
-import type { Category, PaginatedData, PolicyPage, Product, SharedProps, Slider } from '@/types';
+import type {
+    Category,
+    DefaultHeroConfig,
+    PaginatedData,
+    PolicyPage,
+    Product,
+    SharedProps,
+    Slider,
+} from '@/types';
 
 export interface StorefrontTheme {
     store_name: string;
@@ -24,6 +32,7 @@ export interface SectionsConfig {
 
 export interface StorefrontHomeProps extends SharedProps {
     sliders: Slider[];
+    defaultHero?: DefaultHeroConfig;
     categories: Category[];
     featuredProducts: Product[];
     newArrivals: Product[];
@@ -48,6 +57,8 @@ export interface StorefrontShopProps extends SharedProps {
         category: string;
         sort: string;
         in_stock: boolean;
+        min_price?: string;
+        max_price?: string;
     };
     theme: StorefrontTheme;
 }

@@ -77,7 +77,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
             <div className="max-w-6xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 <div
                     className={`flex flex-col ${
-                        hasImage ? '@min-[1024px]:flex-row items-center gap-12' : 'items-center text-center'
+                        hasImage ? '@min-[800px]:flex-row items-center gap-8 @min-[1024px]:gap-12' : 'items-center text-center'
                     }`}
                 >
                     {/* Content Column */}
@@ -98,7 +98,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                         <h1
                             style={headlineStyle}
                             data-lc-el="title"
-                            className="text-3xl @min-[640px]:text-4xl @min-[1024px]:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight"
+                            className="text-3xl @min-[640px]:text-4xl @min-[800px]:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight"
                         >
                             {props.headline || 'Your Compelling Headline Here'}
                         </h1>
@@ -142,7 +142,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
                     {hasImage && (
                         <div
                             data-lc-el="image"
-                            className="flex-1 w-full max-w-md @min-[1024px]:max-w-none"
+                            className="flex-1 w-full max-w-md @min-[800px]:max-w-none"
                         >
                             <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white border border-gray-100 aspect-4/3">
                                 <img

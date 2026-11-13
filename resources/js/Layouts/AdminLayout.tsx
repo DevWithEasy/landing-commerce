@@ -4,6 +4,7 @@ import {
     AlertCircle,
     CheckCircle,
     CreditCard,
+    ExternalLink,
     FileText,
     FolderTree,
     Image as ImageIcon,
@@ -141,7 +142,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         : 'Administrator';
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-[#FAF7F2] flex flex-col md:flex-row">
             {/* Mobile backdrop */}
             {sidebarOpen && (
                 <div
@@ -150,26 +151,26 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar (Velure Deep Forest Green) */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-100 transform transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-0 -translate-x-full'
+                className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0B3B2E] text-emerald-50 transform transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
+                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
                 <div className="flex flex-col h-full">
                     {/* Brand header */}
-                    <div className="flex items-center justify-between px-6 h-16 border-b border-slate-800">
+                    <div className="flex items-center justify-between px-6 h-16 border-b border-[#145240]">
                         <Link href="/admin/products" className="flex items-center space-x-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-sm font-bold text-lg">
+                            <div className="w-8 h-8 rounded-lg bg-[#F96D16] flex items-center justify-center text-white shadow-xs font-bold text-lg">
                                 <Store className="w-4 h-4" />
                             </div>
-                            <span className="font-semibold text-base tracking-tight text-white">
+                            <span className="font-serif font-bold text-base tracking-tight text-white">
                                 Landing Commerce
                             </span>
                         </Link>
                         <button
                             type="button"
-                            className="md:hidden text-slate-400 hover:text-white"
+                            className="md:hidden text-emerald-200 hover:text-white"
                             onClick={() => setSidebarOpen(false)}
                             aria-label="Close sidebar"
                         >
@@ -179,7 +180,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
 
                     {/* Navigation */}
                     <div className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                        <div className="px-2 text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                        <div className="px-2 text-[11px] font-semibold uppercase tracking-wider text-emerald-200/70 mb-2">
                             Commerce Core
                         </div>
                         {navigation.map((item) => {
@@ -188,18 +189,18 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                                         item.current
-                                            ? 'bg-primary-600 text-white shadow-sm'
-                                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                                            ? 'bg-[#F96D16] text-white shadow-xs'
+                                            : 'text-emerald-100/85 hover:bg-[#124D3C] hover:text-white'
                                     }`}
                                 >
                                     <div className="flex items-center space-x-3">
-                                        <Icon className="w-5 h-5 flex-shrink-0" />
+                                        <Icon className="w-4.5 h-4.5 flex-shrink-0" />
                                         <span>{item.name}</span>
                                     </div>
                                     {item.badge && (
-                                        <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#082B21] text-emerald-200 border border-[#145240]">
                                             {item.badge}
                                         </span>
                                     )}
@@ -209,21 +210,21 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                     </div>
 
                     {/* User profile footer */}
-                    <div className="p-4 border-t border-slate-800 bg-slate-950/40">
+                    <div className="p-4 border-t border-[#145240] bg-[#082B21]">
                         <div className="flex items-center space-x-3">
-                            <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
-                                <Shield className="w-4 h-4 text-primary-400" />
+                            <div className="w-9 h-9 rounded-full bg-[#124D3C] border border-[#1B6B54] flex items-center justify-center text-emerald-100">
+                                <Shield className="w-4 h-4 text-[#F96D16]" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-white truncate">
                                     {user?.name || 'Store Admin'}
                                 </p>
-                                <p className="text-xs text-slate-400 truncate">{roleName}</p>
+                                <p className="text-xs text-emerald-200/70 truncate">{roleName}</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => router.post('/logout')}
-                                className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg transition-colors"
+                                className="p-1.5 text-emerald-200/70 hover:text-rose-300 hover:bg-[#124D3C] rounded-lg transition-colors"
                                 title="Sign Out"
                             >
                                 <LogOut className="w-4 h-4" />
@@ -236,11 +237,11 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
             {/* Main content area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Top header */}
-                <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+                <header className="bg-white border-b border-stone-200/80 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center space-x-3">
                         <button
                             type="button"
-                            className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
+                            className="md:hidden text-gray-500 hover:text-[#0B3B2E] focus:outline-none"
                             onClick={() => setSidebarOpen(true)}
                             aria-label="Open sidebar"
                         >
@@ -248,7 +249,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                         </button>
                         <div>
                             {title && (
-                                <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+                                <h1 className="font-serif text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
                                     {title}
                                 </h1>
                             )}
@@ -260,7 +261,18 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                         </div>
                     </div>
 
-                    {actions && <div className="flex items-center space-x-3">{actions}</div>}
+                    <div className="flex items-center space-x-3">
+                        <a
+                            href="/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 hover:border-[#0B3B2E] text-xs font-semibold text-[#0B3B2E] hover:bg-[#FAF7F2] transition"
+                        >
+                            <span>View Store</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                        {actions}
+                    </div>
                 </header>
 
                 {/* Flash Messages */}

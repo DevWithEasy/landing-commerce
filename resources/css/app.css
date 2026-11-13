@@ -12,25 +12,25 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 
-    /* Brand / Primary Palette */
-    --color-primary-50: #eff6ff;
-    --color-primary-100: #dbeafe;
-    --color-primary-200: #bfdbfe;
-    --color-primary-300: #93c5fd;
-    --color-primary-400: #60a5fa;
-    --color-primary-500: #2563eb;
-    --color-primary-600: #1d4ed8;
-    --color-primary-700: #1e40af;
-    --color-primary-800: #1e3a8a;
-    --color-primary-900: #172554;
-    --color-primary-950: #0b132b;
+    /* Brand / Primary Palette (Velure Warm Orange) */
+    --color-primary-50: #fff7ed;
+    --color-primary-100: #ffedd5;
+    --color-primary-200: #fed7aa;
+    --color-primary-300: #fdba74;
+    --color-primary-400: #fb923c;
+    --color-primary-500: #f96d16;
+    --color-primary-600: #ea580c;
+    --color-primary-700: #c2410c;
+    --color-primary-800: #9a3412;
+    --color-primary-900: #7c2d12;
+    --color-primary-950: #431407;
 
-    /* Conversion / Accent Palette */
-    --color-accent-50: #f0fdf4;
-    --color-accent-100: #dcfce7;
+    /* Conversion / Accent Palette (Velure Deep Forest Green) */
+    --color-accent-50: #ecfdf5;
+    --color-accent-100: #d1fae5;
     --color-accent-500: #10b981;
-    --color-accent-600: #059669;
-    --color-accent-700: #047857;
+    --color-accent-600: #0b3b2e;
+    --color-accent-700: #082b21;
 
     /* Semantic Surface Radii */
     --radius-sm: 0.25rem;
@@ -44,7 +44,7 @@
     body {
         font-family: var(--font-sans);
         color: #1f2937;
-        background-color: #f9fafb;
+        background-color: #faf7f2;
     }
 }
 

@@ -1,4 +1,4 @@
-import {
+﻿import {
     AlignCenter,
     AlignJustify,
     AlignLeft,
@@ -211,7 +211,7 @@ export function RichTextEditor({
                 className={`border rounded-xl bg-white shadow-2xs overflow-hidden transition ${
                     error
                         ? 'border-rose-400 ring-2 ring-rose-100'
-                        : 'border-gray-300 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-100'
+                        : 'border-gray-300 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100'
                 }`}
             >
                 {/* Toolbar */}
@@ -221,7 +221,7 @@ export function RichTextEditor({
                         onChange={(e) => handleBlockFormat(e.target.value)}
                         disabled={isSourceMode}
                         defaultValue="p"
-                        className="text-xs h-8 py-1 px-2 border border-gray-300 bg-white rounded-lg font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
+                        className="text-xs h-8 py-1 px-2 border border-gray-300 bg-white rounded-lg font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50"
                         title="Text Format"
                     >
                         <option value="p">Paragraph</option>
@@ -242,7 +242,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.bold
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Bold (Ctrl+B)"
@@ -256,7 +256,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.italic
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Italic (Ctrl+I)"
@@ -270,7 +270,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.underline
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Underline (Ctrl+U)"
@@ -284,7 +284,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.strikeThrough
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Strikethrough"
@@ -301,7 +301,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.insertUnorderedList
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Bullet List"
@@ -315,7 +315,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.insertOrderedList
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Numbered List"
@@ -332,7 +332,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.justifyLeft
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Align Left"
@@ -346,7 +346,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.justifyCenter
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Align Center"
@@ -360,7 +360,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.justifyRight
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Align Right"
@@ -374,7 +374,7 @@ export function RichTextEditor({
                         disabled={isSourceMode}
                         className={`p-1.5 rounded-lg text-xs font-semibold transition ${
                             activeFormats.justifyFull
-                                ? 'bg-indigo-100 text-indigo-700 shadow-xs'
+                                ? 'bg-primary-100 text-primary-700 shadow-xs'
                                 : 'text-gray-600 hover:bg-gray-200/70 hover:text-gray-900 disabled:opacity-40'
                         }`}
                         title="Justify"
@@ -465,7 +465,7 @@ export function RichTextEditor({
                             onClick={toggleSourceMode}
                             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                                 isSourceMode
-                                    ? 'bg-indigo-600 text-white shadow-xs'
+                                    ? 'bg-primary-600 text-white shadow-xs'
                                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                             }`}
                             title={isSourceMode ? 'Switch to Visual Editor' : 'Switch to HTML Code Editor'}

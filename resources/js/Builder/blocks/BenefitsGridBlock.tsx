@@ -53,7 +53,7 @@ export function BenefitsGridBlock({ props, styles = {} }: BenefitsGridBlockCompo
     const columns = props.columns || 3;
     const gridColsClass =
         columns === 4
-            ? 'grid-cols-1 @min-[640px]:grid-cols-2 @min-[1024px]:grid-cols-4'
+            ? 'grid-cols-1 @min-[640px]:grid-cols-2 @min-[800px]:grid-cols-4'
             : columns === 2
               ? 'grid-cols-1 @min-[640px]:grid-cols-2'
               : 'grid-cols-1 @min-[768px]:grid-cols-3';

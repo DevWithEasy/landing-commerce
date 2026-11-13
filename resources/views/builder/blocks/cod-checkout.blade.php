@@ -82,8 +82,9 @@
     $summaryBorderColor = $safeCss($props['summaryBorderColor'] ?? '#e2e8f0') ?: '#e2e8f0';
     $trustIconColor = $safeCss($props['trustIconColor'] ?? $accentColor) ?: $accentColor;
 
+    $rawContainerMaxWidth = $safeCss($props['containerMaxWidth'] ?? null);
     $containerStyle = $inlineStyle([
-        'max-width' => $props['containerMaxWidth'] ?? '672px',
+        'max-width' => ($rawContainerMaxWidth && $rawContainerMaxWidth !== '672px') ? $rawContainerMaxWidth : '1080px',
         'padding-top' => $props['containerPaddingX'] ?? '16px',
         'padding-bottom' => $props['containerPaddingX'] ?? '16px',
         'padding-left' => $props['containerPaddingX'] ?? '16px',
@@ -130,7 +131,7 @@
         'padding-top' => $props['bodyPaddingTop'] ?? '24px',
         'display' => 'flex',
         'flex-direction' => 'column',
-        'gap' => $props['fieldGap'] ?? '16px',
+        'gap' => $props['fieldGap'] ?? '24px',
     ]);
 
     $badgeStyle = $inlineStyle([
@@ -422,12 +423,10 @@
                 @if ($hasMultiple && $showProductSelector)
                     <div {!! $productPanelStyle !!}>
                         <div class="flex items-center justify-between"
-                            style="margin-bottom: 8px; color: {{ e($productPanelTitleColor) }}; font-size: 11px; font-weight: 700;">
-                            <span>
-                                Order Items ({{ $mode === 'multiple' ? 'Check Multiple' : 'Select One' }}):
-                            </span>
-                            <span style="color: {{ e($accentColor) }}; font-weight: 600;">
-                                {{ $mode === 'multiple' ? 'Checkbox Selection' : 'Radio Selection' }}
+                            style="margin-bottom: 10px; color: {{ e($productPanelTitleColor) }}; font-size: 15px; font-weight: 700;">
+                            <span>Your Products</span>
+                            <span class="text-xs font-semibold" style="color: {{ e($accentColor) }};">
+                                {{ $mode === 'multiple' ? 'Multiple Selection' : 'Select Product' }}
                             </span>
                         </div>
 
@@ -465,8 +464,8 @@
                                 @endphp
                                 <div class="cod-product-card relative flex flex-col {{ $isItemChecked ? 'cod-card-selected' : '' }}" data-lc-el="product-card"
                                     {!! $itemCardStyle !!}>
-                                    <label class="flex w-full cursor-pointer items-center justify-between">
-                                        <div class="flex min-w-0 flex-1 items-center space-x-3">
+                                    <div class="flex w-full flex-wrap items-center justify-between gap-3">
+                                        <label class="flex min-w-0 flex-1 cursor-pointer items-center space-x-3">
                                             {{-- Selector Input --}}
                                             @if ($mode === 'multiple')
                                                 <input type="checkbox"
@@ -476,6 +475,7 @@
                                                     data-variant-id="{{ $pVarId }}"
                                                     data-price="{{ $pEffPrice }}"
                                                     data-title="{{ e($pItem->title) }}"
+                                                    data-image="{{ e($pImgUrl ?? '') }}"
                                                     {{ $isItemChecked ? 'checked' : '' }} />
                                             @else
                                                 <input type="radio" name="cod_radio_product"
@@ -485,6 +485,7 @@
                                                     data-variant-id="{{ $pVarId }}"
                                                     data-price="{{ $pEffPrice }}"
                                                     data-title="{{ e($pItem->title) }}"
+                                                    data-image="{{ e($pImgUrl ?? '') }}"
                                                     {{ $isItemChecked ? 'checked' : '' }} />
                                             @endif
 
@@ -521,6 +522,7 @@
 
                                                 <div class="flex items-baseline space-x-2">
                                                     <span class="cod-card-price font-extrabold"
+                                                        data-unit-price="{{ $pEffPrice }}"
                                                         {!! $productPriceStyle !!}>
                                                         ৳{{ number_format($pEffPrice, 0) }}
                                                     </span>
@@ -537,8 +539,20 @@
                                                     @endif
                                                 </div>
                                             </div>
+                                        </label>
+
+                                        {{-- Quantity Stepper --}}
+                                        <div class="flex items-center rounded-md border border-slate-200 bg-white">
+                                            <button type="button"
+                                                class="cod-qty-minus px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                                                aria-label="Decrease quantity">&minus;</button>
+                                            <span class="cod-qty-val min-w-[26px] text-center text-xs font-bold text-slate-800"
+                                                data-qty="1">1</span>
+                                            <button type="button"
+                                                class="cod-qty-plus px-2 py-1 text-xs font-bold text-slate-600 hover:bg-slate-100"
+                                                aria-label="Increase quantity">+</button>
                                         </div>
-                                    </label>
+                                    </div>
 
                                     {{-- Variants selector inside card (only shown when product is selected) --}}
                                     @if ($showVariants && $pItem->variants->count() > 1)
@@ -620,129 +634,176 @@
                     class="hidden rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
                 </div>
 
-                {{-- Customer Fields (Name, Phone, Address) - Fully Customizable --}}
-                <div>
-                    <label {!! $labelStyle !!} data-lc-el="label">
-                        {{ $nameLabel }}
-                        @if ($showRequiredMark)
-                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
-                        @endif
-                    </label>
-                    <input type="text" name="customer_name" required data-lc-el="input"
-                        placeholder="{{ $namePlaceholder }}" {!! $inputStyle !!} />
-                </div>
+                {{-- Bottom 2-Column Layout on PC (Mobile remains single-column) --}}
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+                    {{-- Left Column: Billing details & Shipping --}}
+                    <div class="lg:col-span-6 space-y-4">
+                        <h3 class="text-base font-bold text-slate-900">
+                            Billing details
+                        </h3>
 
-                <div>
-                    <label {!! $labelStyle !!} data-lc-el="label">
-                        {{ $phoneLabel }}
-                        @if ($showRequiredMark)
-                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
-                        @endif
-                    </label>
-                    <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}"
-                        pattern="01[3-9][0-9]{8}" data-lc-el="input" {!! $inputStyle !!} />
-                </div>
+                        <div>
+                            <label {!! $labelStyle !!} data-lc-el="label">
+                                {{ $nameLabel }}
+                                @if ($showRequiredMark)
+                                    <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                                @endif
+                            </label>
+                            <input type="text" name="customer_name" required data-lc-el="input"
+                                placeholder="{{ $namePlaceholder }}" {!! $inputStyle !!} />
+                        </div>
 
-                <div>
-                    <label {!! $labelStyle !!} data-lc-el="label">
-                        {{ $addressLabel }}
-                        @if ($showRequiredMark)
-                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
-                        @endif
-                    </label>
-                    <textarea name="delivery_address" required rows="2" data-lc-el="input"
-                        placeholder="{{ $addressPlaceholder }}" {!! $inputStyle !!}></textarea>
-                </div>
+                        <div>
+                            <label {!! $labelStyle !!} data-lc-el="label">
+                                {{ $addressLabel }}
+                                @if ($showRequiredMark)
+                                    <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                                @endif
+                            </label>
+                            <textarea name="delivery_address" required rows="2" data-lc-el="input"
+                                placeholder="{{ $addressPlaceholder }}" {!! $inputStyle !!}></textarea>
+                        </div>
 
-                {{-- Shipping Method Dropdown --}}
-                <div>
-                    <label {!! $labelStyle !!} data-lc-el="label">
-                        {{ $shippingLabel }}
-                        @if ($showRequiredMark)
-                            <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                        <div>
+                            <label {!! $labelStyle !!} data-lc-el="label">
+                                {{ $phoneLabel }}
+                                @if ($showRequiredMark)
+                                    <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                                @endif
+                            </label>
+                            <input type="tel" name="customer_phone" required placeholder="{{ $phonePlaceholder }}"
+                                pattern="01[3-9][0-9]{8}" data-lc-el="input" {!! $inputStyle !!} />
+                        </div>
+
+                        {{-- Shipping Method Radio Cards --}}
+                        <div class="pt-2">
+                            <h3 class="text-base font-bold text-slate-900 mb-2.5">
+                                {{ $shippingLabel }}
+                                @if ($showRequiredMark)
+                                    <span style="color: {{ e($requiredMarkColor) }};">*</span>
+                                @endif
+                            </h3>
+                            <div class="space-y-2">
+                                @foreach ($activeMethods as $sMethod)
+                                    @php
+                                        $sRate = (float) ($sMethod->rate ?? 70.0);
+                                        $sTime = $sMethod->delivery_time ? "({$sMethod->delivery_time})" : '';
+                                        $zCode = $sMethod->zone_code ?? ($sMethod->zone?->code ?? '');
+                                        if ($zCode === 'inside_dhaka' || str_contains(strtolower($sMethod->name), 'inside')) {
+                                            $zoneDistrict = 'Dhaka';
+                                        } elseif ($zCode === 'sub_dhaka' || str_contains(strtolower($sMethod->name), 'sub')) {
+                                            $zoneDistrict = 'Gazipur';
+                                        } else {
+                                            $zoneDistrict = 'Chattogram';
+                                        }
+                                    @endphp
+                                    <label class="cod-shipping-option flex w-full cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-emerald-500">
+                                        <span class="flex items-center gap-2.5">
+                                            <input type="radio" name="shipping_method_id"
+                                                class="cod-shipping-radio h-4 w-4"
+                                                style="accent-color: {{ e($accentColor) }};"
+                                                value="{{ $sMethod->id }}"
+                                                data-rate="{{ $sRate }}"
+                                                data-zone="{{ $zoneDistrict }}"
+                                                {{ $loop->first ? 'checked' : '' }} />
+                                            <span>
+                                                {{ $sMethod->name }}
+                                                @if ($sTime)
+                                                    <span class="text-xs font-normal text-slate-500">{{ $sTime }}</span>
+                                                @endif
+                                            </span>
+                                        </span>
+                                        <span class="font-bold">৳{{ number_format($sRate, 0) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Right Column: Your order, Payment Method & Submit --}}
+                    <div class="lg:col-span-6 space-y-4">
+                        <h3 class="text-base font-bold text-slate-900">
+                            Your order
+                        </h3>
+
+                        {{-- Live Summary Breakdown --}}
+                        @if ($showSummary)
+                            <div {!! $summaryStyle !!} data-lc-el="summary">
+                                <div class="flex justify-between pb-2 border-b border-slate-200 font-bold text-slate-700">
+                                    <span>Product</span>
+                                    <span>Subtotal</span>
+                                </div>
+                                <div id="cod-order-items-list" class="space-y-2 py-1 border-b border-slate-200 empty:hidden"></div>
+                                <div class="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span id="cod-summary-subtotal" class="font-bold"
+                                        {!! $summaryValueStyle !!}>৳0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Shipment</span>
+                                    <span id="cod-summary-shipping" class="font-bold"
+                                        style="color: {{ e($accentColor) }};">৳{{ number_format($defaultShippingFee, 0) }}</span>
+                                </div>
+                                <div class="flex justify-between border-t pt-2 font-extrabold"
+                                    style="border-color: {{ e($summaryBorderColor) }};">
+                                    <span>Total</span>
+                                    <span id="cod-summary-total" class="font-black" {!! $summaryTotalStyle !!}>৳0</span>
+                                </div>
+                            </div>
                         @endif
-                    </label>
-                    <div class="relative">
-                        <select name="shipping_method_id" id="cod_shipping_method" {!! $shippingStyle !!}>
-                            @foreach ($activeMethods as $sMethod)
-                                @php
-                                    $sRate = (float) ($sMethod->rate ?? 70.0);
-                                    $sTime = $sMethod->delivery_time ? "({$sMethod->delivery_time})" : '';
-                                    $zCode = $sMethod->zone_code ?? ($sMethod->zone?->code ?? '');
-                                    if ($zCode === 'inside_dhaka' || str_contains(strtolower($sMethod->name), 'inside')) {
-                                        $zoneDistrict = 'Dhaka';
-                                    } elseif ($zCode === 'sub_dhaka' || str_contains(strtolower($sMethod->name), 'sub')) {
-                                        $zoneDistrict = 'Gazipur';
-                                    } else {
-                                        $zoneDistrict = 'Chattogram';
-                                    }
-                                @endphp
-                                <option value="{{ $sMethod->id }}" data-rate="{{ $sRate }}"
-                                    data-zone="{{ $zoneDistrict }}" {{ $loop->first ? 'selected' : '' }}>
-                                    {{ $sMethod->name }} — ৳{{ number_format($sRate, 0) }} {{ $sTime }}
-                                </option>
-                            @endforeach
-                        </select>
+
+                        {{-- Payment Method Info Box --}}
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2.5">
+                            <div class="text-sm font-bold text-slate-800">
+                                Cash on delivery
+                            </div>
+                            <div class="rounded-lg bg-slate-200/70 px-3.5 py-2.5 text-xs text-slate-600">
+                                Pay with cash upon delivery.
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] leading-relaxed text-slate-500">
+                            Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our privacy policy.
+                        </p>
+
+                        <div>
+                            <button type="submit" id="cod-submit-btn"
+                                data-default-text="{{ e($buttonText) }}" data-lc-el="button" {!! $buttonStyle !!}
+                                class="cod-submit-btn flex w-full cursor-pointer items-center justify-center space-x-2 text-white transition disabled:cursor-not-allowed disabled:opacity-60 {{ $buttonPulse ? 'animate-pulse' : '' }}">
+                                <span id="cod-btn-spinner" class="hidden">
+                                    <svg class="-ml-1 mr-2 h-5 w-5 animate-spin text-white" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                    </svg>
+                                </span>
+                                <span id="cod-btn-text">{{ $buttonText }}</span>
+                            </button>
+                        </div>
+
+                        @if ($showTrustBadges)
+                            <div class="flex flex-wrap items-center justify-center text-center" data-lc-el="trust" {!! $trustRowStyle !!}>
+                                <span class="inline-flex items-center">
+                                    <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    {{ $trustText1 }}
+                                </span>
+                                <span class="inline-flex items-center">
+                                    <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    {{ $trustText2 }}
+                                </span>
+                            </div>
+                        @endif
                     </div>
                 </div>
-
-                {{-- Live Summary Breakdown --}}
-                @if ($showSummary)
-                    <div {!! $summaryStyle !!} data-lc-el="summary">
-                        <div class="flex justify-between">
-                            <span>Items Subtotal:</span>
-                            <span id="cod-summary-subtotal" class="font-bold"
-                                {!! $summaryValueStyle !!}>৳0</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Delivery Charge:</span>
-                            <span id="cod-summary-shipping" class="font-bold"
-                                style="color: {{ e($accentColor) }};">৳{{ number_format($defaultShippingFee, 0) }}</span>
-                        </div>
-                        <div class="flex justify-between border-t pt-2 font-extrabold"
-                            style="border-color: {{ e($summaryBorderColor) }};">
-                            <span>Total Payable:</span>
-                            <span id="cod-summary-total" class="font-black" {!! $summaryTotalStyle !!}>৳0</span>
-                        </div>
-                    </div>
-                @endif
-
-                <div>
-                    <button type="submit" id="cod-submit-btn"
-                        data-default-text="{{ e($buttonText) }}" data-lc-el="button" {!! $buttonStyle !!}
-                        class="cod-submit-btn flex w-full cursor-pointer items-center justify-center space-x-2 text-white transition disabled:cursor-not-allowed disabled:opacity-60 {{ $buttonPulse ? 'animate-pulse' : '' }}">
-                        <span id="cod-btn-spinner" class="hidden">
-                            <svg class="-ml-1 mr-2 h-5 w-5 animate-spin text-white" fill="none"
-                                viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10"
-                                    stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                            </svg>
-                        </span>
-                        <span id="cod-btn-text">{{ $buttonText }}</span>
-                    </button>
-                </div>
-
-                @if ($showTrustBadges)
-                    <div class="flex flex-wrap items-center justify-center text-center" data-lc-el="trust" {!! $trustRowStyle !!}>
-                        <span class="inline-flex items-center">
-                            <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            {{ $trustText1 }}
-                        </span>
-                        <span class="inline-flex items-center">
-                            <svg class="mr-1" style="width: {{ e($trustIconSize) }}; height: {{ e($trustIconSize) }}; color: {{ e($trustIconColor) }};"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                            {{ $trustText2 }}
-                        </span>
-                    </div>
-                @endif
             </form>
         </div>
     </div>
@@ -755,6 +816,7 @@
             if (!form) return;
 
             var itemsContainer = document.getElementById('cod-items-container');
+            var orderItemsList = document.getElementById('cod-order-items-list');
             var subtotalEl = document.getElementById('cod-summary-subtotal');
             var shippingEl = document.getElementById('cod-summary-shipping');
             var totalEl = document.getElementById('cod-summary-total');
@@ -763,10 +825,49 @@
             var btnSpinner = document.getElementById('cod-btn-spinner');
             var btnText = document.getElementById('cod-btn-text');
             var toggles = form.querySelectorAll('.cod-product-toggle');
-            var shippingSelect = document.getElementById('cod_shipping_method');
+            var shippingRadios = form.querySelectorAll('.cod-shipping-radio');
             var districtInput = document.getElementById('cod_district');
             var variantBtns = form.querySelectorAll('.cod-variant-btn');
             var defaultButtonText = submitBtn ? (submitBtn.getAttribute('data-default-text') || 'Confirm Order - Cash on Delivery') : 'Confirm Order - Cash on Delivery';
+
+            // Quantity stepper click handlers
+            form.querySelectorAll('.cod-product-card').forEach(function(card) {
+                var minusBtn = card.querySelector('.cod-qty-minus');
+                var plusBtn = card.querySelector('.cod-qty-plus');
+                var qtyEl = card.querySelector('.cod-qty-val');
+                var priceEl = card.querySelector('.cod-card-price');
+                var toggle = card.querySelector('.cod-product-toggle');
+
+                function setQty(nextQty) {
+                    if (nextQty < 1) nextQty = 1;
+                    if (qtyEl) {
+                        qtyEl.setAttribute('data-qty', String(nextQty));
+                        qtyEl.innerText = String(nextQty);
+                    }
+                    if (priceEl && toggle) {
+                        var unit = parseFloat(toggle.getAttribute('data-price') || '0');
+                        priceEl.innerText = '৳' + Math.round(unit * nextQty).toLocaleString();
+                    }
+                    calculateFromToggles();
+                }
+
+                if (minusBtn) {
+                    minusBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        var cur = parseInt((qtyEl && qtyEl.getAttribute('data-qty')) || '1', 10);
+                        setQty(cur - 1);
+                    });
+                }
+                if (plusBtn) {
+                    plusBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        var cur = parseInt((qtyEl && qtyEl.getAttribute('data-qty')) || '1', 10);
+                        setQty(cur + 1);
+                    });
+                }
+            });
 
             // Variant button click handler
             variantBtns.forEach(function(btn) {
@@ -819,31 +920,42 @@
 
             var currentSubtotal = 0;
 
+            function getSelectedShippingRadio() {
+                for (var i = 0; i < shippingRadios.length; i++) {
+                    if (shippingRadios[i].checked) return shippingRadios[i];
+                }
+                return shippingRadios[0] || null;
+            }
+
             function getShippingRate() {
-                if (!shippingSelect) return 70;
-                var opt = shippingSelect.selectedOptions[0];
-                return opt ? parseFloat(opt.getAttribute('data-rate') || '70') : 70;
+                var radio = getSelectedShippingRadio();
+                return radio ? parseFloat(radio.getAttribute('data-rate') || '70') : 70;
             }
 
             function updateTotals() {
                 var shipFee = getShippingRate();
+                var grandTotal = Math.round(currentSubtotal + shipFee);
                 if (shippingEl) shippingEl.innerText = '৳' + Math.round(shipFee).toLocaleString();
                 if (subtotalEl) subtotalEl.innerText = '৳' + Math.round(currentSubtotal).toLocaleString();
-                if (totalEl) totalEl.innerText = '৳' + Math.round(currentSubtotal + shipFee).toLocaleString();
+                if (totalEl) totalEl.innerText = '৳' + grandTotal.toLocaleString();
+                if (btnText) btnText.innerText = defaultButtonText + ' ৳' + grandTotal.toLocaleString();
 
-                if (shippingSelect && districtInput) {
-                    var opt = shippingSelect.selectedOptions[0];
-                    var zoneStr = opt ? (opt.getAttribute('data-zone') || 'Dhaka') : 'Dhaka';
-                    districtInput.value = zoneStr;
+                var radio = getSelectedShippingRadio();
+                if (radio && districtInput) {
+                    districtInput.value = radio.getAttribute('data-zone') || 'Dhaka';
                 }
             }
 
             function rebuildFromItems(items) {
                 if (!itemsContainer) return;
                 itemsContainer.innerHTML = '';
+                if (orderItemsList) orderItemsList.innerHTML = '';
                 var subtotal = 0;
 
                 items.forEach(function(item, idx) {
+                    var qty = item.quantity || 1;
+                    var lineTotal = (item.price || 0) * qty;
+
                     var inputVar = document.createElement('input');
                     inputVar.type = 'hidden';
                     inputVar.name = 'items[' + idx + '][variant_id]';
@@ -853,10 +965,44 @@
                     var inputQty = document.createElement('input');
                     inputQty.type = 'hidden';
                     inputQty.name = 'items[' + idx + '][quantity]';
-                    inputQty.value = item.quantity || 1;
+                    inputQty.value = qty;
                     itemsContainer.appendChild(inputQty);
 
-                    subtotal += (item.price || 0) * (item.quantity || 1);
+                    if (orderItemsList) {
+                        var row = document.createElement('div');
+                        row.className = 'flex items-center justify-between gap-2 text-xs';
+
+                        var left = document.createElement('div');
+                        left.className = 'flex items-center gap-2 min-w-0';
+                        if (item.image) {
+                            var img = document.createElement('img');
+                            img.src = item.image;
+                            img.alt = item.title || '';
+                            img.className = 'h-8 w-8 rounded border border-slate-200 object-cover shrink-0 bg-white';
+                            left.appendChild(img);
+                        }
+                        var titleSpan = document.createElement('span');
+                        titleSpan.className = 'truncate font-medium text-slate-700';
+                        titleSpan.textContent = item.title || '';
+                        left.appendChild(titleSpan);
+
+                        var right = document.createElement('div');
+                        right.className = 'shrink-0 flex items-center gap-3';
+                        var qtySpan = document.createElement('span');
+                        qtySpan.className = 'text-slate-500';
+                        qtySpan.textContent = '× ' + qty;
+                        var priceSpan = document.createElement('span');
+                        priceSpan.className = 'font-bold text-slate-800';
+                        priceSpan.textContent = '৳' + Math.round(lineTotal).toLocaleString();
+                        right.appendChild(qtySpan);
+                        right.appendChild(priceSpan);
+
+                        row.appendChild(left);
+                        row.appendChild(right);
+                        orderItemsList.appendChild(row);
+                    }
+
+                    subtotal += lineTotal;
                 });
 
                 currentSubtotal = subtotal;
@@ -868,6 +1014,8 @@
                 toggles.forEach(function(t) {
                     var card = t.closest('.cod-product-card');
                     var variantContainer = card ? card.querySelector('.cod-variant-container') : null;
+                    var qtyEl = card ? card.querySelector('.cod-qty-val') : null;
+                    var qty = parseInt((qtyEl && qtyEl.getAttribute('data-qty')) || '1', 10) || 1;
                     if (t.checked) {
                         if (card) {
                             card.classList.add('cod-card-selected');
@@ -880,7 +1028,8 @@
                             variantId: parseInt(t.getAttribute('data-variant-id'), 10),
                             price: parseFloat(t.getAttribute('data-price') || '0'),
                             title: t.getAttribute('data-title'),
-                            quantity: 1
+                            image: t.getAttribute('data-image') || '',
+                            quantity: qty
                         });
                     } else {
                         if (card) {
@@ -895,9 +1044,9 @@
                 rebuildFromItems(selected);
             }
 
-            if (shippingSelect) {
-                shippingSelect.addEventListener('change', updateTotals);
-            }
+            shippingRadios.forEach(function(radio) {
+                radio.addEventListener('change', updateTotals);
+            });
 
             if (toggles.length > 0) {
                 toggles.forEach(function(t) {
@@ -907,12 +1056,17 @@
             } else {
                 // Single product initial calculation
                 var existingInputs = itemsContainer.querySelectorAll('.cod-item-input');
-                var initialSubtotal = 0;
+                var initialItems = [];
                 existingInputs.forEach(function(inp) {
-                    initialSubtotal += parseFloat(inp.getAttribute('data-price') || '0');
+                    initialItems.push({
+                        variantId: inp.value,
+                        price: parseFloat(inp.getAttribute('data-price') || '0'),
+                        title: inp.getAttribute('data-title') || 'Product',
+                        image: '',
+                        quantity: 1
+                    });
                 });
-                currentSubtotal = initialSubtotal;
-                updateTotals();
+                rebuildFromItems(initialItems);
             }
 
             // Listen to event from external product-selector block

@@ -1,14 +1,22 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
     AlertCircle,
-    CheckCircle2,
+    ArrowRight,
+    Check,
     Clock,
+    CreditCard,
     Lock,
+    MapPin,
+    MessageSquare,
     Minus,
-    Package,
+    Phone,
     Plus,
+    RefreshCw,
     ShieldCheck,
+    ShoppingCart,
     Truck,
+    User,
+    Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
@@ -119,6 +127,7 @@ export default function CheckoutShow({
     const [transactionId, setTransactionId] = useState<string>('');
 
     // 6. Submission & Error States
+    const [agreedTerms, setAgreedTerms] = useState<boolean>(true);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [rateLimitMessage, setRateLimitMessage] = useState<string | null>(null);
@@ -276,18 +285,45 @@ export default function CheckoutShow({
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
 
-            <div className="bg-slate-50 py-6 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-4xl mx-auto">
-                {/* Header Brand & Trust Badges */}
-                <header className="mb-6 text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold mb-2 border border-emerald-200">
-                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        <span>১০০% বিশ্বস্ত ক্যাশ অন ডেলিভারি সার্ভিস</span>
+            <div className="bg-[#FAF7F2] py-8 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto">
+                {/* Top Header & 3-Step Progress Stepper matching Velure Reference */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-7">
+                    <div>
+                        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                            Checkout
+                        </h1>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                            Complete your order in a few simple steps.
+                        </p>
                     </div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                        অর্ডার সম্পূর্ণ করতে নিচের ফর্মটি পূরণ করুন
-                    </h1>
-                </header>
+
+                    {/* 3-Step Progress Stepper */}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 rounded-full bg-[#0B3B2E] text-white flex items-center justify-center shadow-xs">
+                                <ShoppingCart className="w-4 h-4" />
+                            </div>
+                            <span className="text-[11px] font-semibold text-[#0B3B2E] mt-1">Cart</span>
+                        </div>
+                        <div className="w-12 sm:w-20 h-0.5 bg-[#0B3B2E] -mt-4" />
+                        <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 rounded-full bg-[#F96D16] text-white flex items-center justify-center shadow-xs ring-4 ring-[#F96D16]/20">
+                                <MapPin className="w-4 h-4" />
+                            </div>
+                            <span className="text-[11px] font-bold text-[#EA580C] mt-1">Checkout</span>
+                        </div>
+                        <div className="w-12 sm:w-20 h-0.5 bg-stone-300 -mt-4" />
+                        <div className="flex flex-col items-center">
+                            <div className="w-8 h-8 rounded-full bg-stone-300 text-white flex items-center justify-center">
+                                <Check className="w-4 h-4" />
+                            </div>
+                            <span className="text-[11px] font-medium text-gray-400 mt-1 whitespace-nowrap">
+                                Order Complete
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Rate Limit Alert Banner */}
                 {rateLimitMessage && (
@@ -313,15 +349,10 @@ export default function CheckoutShow({
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* Left Column: Checkout Form */}
-                    <div className="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-                        <div className="flex items-center gap-2 pb-4 mb-5 border-b border-slate-100">
-                            <Truck className="w-5 h-5 text-primary-600" />
-                            <h2 className="text-lg font-bold text-slate-800">ডেলিভারি তথ্য দিন</h2>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+                    {/* Left Column: Unified 4-Step Checkout Form Card */}
+                    <div className="lg:col-span-8 bg-white rounded-3xl shadow-[0_2px_14px_rgba(15,23,42,0.04)] border border-stone-200/80 p-6 sm:p-8">
+                        <form onSubmit={handleSubmit} className="space-y-7">
                             {/* Invisible Honeypot Field */}
                             <input
                                 type="text"
@@ -338,173 +369,208 @@ export default function CheckoutShow({
                                 }}
                             />
 
-                            {/* Customer Name */}
+                            {/* Step 1: Contact Information */}
                             <div>
-                                <label htmlFor="checkout_customer_name" className="block text-sm font-medium text-slate-700 mb-1">
-                                    আপনার নাম <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="checkout_customer_name"
-                                    type="text"
-                                    required
-                                    aria-required="true"
-                                    aria-invalid={!!(errors.customer_name || errors.name)}
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    placeholder="আপনার সম্পূর্ণ নাম লিখুন"
-                                    className={`w-full px-3.5 py-2.5 rounded-xl border ${
-                                        errors.customer_name || errors.name
-                                            ? 'border-red-400 bg-red-50/30'
-                                            : 'border-slate-300'
-                                    } focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
-                                />
-                                {(errors.customer_name || errors.name) && (
-                                    <p className="text-xs text-red-600 mt-1">
-                                        {errors.customer_name || errors.name}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Customer Phone */}
-                            <div>
-                                <label htmlFor="checkout_customer_phone" className="block text-sm font-medium text-slate-700 mb-1">
-                                    মোবাইল নম্বর <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm font-medium" aria-hidden="true">
-                                        +88
-                                    </div>
-                                    <input
-                                        id="checkout_customer_phone"
-                                        type="tel"
-                                        required
-                                        aria-required="true"
-                                        aria-invalid={!!(errors.customer_phone || errors.phone)}
-                                        value={customerPhone}
-                                        onChange={(e) => setCustomerPhone(e.target.value)}
-                                        placeholder="017XXXXXXXX"
-                                        className={`w-full pl-12 pr-3.5 py-2.5 rounded-xl border ${
-                                            errors.customer_phone || errors.phone
-                                                ? 'border-red-400 bg-red-50/30'
-                                                : 'border-slate-300'
-                                        } focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
-                                    />
-                                </div>
-                                <p className="text-[11px] text-slate-500 mt-1">
-                                    ১১ ডিজিটের সচল মোবাইল নম্বর দিন (যেমন: 01712345678)
-                                </p>
-                                {(errors.customer_phone || errors.phone) && (
-                                    <p className="text-xs text-red-600 mt-1">
-                                        {errors.customer_phone || errors.phone}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Delivery Address */}
-                            <div>
-                                <label htmlFor="checkout_delivery_address" className="block text-sm font-medium text-slate-700 mb-1">
-                                    সম্পূর্ণ ঠিকানা <span className="text-red-500">*</span>
-                                </label>
-                                <textarea
-                                    id="checkout_delivery_address"
-                                    required
-                                    aria-required="true"
-                                    aria-invalid={!!(errors.delivery_address || errors.address)}
-                                    rows={2}
-                                    value={deliveryAddress}
-                                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                                    placeholder="বাসা নং, রোড নং, এলাকা/গ্রাম এর নাম লিখুন"
-                                    className={`w-full px-3.5 py-2.5 rounded-xl border ${
-                                        errors.delivery_address || errors.address
-                                            ? 'border-red-400 bg-red-50/30'
-                                            : 'border-slate-300'
-                                    } focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm`}
-                                />
-                                {(errors.delivery_address || errors.address) && (
-                                    <p className="text-xs text-red-600 mt-1">
-                                        {errors.delivery_address || errors.address}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Order Notes (Optional) */}
-                            <div>
-                                <label htmlFor="checkout_notes" className="block text-sm font-medium text-slate-700 mb-1">
-                                    বিশেষ নির্দেশনা{' '}
-                                    <span className="text-xs text-slate-400 font-normal">
-                                        (ঐচ্ছিক)
+                                <div className="flex items-center gap-2.5 mb-4">
+                                    <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                        1
                                     </span>
-                                </label>
-                                <input
-                                    id="checkout_notes"
-                                    type="text"
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="ডেলিভারি সম্পর্কিত কোনো বিশেষ নির্দেশনা থাকলে লিখুন"
-                                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-                                />
+                                    <h2 className="font-serif text-lg font-bold text-gray-900">
+                                        Contact Information
+                                    </h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="checkout_customer_name" className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Full Name <span className="text-[#F96D16]">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            <input
+                                                id="checkout_customer_name"
+                                                type="text"
+                                                required
+                                                aria-required="true"
+                                                aria-invalid={!!(errors.customer_name || errors.name)}
+                                                value={customerName}
+                                                onChange={(e) => setCustomerName(e.target.value)}
+                                                placeholder="আপনার সম্পূর্ণ নাম লিখুন"
+                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-[#FAF7F2]/50 ${
+                                                    errors.customer_name || errors.name
+                                                        ? 'border-rose-400 bg-rose-50/30'
+                                                        : 'border-stone-200'
+                                                } focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition`}
+                                            />
+                                        </div>
+                                        {(errors.customer_name || errors.name) && (
+                                            <p className="text-xs text-rose-600 mt-1">
+                                                {errors.customer_name || errors.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="checkout_customer_phone" className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Phone Number <span className="text-[#F96D16]">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            <input
+                                                id="checkout_customer_phone"
+                                                type="tel"
+                                                required
+                                                aria-required="true"
+                                                aria-invalid={!!(errors.customer_phone || errors.phone)}
+                                                value={customerPhone}
+                                                onChange={(e) => setCustomerPhone(e.target.value)}
+                                                placeholder="+880 17XXXXXXXX"
+                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-[#FAF7F2]/50 ${
+                                                    errors.customer_phone || errors.phone
+                                                        ? 'border-rose-400 bg-rose-50/30'
+                                                        : 'border-stone-200'
+                                                } focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition`}
+                                            />
+                                        </div>
+                                        {(errors.customer_phone || errors.phone) && (
+                                            <p className="text-xs text-rose-600 mt-1">
+                                                {errors.customer_phone || errors.phone}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Shipping Method Options (database-driven, 2 per row) */}
+                            {/* Step 2: Delivery Address */}
+                            <div className="pt-2 border-t border-stone-100">
+                                <div className="flex items-center gap-2.5 mb-4 pt-3">
+                                    <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                        2
+                                    </span>
+                                    <h2 className="font-serif text-lg font-bold text-gray-900">
+                                        Delivery Address
+                                    </h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="checkout_delivery_address" className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Address <span className="text-[#F96D16]">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
+                                            <input
+                                                id="checkout_delivery_address"
+                                                type="text"
+                                                required
+                                                aria-required="true"
+                                                aria-invalid={!!(errors.delivery_address || errors.address)}
+                                                value={deliveryAddress}
+                                                onChange={(e) => setDeliveryAddress(e.target.value)}
+                                                placeholder="বাসা নং, রোড নং, এলাকা/থানা, জেলা"
+                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-[#FAF7F2]/50 ${
+                                                    errors.delivery_address || errors.address
+                                                        ? 'border-rose-400 bg-rose-50/30'
+                                                        : 'border-stone-200'
+                                                } focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition`}
+                                            />
+                                        </div>
+                                        {(errors.delivery_address || errors.address) && (
+                                            <p className="text-xs text-rose-600 mt-1">
+                                                {errors.delivery_address || errors.address}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="checkout_notes" className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                            Delivery Note <span className="text-gray-400 font-normal">(Optional)</span>
+                                        </label>
+                                        <div className="relative">
+                                            <MessageSquare className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
+                                            <input
+                                                id="checkout_notes"
+                                                type="text"
+                                                value={notes}
+                                                onChange={(e) => setNotes(e.target.value)}
+                                                placeholder="E.g. Call before delivery"
+                                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-[#FAF7F2]/50 focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Step 3: Delivery Method */}
                             {shippingMethods.length > 0 && (
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-slate-700">
-                                        ডেলিভারি মেথড নির্বাচন করুন
-                                    </label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <div className="pt-2 border-t border-stone-100">
+                                    <div className="flex items-center gap-2.5 mb-4 pt-3">
+                                        <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                            3
+                                        </span>
+                                        <h2 className="font-serif text-lg font-bold text-gray-900">
+                                            Delivery Method
+                                        </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {shippingMethods.map((method: ShippingMethod) => {
                                             const isSelected = selectedShippingMethodId === method.id;
                                             return (
                                                 <div
                                                     key={method.id}
                                                     onClick={() => setSelectedShippingMethodId(method.id)}
-                                                    className={`h-full p-3 rounded-xl border text-sm cursor-pointer transition-all flex flex-col justify-between gap-2 ${
+                                                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
                                                         isSelected
-                                                            ? 'border-primary-600 bg-primary-50/40 ring-1 ring-primary-500'
-                                                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                                                            ? 'border-[#F96D16] bg-orange-50/30 ring-1 ring-[#F96D16]'
+                                                            : 'border-stone-200 hover:border-stone-300 bg-white'
                                                     }`}
                                                 >
-                                                    <div className="flex items-start gap-2.5">
+                                                    <div className="flex items-center gap-3 min-w-0">
                                                         <div
-                                                            className={`w-4 h-4 mt-0.5 shrink-0 rounded-full border flex items-center justify-center ${
+                                                            className={`w-4 h-4 shrink-0 rounded-full border flex items-center justify-center ${
                                                                 isSelected
-                                                                    ? 'border-primary-600 bg-primary-600'
-                                                                    : 'border-slate-300 bg-white'
+                                                                    ? 'border-[#F96D16] bg-[#F96D16]'
+                                                                    : 'border-stone-300 bg-white'
                                                             }`}
                                                         >
                                                             {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                                         </div>
+                                                        <Truck className="w-5 h-5 text-gray-600 shrink-0" />
                                                         <div className="min-w-0">
-                                                            <div className="font-semibold text-slate-900 leading-snug">{method.name}</div>
-                                                            {method.description && (
-                                                                <div className="text-xs text-slate-500 mt-0.5">{method.description}</div>
-                                                            )}
-                                                            {method.delivery_time && (
-                                                                <div className="text-[11px] text-slate-400 mt-0.5">
-                                                                    আনুমানিক সময়: {method.delivery_time}
-                                                                </div>
-                                                            )}
+                                                            <div className="text-xs sm:text-sm font-bold text-gray-900 truncate">
+                                                                {method.name}
+                                                            </div>
+                                                            <div className="text-[11px] text-gray-500 truncate">
+                                                                {method.delivery_time || method.description || 'Standard delivery'}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-sm font-bold text-slate-900 pl-7">
-                                                        {formatBdt(method.rate)}
+                                                    <div className="text-xs sm:text-sm font-bold text-[#0B3B2E] shrink-0">
+                                                        {Number(method.rate) === 0 ? 'Free' : formatBdt(method.rate)}
                                                     </div>
                                                 </div>
                                             );
                                         })}
                                     </div>
                                     {errors.shipping_method_id && (
-                                        <p className="text-xs text-red-600 mt-1">{errors.shipping_method_id}</p>
+                                        <p className="text-xs text-rose-600 mt-1">{errors.shipping_method_id}</p>
                                     )}
                                 </div>
                             )}
 
-                            {/* Payment Method Selection */}
-                            <div className="pt-2 space-y-2">
-                                <label className="block text-sm font-medium text-slate-700">
-                                    পেমেন্ট পদ্ধতি নির্বাচন করুন
-                                </label>
-                                <div className="space-y-2">
+                            {/* Step 4: Payment Method */}
+                            <div className="pt-2 border-t border-stone-100">
+                                <div className="flex items-center gap-2.5 mb-4 pt-3">
+                                    <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                        {shippingMethods.length > 0 ? '4' : '3'}
+                                    </span>
+                                    <h2 className="font-serif text-lg font-bold text-gray-900">
+                                        Payment Method
+                                    </h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {activePaymentMethods.map((pm: PaymentMethod) => {
                                         const isSelected = selectedPaymentMethod === pm.code;
                                         return (
@@ -514,327 +580,332 @@ export default function CheckoutShow({
                                                     setSelectedPaymentMethod(pm.code);
                                                     trackAddPaymentInfo(pm.code, grandTotal);
                                                 }}
-                                                className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                                                className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-2.5 ${
                                                     isSelected
-                                                        ? 'border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500'
-                                                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                                                        ? 'border-[#F96D16] bg-orange-50/30 ring-1 ring-[#F96D16]'
+                                                        : 'border-stone-200 hover:border-stone-300 bg-white'
                                                 }`}
                                             >
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div
-                                                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                                                                isSelected
-                                                                    ? 'border-emerald-600 bg-emerald-600'
-                                                                    : 'border-slate-300 bg-white'
-                                                            }`}
-                                                        >
-                                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                                        </div>
-                                                        <span className="text-sm font-bold text-slate-900">
+                                                <div
+                                                    className={`w-4 h-4 mt-0.5 shrink-0 rounded-full border flex items-center justify-center ${
+                                                        isSelected
+                                                            ? 'border-[#F96D16] bg-[#F96D16]'
+                                                            : 'border-stone-300 bg-white'
+                                                    }`}
+                                                >
+                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-1.5">
+                                                        {pm.code === 'cod' ? (
+                                                            <Wallet className="w-4 h-4 text-[#0B3B2E] shrink-0" />
+                                                        ) : (
+                                                            <CreditCard className="w-4 h-4 text-[#F96D16] shrink-0" />
+                                                        )}
+                                                        <span className="text-xs font-bold text-gray-900 truncate">
                                                             {pm.name}
                                                         </span>
                                                     </div>
-                                                    {pm.code === 'cod' ? (
-                                                        <span className="text-xs bg-emerald-200/60 text-emerald-800 font-semibold px-2 py-0.5 rounded-md">
-                                                            হাতে পেয়ে টাকা দিন
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-md">
-                                                            ম্যানুয়াল পেমেন্ট
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {pm.description && (
-                                                    <p className="text-xs text-slate-500 mt-1.5 ml-6.5">
-                                                        {pm.description}
+                                                    <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">
+                                                        {pm.description || (pm.code === 'cod' ? 'Pay when you receive your order' : 'Manual mobile/online payment')}
                                                     </p>
-                                                )}
-
-                                                {isSelected && pm.requires_transaction_id && (
-                                                    <div className="mt-3 pt-3 border-t border-emerald-200/60 ml-6.5 space-y-2">
-                                                        {pm.account_number && (
-                                                            <div className="text-xs font-semibold text-slate-800">
-                                                                একাউন্ট নাম্বার: <span className="font-mono text-emerald-700 font-bold">{pm.account_number}</span>
-                                                            </div>
-                                                        )}
-                                                        {pm.instructions && (
-                                                            <div className="text-xs text-slate-600 bg-white/80 p-2 rounded-lg border border-slate-200">
-                                                                {pm.instructions}
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <label htmlFor="checkout_transaction_id" className="block text-xs font-medium text-slate-700 mb-1">
-                                                                ট্রানজেকশন আইডি (TrxID) <span className="text-red-500">*</span>
-                                                            </label>
-                                                            <input
-                                                                id="checkout_transaction_id"
-                                                                type="text"
-                                                                aria-required="true"
-                                                                value={transactionId}
-                                                                onChange={(e) => setTransactionId(e.target.value)}
-                                                                placeholder="যেমন: 8N7A6D..."
-                                                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 text-sm font-mono uppercase bg-white"
-                                                            />
-                                                            {errors.payment_transaction_id && (
-                                                                <p className="text-xs text-red-600 mt-1">
-                                                                    {errors.payment_transaction_id}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                </div>
                                             </div>
                                         );
                                     })}
                                 </div>
+
+                                {/* Transaction ID Details if Selected Method Requires It */}
+                                {activePaymentMethods.map((pm: PaymentMethod) => {
+                                    if (selectedPaymentMethod !== pm.code || !pm.requires_transaction_id) return null;
+                                    return (
+                                        <div
+                                            key={`trx-${pm.id}`}
+                                            className="mt-3 p-4 rounded-xl bg-[#FAF7F2] border border-stone-200 space-y-2"
+                                        >
+                                            {pm.account_number && (
+                                                <div className="text-xs font-semibold text-gray-800">
+                                                    Account Number:{' '}
+                                                    <span className="font-mono text-[#0B3B2E] font-bold">{pm.account_number}</span>
+                                                </div>
+                                            )}
+                                            {pm.instructions && (
+                                                <div className="text-xs text-gray-600 bg-white p-2.5 rounded-lg border border-stone-200">
+                                                    {pm.instructions}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <label htmlFor="checkout_transaction_id" className="block text-xs font-semibold text-gray-700 mb-1">
+                                                    Transaction ID (TrxID) <span className="text-[#F96D16]">*</span>
+                                                </label>
+                                                <input
+                                                    id="checkout_transaction_id"
+                                                    type="text"
+                                                    aria-required="true"
+                                                    value={transactionId}
+                                                    onChange={(e) => setTransactionId(e.target.value)}
+                                                    placeholder="e.g. 8N7A6D..."
+                                                    className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] text-sm font-mono uppercase bg-white"
+                                                />
+                                                {errors.payment_transaction_id && (
+                                                    <p className="text-xs text-rose-600 mt-1">
+                                                        {errors.payment_transaction_id}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
                                 {activePaymentMethods.length === 0 && (
-                                    <p className="text-xs text-red-600">
+                                    <p className="text-xs text-rose-600 mt-2">
                                         কোনো পেমেন্ট পদ্ধতি সক্রিয় নেই। অ্যাডমিন প্যানেল থেকে পেমেন্ট পদ্ধতি সক্রিয় করুন।
                                     </p>
                                 )}
                                 {errors.payment_method && (
-                                    <p className="text-xs text-red-600 mt-1">{errors.payment_method}</p>
+                                    <p className="text-xs text-rose-600 mt-1">{errors.payment_method}</p>
                                 )}
                             </div>
 
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || activePaymentMethods.length === 0}
-                                className="w-full mt-4 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                        <span>অর্ডার প্রসেস হচ্ছে...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle2 className="w-5 h-5" />
-                                        <span>অর্ডার কনফার্ম করুন — {formatBdt(grandTotal)}</span>
-                                    </>
-                                )}
-                            </button>
+                            {/* Bottom Terms & Place Order Row */}
+                            <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <label className="flex items-center gap-2.5 text-xs text-gray-600 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={agreedTerms}
+                                        onChange={(e) => setAgreedTerms(e.target.checked)}
+                                        className="rounded border-stone-300 text-[#F96D16] focus:ring-[#F96D16] accent-[#F96D16]"
+                                    />
+                                    <span>
+                                        I agree to the{' '}
+                                        <Link href="/page/terms-conditions" className="text-[#0B3B2E] font-semibold underline">
+                                            Terms &amp; Conditions
+                                        </Link>{' '}
+                                        and{' '}
+                                        <Link href="/page/privacy-policy" className="text-[#0B3B2E] font-semibold underline">
+                                            Privacy Policy
+                                        </Link>
+                                        .
+                                    </span>
+                                </label>
 
-                            <p className="text-center text-xs text-slate-500 flex items-center justify-center gap-1.5 mt-2">
-                                <Lock className="w-3.5 h-3.5 text-slate-400" />
-                                <span>আপনার তথ্য সম্পূর্ণ নিরাপদ ও গোপন রাখা হবে</span>
-                            </p>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || activePaymentMethods.length === 0 || !agreedTerms}
+                                    className="inline-flex items-center justify-center gap-2 py-3 px-7 bg-[#F96D16] hover:bg-[#EA580C] text-white font-bold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                            <span>Processing...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>Place Order ({formatBdt(grandTotal)})</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </form>
                     </div>
 
-                    {/* Right Column: Product Card & Order Summary */}
-                    <div className="lg:col-span-5 space-y-4">
-                        {/* Product / Cart Items Card */}
-                        {isCartMode && cart ? (
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                                    <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-                                        <Package className="w-4 h-4 text-emerald-600" />
-                                        <span>অর্ডারের পণ্যসমূহ ({cart.total_items} টি)</span>
-                                    </h3>
-                                    <Link
-                                        href="/cart"
-                                        className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
-                                    >
-                                        কার্ট পরিবর্তন
-                                    </Link>
-                                </div>
+                    {/* Right Column: Order Summary & Trust Card (4 cols) */}
+                    <div className="lg:col-span-4 space-y-5">
+                        {/* Unified Order Summary Card */}
+                        <div className="bg-white rounded-3xl shadow-[0_2px_14px_rgba(15,23,42,0.04)] border border-stone-200/80 p-6">
+                            <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-stone-100">
+                                <h3 className="font-serif text-lg font-bold text-gray-900">Order Summary</h3>
+                                <span className="text-xs font-medium text-gray-500">
+                                    {isCartMode && cart ? `${cart.total_items} Items` : `${quantity} Item${quantity > 1 ? 's' : ''}`}
+                                </span>
+                            </div>
 
-                                <div className="space-y-3 divide-y divide-slate-100">
+                            {isCartMode && cart ? (
+                                <div className="space-y-3.5 divide-y divide-stone-100">
                                     {cart.items.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="pt-3 first:pt-0 flex items-center justify-between gap-3"
+                                            className="pt-3.5 first:pt-0 flex items-center justify-between gap-3"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <SafeImage
-                                                    src={item.image_url}
-                                                    alt={item.product_title}
-                                                    className="w-14 h-14 object-cover rounded-xl border border-slate-100 shrink-0"
-                                                    fallbackIconSize="w-5 h-5"
-                                                    fallbackText=""
-                                                    fallbackClassName="w-14 h-14 rounded-xl border border-slate-100 shrink-0"
-                                                />
+                                                <div className="w-14 h-14 rounded-xl bg-[#F6EDE3] overflow-hidden shrink-0">
+                                                    <SafeImage
+                                                        src={item.image_url}
+                                                        alt={item.product_title}
+                                                        className="w-full h-full object-cover"
+                                                        fallbackIconSize="w-5 h-5"
+                                                        fallbackText=""
+                                                        fallbackClassName="w-14 h-14 rounded-xl shrink-0"
+                                                    />
+                                                </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="text-xs font-bold text-slate-900 truncate">
+                                                    <h4 className="text-xs font-bold text-gray-900 truncate">
                                                         {item.product_title}
                                                     </h4>
                                                     {item.variant_name && (
-                                                        <p className="text-[11px] text-slate-500 font-medium">
-                                                            ভ্যারিয়েন্ট: {item.variant_name}
+                                                        <p className="text-[11px] text-gray-500">
+                                                            {item.variant_name}
                                                         </p>
                                                     )}
-                                                    <p className="text-xs text-slate-600 mt-0.5">
-                                                        {formatBdt(item.unit_price)} × {item.quantity}
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">
+                                                        Qty: {item.quantity} × {formatBdt(item.unit_price)}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <span className="text-xs font-black text-slate-900 shrink-0">
+                                            <span className="text-xs sm:text-sm font-bold text-gray-900 shrink-0">
                                                 {formatBdt(item.line_total)}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        ) : product ? (
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                                <h3 className="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                    <Package className="w-4 h-4 text-primary-600" />
-                                    <span>পণ্য বিবরণ</span>
-                                </h3>
+                            ) : product ? (
+                                <div className="space-y-4">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-16 h-16 rounded-xl bg-[#F6EDE3] overflow-hidden shrink-0">
+                                                <SafeImage
+                                                    src={primaryImage ? (primaryImage.thumb_url || primaryImage.url) : null}
+                                                    alt={primaryImage?.alt_text || product.title}
+                                                    className="w-full h-full object-cover"
+                                                    fallbackIconSize="w-6 h-6"
+                                                    fallbackText=""
+                                                />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate">
+                                                    {product.title}
+                                                </h4>
+                                                {selectedVariant && (
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">
+                                                        {selectedVariant.name}
+                                                    </p>
+                                                )}
 
-                                <div className="flex gap-3.5 items-start">
-                                    <div className="w-20 h-20 rounded-xl border border-slate-100 shrink-0 overflow-hidden">
-                                        <SafeImage
-                                            src={primaryImage ? (primaryImage.thumb_url || primaryImage.url) : null}
-                                            alt={primaryImage?.alt_text || product.title}
-                                            className="w-full h-full object-cover"
-                                            fallbackIconSize="w-8 h-8"
-                                            fallbackText=""
-                                        />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-bold text-slate-900 leading-snug truncate">
-                                            {product.title}
-                                        </h4>
-                                        <div className="flex items-baseline gap-2 mt-1">
-                                            <span className="text-base font-extrabold text-emerald-600">
-                                                {formatBdt(unitPrice)}
-                                            </span>
-                                            {selectedVariant?.sale_price && (
-                                                <span className="text-xs text-slate-400 line-through">
-                                                    {formatBdt(selectedVariant.regular_price)}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="mt-1">
-                                            <span className="inline-block px-2 py-0.5 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-md">
-                                                স্টকে আছে
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Multi-Variant Selector */}
-                                {product.has_variants && product.variants.length > 1 && (
-                                    <div className="mt-4 pt-4 border-t border-slate-100">
-                                        <label className="block text-xs font-semibold text-slate-700 mb-2">
-                                            ভ্যারিয়েন্ট নির্বাচন করুন:
-                                        </label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {product.variants.map((v) => {
-                                                const isSelected = selectedVariant?.id === v.id;
-                                                const isOutOfStock =
-                                                    v.manage_stock && v.stock_quantity <= 0;
-
-                                                return (
+                                                {/* Inline Quantity Stepper */}
+                                                <div className="inline-flex items-center border border-stone-200 rounded-full bg-[#FAF7F2] px-1 py-0.5 mt-2">
                                                     <button
-                                                        key={v.id}
                                                         type="button"
-                                                        disabled={isOutOfStock}
-                                                        onClick={() => setSelectedVariant(v)}
-                                                        className={`p-2.5 text-left rounded-xl border text-xs transition-all ${
-                                                            isSelected
-                                                                ? 'border-emerald-600 bg-emerald-50/40 text-emerald-900 ring-2 ring-emerald-500/20 font-bold'
-                                                                : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                                                        } ${isOutOfStock ? 'opacity-40 cursor-not-allowed bg-slate-50' : 'cursor-pointer'}`}
+                                                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                                                        disabled={quantity <= 1}
+                                                        aria-label="Decrease quantity"
+                                                        className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-40"
                                                     >
-                                                        <div className="truncate font-semibold">
-                                                            {v.name}
-                                                        </div>
-                                                        <div className="text-[11px] text-slate-500 mt-0.5">
-                                                            {formatBdt(v.sale_price ?? v.regular_price)}
-                                                        </div>
-                                                        {isOutOfStock && (
-                                                            <div className="text-[10px] text-red-500 font-bold mt-0.5">
-                                                                স্টক শেষ
-                                                            </div>
-                                                        )}
+                                                        <Minus className="w-3 h-3" />
                                                     </button>
-                                                );
-                                            })}
+                                                    <span className="w-7 text-center text-xs font-bold text-gray-900">
+                                                        {quantity}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setQuantity((q) => q + 1)}
+                                                        disabled={
+                                                            selectedVariant?.manage_stock
+                                                                ? quantity >= selectedVariant.stock_quantity
+                                                                : false
+                                                        }
+                                                        aria-label="Increase quantity"
+                                                        className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-40"
+                                                    >
+                                                        <Plus className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-
-                                {/* Quantity Control */}
-                                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                                    <span className="text-sm font-medium text-slate-700">পরিমাণ:</span>
-                                    <div className="inline-flex items-center border border-slate-200 rounded-xl bg-slate-50 p-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                                            disabled={quantity <= 1}
-                                            aria-label="পরিমাণ কমান"
-                                            className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                                        >
-                                            <Minus className="w-3.5 h-3.5" aria-hidden="true" />
-                                        </button>
-                                        <span className="w-10 text-center font-bold text-sm text-slate-800" aria-live="polite">
-                                            {quantity}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => setQuantity((q) => q + 1)}
-                                            disabled={
-                                                selectedVariant?.manage_stock
-                                                    ? quantity >= selectedVariant.stock_quantity
-                                                    : false
-                                            }
-                                            aria-label="পরিমাণ বাড়ান"
-                                            className="p-1 rounded-lg hover:bg-white text-slate-600 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                                        >
-                                            <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
-
-                        {/* Order Calculation Summary */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                            <h3 className="text-base font-bold text-slate-800 mb-3">
-                                অর্ডারের হিসাব
-                            </h3>
-
-                            <div className="space-y-2.5 text-sm">
-                                <div className="flex justify-between text-slate-600">
-                                    <span>সাবটোটাল ({quantity} টি)</span>
-                                    <span className="font-semibold text-slate-900">
-                                        {formatBdt(subtotal)}
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between text-slate-600 items-center">
-                                    <div className="flex items-center gap-1.5">
-                                        <span>ডেলিভারি চার্জ</span>
-                                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
-                                            {selectedMethodName}
+                                        <span className="text-sm font-bold text-gray-900 shrink-0">
+                                            {formatBdt(unitPrice * quantity)}
                                         </span>
                                     </div>
-                                    <span className="font-semibold text-slate-900">
-                                        {formatBdt(shippingFee)}
+
+                                    {/* Multi-Variant Selector */}
+                                    {product.has_variants && product.variants.length > 1 && (
+                                        <div className="pt-3 border-t border-stone-100">
+                                            <label className="block text-[11px] font-semibold text-gray-500 mb-2">
+                                                Select Variant:
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {product.variants.map((v) => {
+                                                    const isSelected = selectedVariant?.id === v.id;
+                                                    const isOutOfStock = v.manage_stock && v.stock_quantity <= 0;
+                                                    return (
+                                                        <button
+                                                            key={v.id}
+                                                            type="button"
+                                                            disabled={isOutOfStock}
+                                                            onClick={() => setSelectedVariant(v)}
+                                                            className={`p-2 text-left rounded-xl border text-xs transition-all ${
+                                                                isSelected
+                                                                    ? 'border-[#F96D16] bg-orange-50/40 text-[#EA580C] font-bold'
+                                                                    : 'border-stone-200 hover:border-stone-300 text-gray-700'
+                                                            } ${isOutOfStock ? 'opacity-40 cursor-not-allowed bg-stone-50' : 'cursor-pointer'}`}
+                                                        >
+                                                            <div className="truncate font-semibold">{v.name}</div>
+                                                            <div className="text-[11px] text-gray-500 mt-0.5">
+                                                                {formatBdt(v.sale_price ?? v.regular_price)}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : null}
+
+                            {/* Totals Breakdown */}
+                            <div className="mt-5 pt-4 border-t border-stone-100 space-y-2.5 text-xs sm:text-sm">
+                                <div className="flex justify-between text-gray-600">
+                                    <span>Subtotal</span>
+                                    <span className="font-semibold text-gray-900">{formatBdt(subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-600 items-center">
+                                    <span className="truncate pr-2">
+                                        Delivery Charge ({selectedMethodName})
+                                    </span>
+                                    <span className="font-semibold text-gray-900 shrink-0">
+                                        {shippingFee === 0 ? 'Free' : formatBdt(shippingFee)}
                                     </span>
                                 </div>
-
-                                <div className="pt-3 border-t border-slate-100 flex justify-between items-baseline">
-                                    <span className="text-base font-bold text-slate-900">
-                                        মোট প্রদেয় টাকা
+                                <div className="pt-3 border-t border-stone-100 flex justify-between items-baseline">
+                                    <span className="text-sm sm:text-base font-bold text-gray-900">
+                                        Total Payable
                                     </span>
-                                    <span className="text-xl font-extrabold text-emerald-600">
+                                    <span className="text-xl font-extrabold text-[#EA580C]">
                                         {formatBdt(grandTotal)}
                                     </span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div className="mt-4 p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2 text-xs text-slate-600">
-                                <Clock className="w-4 h-4 text-slate-400 shrink-0" />
-                                <span>
-                                    ডেলিভারি সময়: <strong>{deliveryTime}</strong>
-                                </span>
+                        {/* Soft Green Trust Card matching Velure Reference */}
+                        <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-5 space-y-3.5">
+                            <div className="flex items-start gap-3">
+                                <Truck className="w-5 h-5 text-[#0B3B2E] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-xs font-bold text-gray-900">Fast Delivery</p>
+                                    <p className="text-[11px] text-gray-600">
+                                        Estimated: {deliveryTime}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <RefreshCw className="w-5 h-5 text-[#0B3B2E] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-xs font-bold text-gray-900">Easy Return</p>
+                                    <p className="text-[11px] text-gray-600">
+                                        7 days hassle-free return
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <ShieldCheck className="w-5 h-5 text-[#0B3B2E] shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-xs font-bold text-gray-900">Secure Payment</p>
+                                    <p className="text-[11px] text-gray-600 flex items-center gap-1">
+                                        <Lock className="w-3 h-3 text-[#0B3B2E]" />
+                                        <span>100% secure &amp; multiple payment options</span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

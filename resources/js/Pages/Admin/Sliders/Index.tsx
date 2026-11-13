@@ -1,12 +1,14 @@
-import { Head, router } from '@inertiajs/react';
+﻿import { Head, router } from '@inertiajs/react';
 import {
     AlertCircle,
     ExternalLink,
     Images,
     Pencil,
     Plus,
+    Save,
     Search,
     Smartphone,
+    Sparkles,
     Trash2,
     X,
 } from 'lucide-react';
@@ -17,8 +19,25 @@ import { Button } from '@/Shared/Button';
 import { Pagination } from '@/Shared/Pagination';
 import type { Slider, SliderIndexProps } from '@/types';
 
-export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
+export default function SliderIndex({ sliders, defaultHero, filters }: SliderIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
+
+    // Default Fallback Hero State
+    const [heroBadge, setHeroBadge] = useState(defaultHero.badge_text);
+    const [heroTitle, setHeroTitle] = useState(defaultHero.title);
+    const [heroDescription, setHeroDescription] = useState(defaultHero.description);
+    const [heroPrimaryText, setHeroPrimaryText] = useState(defaultHero.primary_button_text);
+    const [heroPrimaryUrl, setHeroPrimaryUrl] = useState(defaultHero.primary_button_url);
+    const [heroSecondaryText, setHeroSecondaryText] = useState(defaultHero.secondary_button_text);
+    const [heroSecondaryUrl, setHeroSecondaryUrl] = useState(defaultHero.secondary_button_url);
+    const [heroCardTitle, setHeroCardTitle] = useState(defaultHero.card_title);
+    const [heroCardSubtitle, setHeroCardSubtitle] = useState(defaultHero.card_subtitle);
+    const [heroImage, setHeroImage] = useState<File | null>(null);
+    const [heroImagePreview, setHeroImagePreview] = useState<string | null>(defaultHero.image_url || null);
+    const [removeHeroImage, setRemoveHeroImage] = useState(false);
+    const [isSavingHero, setIsSavingHero] = useState(false);
+    const [heroErrors, setHeroErrors] = useState<Record<string, string>>({});
+    const [heroSaved, setHeroSaved] = useState(false);
 
     // Create Modal State
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -201,6 +220,52 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
         router.post(`/admin/sliders/${slider.id}/toggle`, {}, { preserveScroll: true });
     };
 
+    const handleHeroImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setHeroImage(file);
+            setHeroImagePreview(URL.createObjectURL(file));
+            setRemoveHeroImage(false);
+        }
+    };
+
+    const handleDefaultHeroSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        setIsSavingHero(true);
+        setHeroErrors({});
+        setHeroSaved(false);
+
+        const formData = new FormData();
+        formData.append('badge_text', heroBadge);
+        formData.append('title', heroTitle);
+        formData.append('description', heroDescription);
+        formData.append('primary_button_text', heroPrimaryText);
+        formData.append('primary_button_url', heroPrimaryUrl);
+        formData.append('secondary_button_text', heroSecondaryText);
+        formData.append('secondary_button_url', heroSecondaryUrl);
+        formData.append('card_title', heroCardTitle);
+        formData.append('card_subtitle', heroCardSubtitle);
+        formData.append('remove_image', removeHeroImage ? '1' : '0');
+        if (heroImage) {
+            formData.append('image', heroImage);
+        }
+
+        router.post('/admin/sliders/default-hero', formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setHeroImage(null);
+                setRemoveHeroImage(false);
+                setHeroSaved(true);
+            },
+            onError: (errs) => {
+                setHeroErrors(errs);
+            },
+            onFinish: () => {
+                setIsSavingHero(false);
+            },
+        });
+    };
+
     return (
         <AdminLayout>
             <Head title="Homepage Sliders" />
@@ -210,7 +275,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                            <Images className="w-7 h-7 text-indigo-600" />
+                            <Images className="w-7 h-7 text-primary-600" />
                             Homepage Hero Sliders
                         </h1>
                         <p className="mt-1 text-sm text-gray-500">
@@ -239,7 +304,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                             placeholder="Search slides..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                     </form>
                     <div className="text-sm text-gray-500 w-full sm:w-auto text-right">
@@ -301,9 +366,9 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                             </td>
                                             <td className="px-6 py-4">
                                                 {slider.button_text ? (
-                                                    <div className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-indigo-50 text-indigo-700">
+                                                    <div className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded bg-primary-50 text-primary-700">
                                                         {slider.button_text}
-                                                        {slider.link_url && <ExternalLink className="w-3 h-3 ml-0.5 text-indigo-400" />}
+                                                        {slider.link_url && <ExternalLink className="w-3 h-3 ml-0.5 text-primary-400" />}
                                                     </div>
                                                 ) : (
                                                     <span className="text-gray-400 text-xs italic">No CTA</span>
@@ -332,7 +397,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                                     <button
                                                         type="button"
                                                         onClick={() => openEditModal(slider)}
-                                                        className="p-1.5 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                                                        className="p-1.5 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition"
                                                         title="Edit Slide"
                                                     >
                                                         <Pencil className="w-4 h-4" />
@@ -369,6 +434,244 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                         </div>
                     )}
                 </div>
+
+                {/* Default Fallback Hero Settings (Shown when no active slides exist) */}
+                <form
+                    onSubmit={handleDefaultHeroSubmit}
+                    className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"
+                >
+                    <div className="px-6 py-4 bg-[#FAF7F2] border-b border-stone-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-[#0B3B2E] text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <Sparkles className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-bold text-gray-900">
+                                    Default Fallback Hero Banner
+                                </h2>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    Displayed on the homepage when no active hero slides are added above.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {heroSaved && (
+                                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                                    Saved
+                                </span>
+                            )}
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                disabled={isSavingHero}
+                                className="inline-flex items-center gap-2"
+                            >
+                                <Save className="w-4 h-4" />
+                                {isSavingHero ? 'Saving...' : 'Save Default Hero'}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div className="lg:col-span-8 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Eyebrow Badge Text
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroBadge}
+                                        onChange={(e) => setHeroBadge(e.target.value)}
+                                        placeholder="NEW COLLECTION"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                    {heroErrors.badge_text && (
+                                        <p className="mt-1 text-xs text-rose-600">{heroErrors.badge_text}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Hero Heading <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={heroTitle}
+                                        onChange={(e) => setHeroTitle(e.target.value)}
+                                        placeholder="Modern Fashion for Everyday Life"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                    {heroErrors.title && (
+                                        <p className="mt-1 text-xs text-rose-600">{heroErrors.title}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Hero Description
+                                </label>
+                                <textarea
+                                    rows={2}
+                                    value={heroDescription}
+                                    onChange={(e) => setHeroDescription(e.target.value)}
+                                    placeholder="Discover premium clothing, shoes, watches and accessories..."
+                                    className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                />
+                                {heroErrors.description && (
+                                    <p className="mt-1 text-xs text-rose-600">{heroErrors.description}</p>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Primary Button Text
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroPrimaryText}
+                                        onChange={(e) => setHeroPrimaryText(e.target.value)}
+                                        placeholder="Shop Now"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Primary Button Link
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroPrimaryUrl}
+                                        onChange={(e) => setHeroPrimaryUrl(e.target.value)}
+                                        placeholder="/shop"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Secondary Button Text
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroSecondaryText}
+                                        onChange={(e) => setHeroSecondaryText(e.target.value)}
+                                        placeholder="Explore Collection"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Secondary Button Link
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroSecondaryUrl}
+                                        onChange={(e) => setHeroSecondaryUrl(e.target.value)}
+                                        placeholder="/shop?sort=latest"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Right Arch Card Title (when no image)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroCardTitle}
+                                        onChange={(e) => setHeroCardTitle(e.target.value)}
+                                        placeholder="Curated Essentials"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Right Arch Card Subtitle (when no image)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={heroCardSubtitle}
+                                        onChange={(e) => setHeroCardSubtitle(e.target.value)}
+                                        placeholder="100% Authentic · Fast Cash on Delivery"
+                                        className="w-full px-3.5 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="lg:col-span-4 space-y-3">
+                            <label className="block text-xs font-semibold text-gray-700">
+                                Default Hero Image (Optional)
+                            </label>
+                            <div className="rounded-xl border border-dashed border-stone-300 bg-[#FAF7F2] p-4 text-center">
+                                {heroImagePreview ? (
+                                    <div className="space-y-3">
+                                        <div className="mx-auto w-44 h-40 rounded-t-full overflow-hidden border border-stone-200 bg-[#F5EFE6]">
+                                            <img
+                                                src={heroImagePreview}
+                                                alt="Default hero preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <label className="cursor-pointer px-3 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-semibold text-gray-700 hover:bg-stone-50 transition">
+                                                Change Image
+                                                <input
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,image/webp"
+                                                    onChange={handleHeroImageChange}
+                                                    className="sr-only"
+                                                />
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setHeroImage(null);
+                                                    setHeroImagePreview(null);
+                                                    setRemoveHeroImage(true);
+                                                }}
+                                                className="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <label className="cursor-pointer flex flex-col items-center justify-center py-6 space-y-2">
+                                        <div className="w-11 h-11 rounded-full bg-[#0B3B2E]/10 text-[#0B3B2E] flex items-center justify-center">
+                                            <Images className="w-5 h-5" />
+                                        </div>
+                                        <span className="text-xs font-semibold text-gray-800">
+                                            Upload Default Hero Image
+                                        </span>
+                                        <span className="text-[11px] text-gray-500">
+                                            JPG, PNG or WebP (max 5MB)
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleHeroImageChange}
+                                            className="sr-only"
+                                        />
+                                    </label>
+                                )}
+                            </div>
+                            {heroErrors.image && (
+                                <p className="text-xs text-rose-600">{heroErrors.image}</p>
+                            )}
+                            <p className="text-[11px] text-gray-500 leading-relaxed">
+                                If an image is uploaded, it fills the right-side arch frame on the homepage fallback hero. Otherwise, the cream brand card is shown.
+                            </p>
+                        </div>
+                    </div>
+                </form>
             </div>
 
             {/* Create Modal */}
@@ -411,7 +714,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                     value={createTitle}
                                     onChange={(e) => setCreateTitle(e.target.value)}
                                     placeholder="e.g. বিশেষ অফার - ৩০% পর্যন্ত ছাড়!"
-                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 />
                             </div>
 
@@ -424,7 +727,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                     value={createSubtitle}
                                     onChange={(e) => setCreateSubtitle(e.target.value)}
                                     placeholder="e.g. সীমিত সময়ের অফার। দ্রুত অর্ডার করুন!"
-                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 />
                             </div>
 
@@ -439,7 +742,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         accept="image/jpeg,image/png,image/webp"
                                         required
                                         onChange={handleCreateDesktopImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                                     />
                                     <p className="text-xs text-gray-400 mt-1">Recommended: 1920x600px (WebP/JPEG/PNG)</p>
                                     {createImagePreview && (
@@ -461,7 +764,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
                                         onChange={handleCreateMobileImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                                     />
                                     <p className="text-xs text-gray-400 mt-1">Recommended: 768x600px (WebP/JPEG/PNG)</p>
                                     {createMobileImagePreview && (
@@ -487,7 +790,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         value={createButtonText}
                                         onChange={(e) => setCreateButtonText(e.target.value)}
                                         placeholder="e.g. অর্ডার করুন / Shop Now"
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 </div>
 
@@ -500,7 +803,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         value={createLinkUrl}
                                         onChange={(e) => setCreateLinkUrl(e.target.value)}
                                         placeholder="e.g. /shop or /product/slug"
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 </div>
                             </div>
@@ -516,7 +819,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         min="0"
                                         value={createSortOrder}
                                         onChange={(e) => setCreateSortOrder(e.target.value)}
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 </div>
 
@@ -526,7 +829,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         id="create_is_active"
                                         checked={createIsActive}
                                         onChange={(e) => setCreateIsActive(e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
                                     <label htmlFor="create_is_active" className="text-sm font-semibold text-gray-700 cursor-pointer">
                                         Active on Homepage
@@ -591,7 +894,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                     required
                                     value={editTitle}
                                     onChange={(e) => setEditTitle(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 />
                             </div>
 
@@ -603,7 +906,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                     type="text"
                                     value={editSubtitle}
                                     onChange={(e) => setEditSubtitle(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 />
                             </div>
 
@@ -617,7 +920,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
                                         onChange={handleEditDesktopImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                                     />
                                     {editImagePreview && (
                                         <div className="mt-2 w-full h-24 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
@@ -638,7 +941,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         type="file"
                                         accept="image/jpeg,image/png,image/webp"
                                         onChange={handleEditMobileImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                                     />
                                     {editMobileImagePreview && (
                                         <div className="mt-2 w-full h-24 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
@@ -662,7 +965,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         type="text"
                                         value={editButtonText}
                                         onChange={(e) => setEditButtonText(e.target.value)}
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 </div>
 
@@ -674,7 +977,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         type="text"
                                         value={editLinkUrl}
                                         onChange={(e) => setEditLinkUrl(e.target.value)}
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 </div>
                             </div>
@@ -690,7 +993,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         min="0"
                                         value={editSortOrder}
                                         onChange={(e) => setEditSortOrder(e.target.value)}
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                                     />
                                 </div>
 
@@ -700,7 +1003,7 @@ export default function SliderIndex({ sliders, filters }: SliderIndexProps) {
                                         id="edit_is_active"
                                         checked={editIsActive}
                                         onChange={(e) => setEditIsActive(e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                                     />
                                     <label htmlFor="edit_is_active" className="text-sm font-semibold text-gray-700 cursor-pointer">
                                         Active on Homepage

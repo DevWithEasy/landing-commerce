@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { PaginationLink } from '@/types';
 
 export interface PaginationProps {
@@ -14,35 +15,44 @@ export function Pagination({ links, from, to, total }: PaginationProps) {
     }
 
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 border-t border-gray-200">
-            <div className="text-sm text-gray-500">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2">
+            <div className="text-xs sm:text-sm text-gray-500">
                 {from && to ? (
                     <span>
-                        Showing <span className="font-medium text-gray-800">{from}</span> to{' '}
-                        <span className="font-medium text-gray-800">{to}</span> of{' '}
-                        <span className="font-medium text-gray-800">{total}</span> items
+                        Showing <span className="font-semibold text-gray-800">{from}–{to}</span> of{' '}
+                        <span className="font-semibold text-gray-800">{total}</span> products
                     </span>
                 ) : (
                     <span>No results found</span>
                 )}
             </div>
 
-            <nav className="inline-flex rounded-lg shadow-xs -space-x-px" aria-label="Pagination">
+            <nav className="inline-flex items-center gap-1.5" aria-label="Pagination">
                 {links.map((link, index) => {
-                    // Sanitize label HTML (Laravel returns &laquo; and &raquo;)
+                    const isPrev = link.label.includes('Previous') || link.label.includes('&laquo;');
+                    const isNext = link.label.includes('Next') || link.label.includes('&raquo;');
                     const cleanLabel = link.label
-                        .replace('&laquo; Previous', '← Prev')
-                        .replace('Next &raquo;', 'Next →')
-                        .replace('&laquo;', '«')
-                        .replace('&raquo;', '»');
+                        .replace('&laquo; Previous', '')
+                        .replace('Next &raquo;', '')
+                        .replace('&laquo;', '')
+                        .replace('&raquo;', '')
+                        .trim();
+
+                    const content = isPrev ? (
+                        <ChevronLeft className="w-4 h-4" />
+                    ) : isNext ? (
+                        <ChevronRight className="w-4 h-4" />
+                    ) : (
+                        cleanLabel
+                    );
 
                     if (!link.url) {
                         return (
                             <span
                                 key={index}
-                                className="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-300 bg-white border border-gray-300 cursor-not-allowed first:rounded-l-md last:rounded-r-md select-none"
+                                className="inline-flex items-center justify-center min-w-[34px] h-[34px] px-2.5 text-xs font-medium text-gray-300 bg-white border border-stone-200 rounded-lg cursor-not-allowed select-none"
                             >
-                                {cleanLabel}
+                                {content}
                             </span>
                         );
                     }
@@ -53,13 +63,13 @@ export function Pagination({ links, from, to, total }: PaginationProps) {
                             href={link.url}
                             preserveScroll
                             preserveState
-                            className={`relative inline-flex items-center px-3.5 py-1.5 text-sm font-medium border first:rounded-l-md last:rounded-r-md transition-colors ${
+                            className={`inline-flex items-center justify-center min-w-[34px] h-[34px] px-2.5 text-xs font-semibold rounded-lg border transition-colors ${
                                 link.active
-                                    ? 'z-10 bg-primary-600 border-primary-600 text-white font-semibold'
-                                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                    ? 'bg-[#F96D16] border-[#F96D16] text-white shadow-xs'
+                                    : 'bg-white border-stone-200 text-gray-700 hover:bg-[#FAF7F2] hover:border-stone-300'
                             }`}
                         >
-                            {cleanLabel}
+                            {content}
                         </Link>
                     );
                 })}

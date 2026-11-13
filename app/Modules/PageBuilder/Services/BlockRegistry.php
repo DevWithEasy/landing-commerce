@@ -142,7 +142,7 @@ class BlockRegistry
                 // Typography & layout
                 'fontFamily' => '',
                 'accentColor' => '#059669',
-                'containerMaxWidth' => '672px',
+                'containerMaxWidth' => '1080px',
                 'containerPaddingX' => '16px',
                 'fieldGap' => '16px',
 

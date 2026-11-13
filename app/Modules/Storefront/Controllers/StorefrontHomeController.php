@@ -125,6 +125,7 @@ class StorefrontHomeController extends Controller
 
             return Inertia::render('Storefront/Home', [
                 'sliders' => $sliders,
+                'defaultHero' => $this->settingsService->getDefaultHeroConfig(),
                 'categories' => $categories,
                 'featuredProducts' => $featuredProducts,
                 'newArrivals' => $newArrivals,

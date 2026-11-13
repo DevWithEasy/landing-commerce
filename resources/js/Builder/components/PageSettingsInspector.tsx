@@ -6,6 +6,7 @@ export interface PageSettingsInspectorProps {
     width?: number;
     onBackToBlock?: () => void;
     hasSelectedBlock?: boolean;
+    embedded?: boolean;
 }
 
 const FONT_OPTIONS = [
@@ -57,6 +58,7 @@ export function PageSettingsInspector({
     width,
     onBackToBlock,
     hasSelectedBlock = false,
+    embedded = false,
 }: PageSettingsInspectorProps) {
     const { ast, updatePageSettings } = useBuilderStore();
     const settings = ast.settings || {};
@@ -65,34 +67,42 @@ export function PageSettingsInspector({
     const currentBg = settings.backgroundColor || '#ffffff';
     const currentMaxWidth = settings.containerMaxWidth || '1200px';
 
-    return (
-        <aside
-            style={{ width: width ? `${width}px` : undefined }}
-            className="w-80 sm:w-88 shrink-0 bg-white border-l border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none transition-[width] duration-75 overflow-hidden"
-        >
-            <div className="p-3 border-b border-gray-200 bg-gray-50/80 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-                        <Palette className="w-4 h-4" />
-                    </div>
-                    <div>
-                        <h4 className="text-xs font-bold text-gray-900">Page Settings</h4>
-                        <p className="text-[10px] text-gray-500">
-                            Global fonts, background and brand color
-                        </p>
-                    </div>
-                </div>
+    const Wrapper = embedded ? 'div' : 'aside';
 
-                {hasSelectedBlock && onBackToBlock && (
-                    <button
-                        type="button"
-                        onClick={onBackToBlock}
-                        className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors"
-                    >
-                        Back to block
-                    </button>
-                )}
-            </div>
+    return (
+        <Wrapper
+            style={!embedded && width ? { width: `${width}px` } : undefined}
+            className={
+                embedded
+                    ? 'flex-1 flex flex-col min-h-0 bg-white select-none overflow-hidden'
+                    : 'w-80 sm:w-88 shrink-0 bg-white border-l border-gray-200 flex flex-col h-[calc(100vh-4rem)] select-none transition-[width] duration-75 overflow-hidden'
+            }
+        >
+            {!embedded && (
+                <div className="p-3 border-b border-gray-200 bg-gray-50/80 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                            <Palette className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h4 className="text-xs font-bold text-gray-900">Page Settings</h4>
+                            <p className="text-[10px] text-gray-500">
+                                Global fonts, background and brand color
+                            </p>
+                        </div>
+                    </div>
+
+                    {hasSelectedBlock && onBackToBlock && (
+                        <button
+                            type="button"
+                            onClick={onBackToBlock}
+                            className="text-[11px] font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors"
+                        >
+                            Back to block
+                        </button>
+                    )}
+                </div>
+            )}
 
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 <ControlSection title="Typography" icon={Type} defaultOpen>
@@ -194,6 +204,6 @@ export function PageSettingsInspector({
                     />
                 </ControlSection>
             </div>
-        </aside>
+        </Wrapper>
     );
 }

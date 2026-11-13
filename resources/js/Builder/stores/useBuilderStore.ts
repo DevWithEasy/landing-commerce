@@ -6,6 +6,21 @@ export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 
 // Recursive Tree Utilities
 
+export function cloneBlockWithFreshIds(block: Block): Block {
+    const suffix =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID().slice(0, 8)
+            : `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+
+    return {
+        ...block,
+        id: `blk_${suffix}`,
+        props: JSON.parse(JSON.stringify(block.props || {})) as BlockProps,
+        styles: JSON.parse(JSON.stringify(block.styles || {})) as BlockStyles,
+        children: block.children ? block.children.map(cloneBlockWithFreshIds) : undefined,
+    };
+}
+
 export function findBlockInTree(blocks: Block[], id: string): Block | null {
     for (const b of blocks) {
         if (b.id === id) return b;
@@ -238,6 +253,7 @@ export interface BuilderState {
     updateBlockStyles: (id: string, styles: Partial<BlockStyles>) => void;
     setBlockStyles: (id: string, styles: BlockStyles) => void;
     removeBlock: (id: string) => void;
+    duplicateBlock: (id: string) => void;
     reorderBlocks: (startIndex: number, endIndex: number, parentId?: string | null) => void;
     moveBlock: (activeId: string, targetParentId: string | null, targetIndex?: number) => void;
 
@@ -404,6 +420,32 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
         set({
             ast: newAst,
             selectedBlockId: selectedBlockId === id ? null : selectedBlockId,
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+        });
+    },
+
+    duplicateBlock: (id: string) => {
+        const { ast, history, historyIndex } = get();
+        const target = findBlockInTree(ast.blocks, id);
+        const location = findParentInTree(ast.blocks, id);
+        if (!target || !location) return;
+
+        const cloned = cloneBlockWithFreshIds(target);
+        const newBlocks = addBlockToTree(
+            ast.blocks,
+            cloned,
+            location.parent ? location.parent.id : null,
+            location.index + 1
+        );
+
+        const newAst: PageAst = { ...ast, blocks: newBlocks };
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(newAst);
+
+        set({
+            ast: newAst,
+            selectedBlockId: cloned.id,
             history: newHistory,
             historyIndex: newHistory.length - 1,
         });

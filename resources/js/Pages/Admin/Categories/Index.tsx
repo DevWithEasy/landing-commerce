@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+﻿import { Head, router } from '@inertiajs/react';
 import {
     AlertCircle,
     FolderTree,
@@ -225,7 +225,7 @@ export default function CategoryIndex({
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search categories by name or slug..."
-                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         />
                         {search && (
                             <button
@@ -321,7 +321,7 @@ export default function CategoryIndex({
                                                 type="button"
                                                 onClick={() => handleToggleStatus(cat)}
                                                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                                    cat.is_active ? 'bg-indigo-600' : 'bg-gray-200'
+                                                    cat.is_active ? 'bg-primary-600' : 'bg-gray-200'
                                                 }`}
                                             >
                                                 <span
@@ -336,7 +336,7 @@ export default function CategoryIndex({
                                                 <button
                                                     type="button"
                                                     onClick={() => openEditModal(cat)}
-                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-gray-100 transition"
+                                                    className="p-1.5 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-gray-100 transition"
                                                     title="Edit category"
                                                 >
                                                     <Pencil className="w-4 h-4" />
@@ -379,7 +379,7 @@ export default function CategoryIndex({
                     <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200 my-8">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Plus className="w-5 h-5 text-indigo-600" />
+                                <Plus className="w-5 h-5 text-primary-600" />
                                 <span>Create Category</span>
                             </h3>
                             <button
@@ -402,7 +402,7 @@ export default function CategoryIndex({
                                     value={createName}
                                     onChange={(e) => setCreateName(e.target.value)}
                                     placeholder="e.g. Men's Fashion, Electronics"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                                 {formErrors.name && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.name}</p>
@@ -418,7 +418,7 @@ export default function CategoryIndex({
                                     value={createSlug}
                                     onChange={(e) => setCreateSlug(e.target.value)}
                                     placeholder="Leave blank to generate automatically"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                                 {formErrors.slug && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.slug}</p>
@@ -432,7 +432,7 @@ export default function CategoryIndex({
                                 <select
                                     value={createParentId}
                                     onChange={(e) => setCreateParentId(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
                                 >
                                     <option value="">None (Top-level Root Category)</option>
                                     {rootCategories.map((rc) => (
@@ -458,7 +458,7 @@ export default function CategoryIndex({
                                     value={createDescription}
                                     onChange={(e) => setCreateDescription(e.target.value)}
                                     placeholder="Brief summary of items in this category"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                                 {formErrors.description && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.description}</p>
@@ -475,7 +475,7 @@ export default function CategoryIndex({
                                         min="0"
                                         value={createSortOrder}
                                         onChange={(e) => setCreateSortOrder(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     />
                                     {formErrors.sort_order && (
                                         <p className="text-xs text-red-600 mt-1">{formErrors.sort_order}</p>
@@ -487,7 +487,7 @@ export default function CategoryIndex({
                                             type="checkbox"
                                             checked={createIsActive}
                                             onChange={(e) => setCreateIsActive(e.target.checked)}
-                                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                         />
                                         <span>Active / Visible</span>
                                     </label>
@@ -512,7 +512,7 @@ export default function CategoryIndex({
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
                                         onChange={(e) => handleImageChange(e, false)}
-                                        className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                                     />
                                 </div>
                                 {formErrors.image && (
@@ -544,7 +544,7 @@ export default function CategoryIndex({
                     <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-gray-200 my-8">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
                             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Pencil className="w-5 h-5 text-indigo-600" />
+                                <Pencil className="w-5 h-5 text-primary-600" />
                                 <span>Edit Category: {editingCategory.name}</span>
                             </h3>
                             <button
@@ -566,7 +566,7 @@ export default function CategoryIndex({
                                     required
                                     value={editName}
                                     onChange={(e) => setEditName(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                                 {formErrors.name && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.name}</p>
@@ -581,7 +581,7 @@ export default function CategoryIndex({
                                     type="text"
                                     value={editSlug}
                                     onChange={(e) => setEditSlug(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                                 {formErrors.slug && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.slug}</p>
@@ -595,7 +595,7 @@ export default function CategoryIndex({
                                 <select
                                     value={editParentId}
                                     onChange={(e) => setEditParentId(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
                                 >
                                     <option value="">None (Top-level Root Category)</option>
                                     {rootCategories
@@ -622,7 +622,7 @@ export default function CategoryIndex({
                                     rows={2}
                                     value={editDescription}
                                     onChange={(e) => setEditDescription(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                                 {formErrors.description && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.description}</p>
@@ -639,7 +639,7 @@ export default function CategoryIndex({
                                         min="0"
                                         value={editSortOrder}
                                         onChange={(e) => setEditSortOrder(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     />
                                     {formErrors.sort_order && (
                                         <p className="text-xs text-red-600 mt-1">{formErrors.sort_order}</p>
@@ -651,7 +651,7 @@ export default function CategoryIndex({
                                             type="checkbox"
                                             checked={editIsActive}
                                             onChange={(e) => setEditIsActive(e.target.checked)}
-                                            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                         />
                                         <span>Active / Visible</span>
                                     </label>
@@ -676,7 +676,7 @@ export default function CategoryIndex({
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
                                         onChange={(e) => handleImageChange(e, true)}
-                                        className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                                     />
                                 </div>
                                 {formErrors.image && (

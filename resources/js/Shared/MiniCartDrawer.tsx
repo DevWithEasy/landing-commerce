@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+﻿import { Link, router } from '@inertiajs/react';
 import {
     AlertCircle,
     ArrowRight,
@@ -172,7 +172,7 @@ export function MiniCartDrawer({
                     {/* Header */}
                     <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
                         <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
                                 <ShoppingBag className="w-5 h-5" />
                             </div>
                             <div>
@@ -215,7 +215,7 @@ export function MiniCartDrawer({
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                                    className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
                                 >
                                     শপিং শুরু করুন
                                 </button>
@@ -250,7 +250,7 @@ export function MiniCartDrawer({
                                                         <Link
                                                             href={`/product/${item.product_slug}`}
                                                             onClick={onClose}
-                                                            className="text-xs font-bold text-gray-900 hover:text-indigo-600 line-clamp-1 transition"
+                                                            className="text-xs font-bold text-gray-900 hover:text-primary-600 line-clamp-1 transition"
                                                             title={item.product_title}
                                                         >
                                                             {item.product_title}
@@ -273,7 +273,7 @@ export function MiniCartDrawer({
                                                     )}
 
                                                     <div className="flex items-baseline gap-1.5 mt-0.5">
-                                                        <span className="text-xs font-bold text-indigo-600">
+                                                        <span className="text-xs font-bold text-primary-600">
                                                             {formatBdt(item.unit_price)}
                                                         </span>
                                                         {item.regular_price > item.unit_price && (
@@ -328,7 +328,7 @@ export function MiniCartDrawer({
                                             {/* Item Loading Spinner Overlay */}
                                             {isLoading && (
                                                 <div className="absolute inset-0 bg-white/60 backdrop-blur-2xs rounded-2xl flex items-center justify-center">
-                                                    <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                                                    <Loader2 className="w-5 h-5 text-primary-600 animate-spin" />
                                                 </div>
                                             )}
                                         </div>
@@ -344,7 +344,7 @@ export function MiniCartDrawer({
                             {/* Subtotal */}
                             <div className="flex items-center justify-between text-sm">
                                 <span className="font-semibold text-gray-600">সাবটোটাল</span>
-                                <span className="text-lg font-black text-indigo-600">
+                                <span className="text-lg font-black text-primary-600">
                                     {formatBdt(cart.subtotal)}
                                 </span>
                             </div>
@@ -366,7 +366,7 @@ export function MiniCartDrawer({
                                 <Link
                                     href="/checkout"
                                     onClick={onClose}
-                                    className="flex items-center justify-center gap-1.5 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-100 transition"
+                                    className="flex items-center justify-center gap-1.5 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold shadow-md shadow-primary-100 transition"
                                 >
                                     <span>অর্ডার করুন</span>
                                     <ArrowRight className="w-3.5 h-3.5" />

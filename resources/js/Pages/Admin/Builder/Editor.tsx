@@ -15,7 +15,6 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { AiGenerateModal } from '@/Builder/components/AiGenerateModal';
 import { Canvas } from '@/Builder/components/Canvas';
-import { Inspector } from '@/Builder/components/Inspector';
 import { LeftSidebar } from '@/Builder/components/LeftSidebar';
 import { RevisionsDrawer } from '@/Builder/components/RevisionsDrawer';
 import { TopBar } from '@/Builder/components/TopBar';
@@ -57,54 +56,31 @@ export default function Editor({
     const [targetContainerId, setTargetContainerId] = useState<string | null>(null);
     const [paletteDragType, setPaletteDragType] = useState<BlockType | null>(null);
 
-    // Draggable sidebar widths with localStorage persistence
+    // Draggable left panel width with localStorage persistence
     const [leftWidth, setLeftWidth] = useState<number>(() => {
         try {
             const saved = localStorage.getItem('lc_builder_left_width');
-            return saved ? Math.max(220, Math.min(500, Number(saved))) : 300;
-        } catch {
-            return 300;
-        }
-    });
-
-    const [rightWidth, setRightWidth] = useState<number>(() => {
-        try {
-            const saved = localStorage.getItem('lc_builder_right_width');
-            return saved ? Math.max(260, Math.min(650, Number(saved))) : 340;
+            return saved ? Math.max(280, Math.min(540, Number(saved))) : 340;
         } catch {
             return 340;
         }
     });
 
     const [isResizingLeft, setIsResizingLeft] = useState(false);
-    const [isResizingRight, setIsResizingRight] = useState(false);
 
-    // Mouse drag handlers for resizing
+    // Mouse drag handler for resizing left panel
     const startResizingLeft = (e: React.MouseEvent) => {
         e.preventDefault();
         setIsResizingLeft(true);
     };
 
-    const startResizingRight = (e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsResizingRight(true);
-    };
-
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (isResizingLeft) {
-                const newWidth = Math.max(220, Math.min(520, e.clientX));
+                const newWidth = Math.max(280, Math.min(540, e.clientX));
                 setLeftWidth(newWidth);
                 try {
                     localStorage.setItem('lc_builder_left_width', String(newWidth));
-                } catch {
-                    // ignore
-                }
-            } else if (isResizingRight) {
-                const newWidth = Math.max(260, Math.min(650, window.innerWidth - e.clientX));
-                setRightWidth(newWidth);
-                try {
-                    localStorage.setItem('lc_builder_right_width', String(newWidth));
                 } catch {
                     // ignore
                 }
@@ -113,12 +89,11 @@ export default function Editor({
 
         const handleMouseUp = () => {
             if (isResizingLeft) setIsResizingLeft(false);
-            if (isResizingRight) setIsResizingRight(false);
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
         };
 
-        if (isResizingLeft || isResizingRight) {
+        if (isResizingLeft) {
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
             window.addEventListener('mousemove', handleMouseMove);
@@ -129,7 +104,7 @@ export default function Editor({
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isResizingLeft, isResizingRight]);
+    }, [isResizingLeft]);
 
     // Initialize AST and products into Zustand store on mount
     useEffect(() => {
@@ -460,7 +435,7 @@ export default function Editor({
                     onOpenAi={() => setIsAiOpen(true)}
                 />
 
-                {/* Main 3-Column Studio Workspace with Resizable Sidebars */}
+                {/* Main 2-Column Elementor-Style Workspace (Unified Left Panel + Full-Width Canvas) */}
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
@@ -472,15 +447,16 @@ export default function Editor({
                         <LeftSidebar
                             width={leftWidth}
                             blockDefinitions={blockDefinitions}
+                            products={products}
                             onAddBlock={handleAddBlock}
                             targetContainerId={targetContainerId}
                             onClearTargetContainer={() => setTargetContainerId(null)}
                         />
 
-                        {/* Left Sidebar Resize Handle (Mouse Drag) */}
+                        {/* Left Panel Resize Handle (Mouse Drag) */}
                         <div
                             onMouseDown={startResizingLeft}
-                            title="Drag to resize blocks panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
+                            title="Drag to resize panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
                             className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
                         >
                             <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
@@ -492,21 +468,6 @@ export default function Editor({
                                 setSelectedBlockId(containerId);
                                 setTargetContainerId(containerId);
                             }}
-                        />
-
-                        {/* Right Inspector Resize Handle (Mouse Drag) */}
-                        <div
-                            onMouseDown={startResizingRight}
-                            title="Drag to resize customizer panel (মাউস দিয়ে টেনে প্রস্থ পরিবর্তন করুন)"
-                            className="w-1.5 hover:w-2 bg-transparent hover:bg-primary-500/30 active:bg-primary-600 transition-all cursor-col-resize flex items-center justify-center relative select-none z-20 shrink-0 group"
-                        >
-                            <div className="w-0.5 h-8 bg-gray-300 group-hover:bg-primary-600 rounded-full transition-colors" />
-                        </div>
-
-                        <Inspector
-                            width={rightWidth}
-                            blockDefinitions={blockDefinitions}
-                            products={products}
                         />
                     </div>
 
