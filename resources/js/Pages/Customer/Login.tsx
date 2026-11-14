@@ -95,12 +95,12 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
 
                 {/* Right Form Panel (Warm Cream + White Card) */}
                 <div className="lg:w-1/2 bg-[#FAF7F2] flex items-center justify-center py-12 px-4 sm:px-8">
-                    <div className="max-w-md w-full bg-white rounded-3xl shadow-[0_8px_32px_rgba(15,23,42,0.06)] border border-stone-200/70 p-8 sm:p-10">
+                    <div className="max-w-md w-full bg-white rounded-xl border border-stone-200/80 p-8 sm:p-10">
                         <div className="text-center mb-7">
-                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#0B3B2E]">
                                 Login to Your Account
                             </h2>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
+                            <p className="text-xs sm:text-sm text-stone-500 mt-1.5">
                                 Access your orders, wishlist and exclusive offers.
                             </p>
                         </div>
@@ -110,7 +110,7 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                             <div>
                                 <div className="relative">
                                     <Mail
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -122,7 +122,7 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                                         onChange={(e) => setData('email', e.target.value)}
                                         required
                                         placeholder="Email address"
-                                        className={`w-full pl-10 pr-4 py-3 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
                                             errors.email ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
                                         }`}
                                     />
@@ -136,7 +136,7 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                             <div>
                                 <div className="relative">
                                     <Lock
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -148,7 +148,7 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                                         onChange={(e) => setData('password', e.target.value)}
                                         required
                                         placeholder="Password"
-                                        className={`w-full pl-10 pr-10 py-3 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                        className={`w-full h-11 pl-10 pr-10 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
                                             errors.password ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
                                         }`}
                                     />
@@ -156,7 +156,7 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                                         type="button"
                                         onClick={() => setShowPassword((prev) => !prev)}
                                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
                                     >
                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
@@ -168,12 +168,12 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
 
                             {/* Remember Me & Track Order */}
                             <div className="flex items-center justify-between text-xs pt-1">
-                                <label className="flex items-center gap-2 cursor-pointer text-gray-600">
+                                <label className="flex items-center gap-2 cursor-pointer text-stone-600">
                                     <input
                                         type="checkbox"
                                         checked={data.remember}
                                         onChange={(e) => setData('remember', e.target.checked)}
-                                        className="rounded border-stone-300 text-[#F96D16] focus:ring-[#F96D16] accent-[#F96D16]"
+                                        className="rounded border-stone-300 text-[#0B3B2E] focus:ring-[#0B3B2E] accent-[#0B3B2E]"
                                     />
                                     <span>Remember me</span>
                                 </label>
@@ -189,7 +189,7 @@ export default function CustomerLogin({ theme, categories }: LoginProps) {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full py-3 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-xl text-sm font-bold shadow-sm transition disabled:opacity-50 mt-2"
+                                className="w-full h-11 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg text-sm font-semibold transition disabled:opacity-50 mt-2"
                             >
                                 {processing ? 'Logging in...' : 'Login'}
                             </button>

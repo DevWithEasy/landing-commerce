@@ -35,7 +35,7 @@ class CustomerAuthController extends Controller
         }
 
         $theme = $this->settings->getStorefrontTheme();
-        $categories = Category::active()->root()->get();
+        $categories = Category::toTree(true);
 
         return Inertia::render('Customer/Register', [
             'theme' => $theme,
@@ -74,7 +74,7 @@ class CustomerAuthController extends Controller
         }
 
         $theme = $this->settings->getStorefrontTheme();
-        $categories = Category::active()->root()->get();
+        $categories = Category::toTree(true);
 
         return Inertia::render('Customer/Login', [
             'theme' => $theme,

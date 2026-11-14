@@ -460,9 +460,33 @@ export interface DefaultHeroConfig {
     image_url: string;
 }
 
+export interface PromoBannersConfig {
+    enabled: boolean;
+    seasonal: {
+        badge: string;
+        title: string;
+        subtitle: string;
+        button_text: string;
+        button_url: string;
+        image_path: string;
+        image_url: string;
+    };
+    combo: {
+        title: string;
+        subtitle: string;
+        button_text: string;
+        button_url: string;
+        badge_label: string;
+        badge_value: string;
+        image_path: string;
+        image_url: string;
+    };
+}
+
 export interface SliderIndexProps extends SharedProps {
     sliders: PaginatedData<Slider>;
     defaultHero: DefaultHeroConfig;
+    promoBanners: PromoBannersConfig;
     filters: {
         search: string;
     };

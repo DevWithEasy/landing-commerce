@@ -308,25 +308,25 @@ export default function ProductDetail({
                         )}
 
                         {/* Main Featured Image */}
-                        <div className="flex-1 relative aspect-[4/5] sm:aspect-square bg-[#F6F3EE] border border-stone-200/80 rounded-2xl overflow-hidden flex items-center justify-center group">
+                        <div className="flex-1 relative aspect-[4/5] bg-[#F3EDE4] border border-stone-200/80 rounded-xl overflow-hidden flex items-center justify-center group">
                             <SafeImage
                                 src={activeImageUrl}
                                 alt={product.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
                                 fallbackIconSize="w-16 h-16"
                                 fallbackText="No Image Available"
                             />
 
                             {/* Top-right Discount Badge */}
                             {discountPercent > 0 && (
-                                <div className="absolute top-3.5 right-3.5 bg-[#F96D16] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-xs">
+                                <div className="absolute top-3.5 right-3.5 bg-[#F96D16] text-white text-xs font-semibold px-2.5 py-1 rounded-full">
                                     -{discountPercent}%
                                 </div>
                             )}
 
                             {/* Stock Out Badge */}
                             {!isCurrentInStock && (
-                                <div className="absolute top-3.5 left-3.5 bg-gray-900/85 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                <div className="absolute top-3.5 left-3.5 bg-stone-900/85 text-white text-xs font-semibold px-3 py-1 rounded-full">
                                     Out of Stock
                                 </div>
                             )}
@@ -336,7 +336,7 @@ export default function ProductDetail({
                                 type="button"
                                 onClick={() => setIsLightboxOpen(true)}
                                 aria-label="Zoom image"
-                                className="absolute bottom-3.5 right-3.5 w-9 h-9 rounded-xl bg-white/90 hover:bg-white text-gray-700 border border-stone-200/80 flex items-center justify-center shadow-xs transition"
+                                className="absolute bottom-3.5 right-3.5 w-9 h-9 rounded-lg bg-white/90 hover:bg-white text-stone-700 border border-stone-200/80 flex items-center justify-center transition"
                             >
                                 <Maximize2 className="w-4 h-4" />
                             </button>
@@ -354,13 +354,13 @@ export default function ProductDetail({
                         </div>
 
                         {/* Title */}
-                        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 leading-tight">
                             {product.title}
                         </h1>
 
                         {/* Short Summary */}
                         {shortSummary && (
-                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
                                 {shortSummary}
                             </p>
                         )}
@@ -372,7 +372,7 @@ export default function ProductDetail({
                             </span>
                             {salePrice !== null && salePrice < regularPrice && (
                                 <>
-                                    <span className="text-base text-gray-400 line-through">
+                                    <span className="text-base text-stone-400 line-through">
                                         {formatBdt(regularPrice)}
                                     </span>
                                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-50 text-[#EA580C] border border-orange-200/70">
@@ -385,9 +385,9 @@ export default function ProductDetail({
                         {/* Variants Selector */}
                         {product.variants && product.variants.length > 1 && (
                             <div className="space-y-2.5 pt-2 border-t border-stone-200/70">
-                                <label className="block text-xs font-semibold text-gray-700">
+                                <label className="block text-xs font-semibold text-stone-700">
                                     Select Option:{' '}
-                                    <span className="font-bold text-gray-900">{selectedVariant.name}</span>
+                                    <span className="font-bold text-stone-900">{selectedVariant.name}</span>
                                 </label>
                                 <div className="flex flex-wrap gap-2">
                                     {product.variants.map((v) => {
@@ -400,12 +400,12 @@ export default function ProductDetail({
                                                 type="button"
                                                 disabled={isOutOfStock}
                                                 onClick={() => handleVariantSelect(v)}
-                                                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border ${
+                                                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 border ${
                                                     isSelected
-                                                        ? 'bg-[#F96D16] text-white border-[#F96D16] shadow-xs'
+                                                        ? 'bg-[#0B3B2E] text-white border-[#0B3B2E]'
                                                         : isOutOfStock
-                                                        ? 'bg-stone-100 text-gray-400 border-stone-200 line-through cursor-not-allowed'
-                                                        : 'bg-white text-gray-800 border-stone-200 hover:border-[#F96D16]'
+                                                        ? 'bg-stone-100 text-stone-400 border-stone-200 line-through cursor-not-allowed'
+                                                        : 'bg-white text-stone-800 border-stone-200 hover:border-[#0B3B2E]'
                                                 }`}
                                             >
                                                 {isSelected && <Check className="w-3 h-3" />}
@@ -419,24 +419,26 @@ export default function ProductDetail({
 
                         {/* Quantity & Stock Row */}
                         <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-stone-200/70">
-                            <span className="text-xs font-semibold text-gray-700">Quantity:</span>
-                            <div className="inline-flex items-center border border-stone-200 rounded-xl bg-white overflow-hidden">
+                            <span className="text-xs font-semibold text-stone-700">Quantity:</span>
+                            <div className="inline-flex items-center border border-stone-200 rounded-lg bg-white overflow-hidden">
                                 <button
                                     type="button"
                                     onClick={() => handleQuantityChange(-1)}
                                     disabled={quantity <= 1 || !isCurrentInStock}
-                                    className="p-2 text-gray-600 hover:bg-stone-100 disabled:opacity-40 transition"
+                                    className="w-9 h-9 flex items-center justify-center text-stone-600 hover:bg-stone-100 disabled:opacity-40 transition"
+                                    aria-label="Decrease quantity"
                                 >
                                     <Minus className="w-3.5 h-3.5" />
                                 </button>
-                                <span className="px-4 py-1.5 text-xs font-bold text-gray-900 min-w-[40px] text-center">
+                                <span className="px-4 text-xs font-bold text-stone-900 min-w-[40px] text-center">
                                     {quantity}
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => handleQuantityChange(1)}
                                     disabled={quantity >= maxStock || !isCurrentInStock}
-                                    className="p-2 text-gray-600 hover:bg-stone-100 disabled:opacity-40 transition"
+                                    className="w-9 h-9 flex items-center justify-center text-stone-600 hover:bg-stone-100 disabled:opacity-40 transition"
+                                    aria-label="Increase quantity"
                                 >
                                     <Plus className="w-3.5 h-3.5" />
                                 </button>
@@ -461,7 +463,7 @@ export default function ProductDetail({
                                     type="button"
                                     onClick={handleAddToCart}
                                     disabled={!isCurrentInStock || isAddingToCart}
-                                    className="flex items-center justify-center gap-2 py-3 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-xs disabled:opacity-60"
+                                    className="flex items-center justify-center gap-2 h-11 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg font-semibold text-xs sm:text-sm transition disabled:opacity-60"
                                 >
                                     <ShoppingCart className="w-4 h-4" />
                                     <span>{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
@@ -470,10 +472,10 @@ export default function ProductDetail({
                                 <button
                                     type="button"
                                     onClick={handleWishlistToggle}
-                                    className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm border transition ${
+                                    className={`flex items-center justify-center gap-2 h-11 px-4 rounded-lg font-semibold text-xs sm:text-sm border transition ${
                                         wishlistAdded
                                             ? 'bg-orange-50 border-[#F96D16] text-[#EA580C]'
-                                            : 'bg-white hover:bg-stone-50 border-stone-300 text-gray-800'
+                                            : 'bg-white hover:bg-[#FAF7F2] border-stone-300 text-stone-800 hover:border-[#0B3B2E]'
                                     }`}
                                 >
                                     <Heart className={`w-4 h-4 ${wishlistAdded ? 'fill-[#F96D16] text-[#F96D16]' : ''}`} />
@@ -484,10 +486,10 @@ export default function ProductDetail({
                             {/* Direct COD Order Button */}
                             <Link
                                 href={buyNowUrl}
-                                className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm transition ${
+                                className={`flex items-center justify-center gap-2 w-full h-11 px-4 rounded-lg font-semibold text-xs sm:text-sm transition ${
                                     isCurrentInStock
-                                        ? 'bg-[#0B3B2E] hover:bg-[#092E24] text-white shadow-xs'
-                                        : 'bg-stone-200 text-gray-400 pointer-events-none'
+                                        ? 'bg-[#0B3B2E] hover:bg-[#082B21] text-white'
+                                        : 'bg-stone-200 text-stone-400 pointer-events-none'
                                 }`}
                             >
                                 <ShoppingBag className="w-4 h-4" />
@@ -501,7 +503,7 @@ export default function ProductDetail({
                                     )}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex w-full items-center justify-center gap-2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition"
+                                    className="inline-flex w-full items-center justify-center gap-2 h-10 px-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold transition"
                                 >
                                     <span>Order via WhatsApp</span>
                                 </a>
@@ -779,24 +781,55 @@ export default function ProductDetail({
                 {relatedProducts && relatedProducts.length > 0 && (
                     <div className="mt-12">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-serif text-2xl font-bold text-gray-900 tracking-tight">
+                            <h2 className="font-serif text-2xl font-bold text-stone-900 tracking-tight">
                                 You Might Also Like
                             </h2>
                             <Link
                                 href="/shop"
-                                className="text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#F96D16] transition"
+                                className="text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#F96D16] transition"
                             >
                                 View All →
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
-                            {relatedProducts.slice(0, 5).map((rel) => (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                            {relatedProducts.slice(0, 4).map((rel) => (
                                 <ProductCard key={rel.id} product={rel} />
                             ))}
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Mobile Sticky Add-to-Cart & Order Bar */}
+            <div className="md:hidden fixed bottom-14 left-0 right-0 z-30 bg-white/95 backdrop-blur-xs border-t border-stone-200 px-3.5 py-2.5 flex items-center justify-between gap-2.5 shadow-sm">
+                <div className="min-w-0">
+                    <p className="text-[10px] text-stone-500 uppercase tracking-wider font-medium">Total Price</p>
+                    <p className="text-base font-bold text-[#EA580C] truncate">
+                        {formatBdt(currentPrice * quantity)}
+                    </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                    <button
+                        type="button"
+                        onClick={handleAddToCart}
+                        disabled={!isCurrentInStock || isAddingToCart}
+                        className="h-10 px-3.5 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+                    >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>{isAddingToCart ? 'Adding...' : 'Add to Cart'}</span>
+                    </button>
+                    <Link
+                        href={buyNowUrl}
+                        className={`h-10 px-4 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                            isCurrentInStock
+                                ? 'bg-[#0B3B2E] hover:bg-[#082B21] text-white'
+                                : 'bg-stone-200 text-stone-400 pointer-events-none'
+                        }`}
+                    >
+                        <span>Order Now</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Image Zoom Lightbox */}
@@ -816,7 +849,7 @@ export default function ProductDetail({
                     <img
                         src={activeImageUrl}
                         alt={product.title}
-                        className="max-w-full max-h-[88vh] rounded-2xl object-contain shadow-2xl"
+                        className="max-w-full max-h-[88vh] rounded-xl object-contain shadow-xl"
                         onClick={(e) => e.stopPropagation()}
                     />
                 </div>

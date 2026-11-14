@@ -27,7 +27,7 @@ class CustomerDashboardController extends Controller
         $customer = $request->user('customer');
 
         $theme = $this->settings->getStorefrontTheme();
-        $categories = Category::active()->root()->get();
+        $categories = Category::toTree(true);
 
         $recentOrders = $customer->orders()
             ->with(['items.product.images', 'items.variant'])

@@ -326,6 +326,11 @@ class SettingsService
     public function getStorefrontTheme(): array
     {
         return [
+            'store_name' => (string) $this->get('store.name', config('app.name', 'Landing Commerce')),
+            'store_phone' => (string) $this->get('store.phone', ''),
+            'store_whatsapp' => (string) $this->get('store.whatsapp', ''),
+            'logo_url' => (string) $this->get('store.logo_url', ''),
+            'favicon_url' => (string) $this->get('store.favicon_url', ''),
             'primary_color' => (string) $this->get('theme.primary_color', '#4f46e5'),
             'secondary_color' => (string) $this->get('theme.secondary_color', '#06b6d4'),
             'accent_color' => (string) $this->get('theme.accent_color', '#f59e0b'),
@@ -360,6 +365,37 @@ class SettingsService
             'card_subtitle' => (string) $this->get('homepage.default_hero.card_subtitle', '100% Authentic · Fast Cash on Delivery'),
             'image_path' => (string) $this->get('homepage.default_hero.image_path', ''),
             'image_url' => (string) $this->get('homepage.default_hero.image_url', ''),
+        ];
+    }
+
+    /**
+     * Get the dual promo banners configuration (Seasonal Sale & Combo Deals).
+     *
+     * @return array<string, mixed>
+     */
+    public function getPromoBannersConfig(): array
+    {
+        return [
+            'enabled' => filter_var((string) $this->get('homepage.promo_banners.enabled', '1'), FILTER_VALIDATE_BOOLEAN),
+            'seasonal' => [
+                'badge' => (string) $this->get('homepage.promo_banners.seasonal.badge', 'SEASONAL SALE'),
+                'title' => (string) $this->get('homepage.promo_banners.seasonal.title', 'Up to 50% OFF'),
+                'subtitle' => (string) $this->get('homepage.promo_banners.seasonal.subtitle', 'On Selected Items'),
+                'button_text' => (string) $this->get('homepage.promo_banners.seasonal.button_text', 'Shop the Sale'),
+                'button_url' => (string) $this->get('homepage.promo_banners.seasonal.button_url', '/shop'),
+                'image_path' => (string) $this->get('homepage.promo_banners.seasonal.image_path', ''),
+                'image_url' => (string) $this->get('homepage.promo_banners.seasonal.image_url', ''),
+            ],
+            'combo' => [
+                'title' => (string) $this->get('homepage.promo_banners.combo.title', 'Combo Deals'),
+                'subtitle' => (string) $this->get('homepage.promo_banners.combo.subtitle', 'Buy More, Save More'),
+                'button_text' => (string) $this->get('homepage.promo_banners.combo.button_text', 'Shop Combo'),
+                'button_url' => (string) $this->get('homepage.promo_banners.combo.button_url', '/shop'),
+                'badge_label' => (string) $this->get('homepage.promo_banners.combo.badge_label', 'SAVE'),
+                'badge_value' => (string) $this->get('homepage.promo_banners.combo.badge_value', '30%'),
+                'image_path' => (string) $this->get('homepage.promo_banners.combo.image_path', ''),
+                'image_url' => (string) $this->get('homepage.promo_banners.combo.image_url', ''),
+            ],
         ];
     }
 }

@@ -70,12 +70,12 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
         const heroImageUrl = defaultHero?.image_url || '';
 
         return (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
-                <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#0B3B2E] via-[#0F4939] to-[#145542] text-white shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+                <div className="relative rounded-xl overflow-hidden bg-[#0B3B2E] text-white border border-stone-200/20">
                     <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[340px] sm:min-h-[390px]">
                         <div className="md:col-span-7 p-8 sm:p-12 lg:p-14 relative z-10">
                             {badgeText && (
-                                <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-200/80 mb-3">
+                                <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200/85 mb-3">
                                     {badgeText}
                                 </span>
                             )}
@@ -92,7 +92,7 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                                     {primaryBtnText && (
                                         <Link
                                             href={primaryBtnUrl}
-                                            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F96D16] hover:bg-[#EA580C] text-white font-semibold rounded-full shadow-md transition text-sm"
+                                            className="inline-flex items-center gap-2 h-11 px-6 bg-[#F96D16] hover:bg-[#EA580C] text-white font-semibold rounded-lg transition text-sm"
                                         >
                                             <span>{primaryBtnText}</span>
                                             <ArrowRight className="w-4 h-4" />
@@ -101,7 +101,7 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                                     {secondaryBtnText && (
                                         <Link
                                             href={secondaryBtnUrl}
-                                            className="inline-flex items-center px-6 py-2.5 border border-white/50 hover:bg-white/10 text-white font-medium rounded-full transition text-sm"
+                                            className="inline-flex items-center h-11 px-6 border border-white/40 hover:bg-white/10 text-white font-medium rounded-lg transition text-sm"
                                         >
                                             {secondaryBtnText}
                                         </Link>
@@ -112,7 +112,7 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
 
                         <div className="hidden md:flex md:col-span-5 h-full items-end justify-center relative pr-6 pt-6">
                             {heroImageUrl ? (
-                                <div className="w-full max-w-[360px] h-[320px] rounded-t-full bg-[#F5EFE6] border border-white/20 shadow-inner overflow-hidden">
+                                <div className="w-full max-w-[360px] h-[320px] rounded-t-full bg-[#F3EDE4] border border-white/20 overflow-hidden">
                                     <img
                                         src={heroImageUrl}
                                         alt={heroTitle}
@@ -120,7 +120,7 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                                     />
                                 </div>
                             ) : (
-                                <div className="w-full max-w-[360px] h-[320px] rounded-t-full bg-[#F5EFE6] border border-white/20 shadow-inner flex flex-col items-center justify-center text-center p-8">
+                                <div className="w-full max-w-[360px] h-[320px] rounded-t-full bg-[#F3EDE4] border border-white/20 flex flex-col items-center justify-center text-center p-8">
                                     <span className="text-xs font-bold uppercase tracking-widest text-[#0B3B2E]/70 mb-2">
                                         {theme.store_name}
                                     </span>
@@ -142,9 +142,9 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
             <div
-                className="relative w-full overflow-hidden rounded-2xl bg-[#0B3B2E] group shadow-lg"
+                className="relative w-full overflow-hidden rounded-xl bg-[#0B3B2E] group"
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={() => setIsPaused(false)}
                 onFocus={() => setIsPaused(true)}
@@ -176,13 +176,13 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                                     />
                                 </picture>
 
-                                {/* Deep Forest Green Gradient Overlay & Text Content */}
+                                {/* Deep Forest Green Overlay & Text Content */}
                                 {(slide.title || slide.subtitle) && (
                                     <div className="absolute inset-0 bg-gradient-to-r from-[#0B3B2E]/95 via-[#0B3B2E]/75 to-transparent flex items-center">
                                         <div className="px-7 sm:px-12 lg:px-14 w-full">
                                             <div className="max-w-lg text-white space-y-3">
                                                 {slide.subtitle && (
-                                                    <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/90">
+                                                    <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200/90">
                                                         {slide.subtitle}
                                                     </p>
                                                 )}
@@ -192,14 +192,14 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                                                 <div className="pt-2 flex flex-wrap items-center gap-3">
                                                     <Link
                                                         href={slide.link_url || '/shop'}
-                                                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#F96D16] hover:bg-[#EA580C] text-white font-semibold text-xs sm:text-sm rounded-full shadow-md transition"
+                                                        className="inline-flex items-center gap-2 h-11 px-6 bg-[#F96D16] hover:bg-[#EA580C] text-white font-semibold text-xs sm:text-sm rounded-lg transition"
                                                     >
                                                         <span>{slide.button_text || 'Shop Now'}</span>
                                                         <ArrowRight className="w-4 h-4" />
                                                     </Link>
                                                     <Link
                                                         href="/shop?sort=latest"
-                                                        className="inline-flex items-center px-5 py-2.5 border border-white/50 hover:bg-white/10 text-white font-medium text-xs sm:text-sm rounded-full transition"
+                                                        className="inline-flex items-center h-11 px-5 border border-white/40 hover:bg-white/10 text-white font-medium text-xs sm:text-sm rounded-lg transition"
                                                     >
                                                         Explore Collection
                                                     </Link>
@@ -213,13 +213,13 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                     })}
                 </div>
 
-                {/* Carousel Arrow Controls */}
+                {/* Carousel Arrow Controls (touch-visible on mobile, hover on desktop) */}
                 {activeSlides.length > 1 && (
                     <>
                         <button
                             type="button"
                             onClick={prevSlide}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/35 hover:bg-black/60 text-white transition backdrop-blur-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-stone-900/45 hover:bg-stone-900/70 text-white transition backdrop-blur-xs opacity-80 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
                             aria-label="Previous slide"
                         >
                             <ChevronLeft className="w-5 h-5" />
@@ -227,7 +227,7 @@ export function HeroSlider({ sliders, theme, defaultHero }: HeroSliderProps) {
                         <button
                             type="button"
                             onClick={nextSlide}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/35 hover:bg-black/60 text-white transition backdrop-blur-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-stone-900/45 hover:bg-stone-900/70 text-white transition backdrop-blur-xs opacity-80 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
                             aria-label="Next slide"
                         >
                             <ChevronRight className="w-5 h-5" />

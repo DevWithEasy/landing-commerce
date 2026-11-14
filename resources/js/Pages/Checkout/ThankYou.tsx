@@ -69,34 +69,34 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
 
             <div className="max-w-2xl mx-auto">
                 {/* Celebratory Hero Card */}
-                <div className="bg-white rounded-3xl shadow-[0_2px_14px_rgba(15,23,42,0.05)] border border-stone-200/80 overflow-hidden text-center p-6 sm:p-8 mb-6">
+                <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden text-center p-6 sm:p-8 mb-6">
                     <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-emerald-50/50 border border-emerald-200/60">
                         <CheckCircle2 className="w-9 h-9 text-[#0B3B2E]" />
                     </div>
 
-                    <span className="inline-block px-3.5 py-1 bg-emerald-50 text-[#0B3B2E] text-xs font-bold rounded-full mb-2.5 border border-emerald-200/80">
+                    <span className="inline-block px-3.5 py-1 bg-emerald-50 text-[#0B3B2E] text-xs font-semibold rounded-full mb-2.5 border border-emerald-200/80">
                         অর্ডার সফলভাবে গ্রহণ করা হয়েছে
                     </span>
 
-                    <h1 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                    <h1 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
                         ধন্যবাদ, {order.customer_name}!
                     </h1>
 
-                    <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto">
+                    <p className="text-sm text-stone-600 mt-2 max-w-md mx-auto">
                         আপনার অর্ডারটি প্রক্রিয়াধীন রয়েছে। আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে ফোনে
                         যোগাযোগ করে অর্ডারটি কনফার্ম করবেন।
                     </p>
 
-                    <div className="mt-5 p-3.5 bg-[#FAF7F2] rounded-2xl border border-stone-200/80 inline-flex items-center gap-3">
+                    <div className="mt-5 p-3.5 bg-[#FAF7F2] rounded-xl border border-stone-200/80 inline-flex items-center gap-3">
                         <div className="text-left">
-                            <span className="text-xs text-gray-500 font-medium block">
+                            <span className="text-xs text-stone-500 font-medium block">
                                 অর্ডার ট্র্যাকিং নম্বর
                             </span>
-                            <span className="text-base sm:text-lg font-mono font-bold text-gray-900 tracking-wider">
+                            <span className="text-base sm:text-lg font-mono font-bold text-stone-900 tracking-wider">
                                 #{order.order_number}
                             </span>
                         </div>
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-orange-50 text-[#EA580C] border border-orange-200/70">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-[#EA580C] border border-orange-200/70">
                             <Clock className="w-3.5 h-3.5" />
                             <span>পেন্ডিং (Pending)</span>
                         </span>
@@ -110,7 +110,7 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={() => trackContact('WhatsApp')}
-                                className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[#0B3B2E] hover:bg-[#092E24] text-white font-bold text-sm shadow-sm transition-all cursor-pointer"
+                                className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto h-11 px-6 rounded-lg bg-[#0B3B2E] hover:bg-[#082B21] text-white font-semibold text-sm transition-all cursor-pointer"
                             >
                                 <MessageCircle className="w-5 h-5 fill-current" />
                                 <span>হোয়াটসঅ্যাপে অর্ডার সম্পর্কে জানুন</span>
@@ -120,34 +120,34 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                 </div>
 
                 {/* Order Details & Summary Card */}
-                <div className="bg-white rounded-3xl shadow-[0_2px_14px_rgba(15,23,42,0.05)] border border-stone-200/80 p-6 sm:p-8 space-y-6">
+                <div className="bg-white rounded-xl border border-stone-200/80 p-6 sm:p-8 space-y-6">
                     {/* Items Snapshot */}
                     <div>
-                        <h2 className="font-serif text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <h2 className="font-serif text-lg font-bold text-stone-900 mb-3 flex items-center gap-2">
                             <PackageCheck className="w-5 h-5 text-[#F96D16]" />
                             <span>অর্ডারকৃত পণ্যসমূহ</span>
                         </h2>
 
-                        <div className="divide-y divide-stone-100 border border-stone-200/70 rounded-2xl overflow-hidden">
+                        <div className="divide-y divide-stone-100 border border-stone-200/70 rounded-xl overflow-hidden">
                             {order.items.map((item) => (
                                 <div
                                     key={item.id}
                                     className="p-3.5 sm:p-4 flex items-center justify-between text-sm bg-white"
                                 >
                                     <div className="min-w-0 pr-4">
-                                        <h4 className="font-bold text-gray-900 truncate">
+                                        <h4 className="font-semibold text-stone-900 truncate">
                                             {item.product_title}
                                         </h4>
-                                        <p className="text-xs text-gray-500 mt-0.5">
+                                        <p className="text-xs text-stone-500 mt-0.5">
                                             ভ্যারিয়েন্ট: {item.variant_name} | পরিমাণ:{' '}
                                             {item.quantity} টি
                                         </p>
                                     </div>
                                     <div className="text-right shrink-0">
-                                        <span className="font-extrabold text-[#EA580C]">
+                                        <span className="font-bold text-[#EA580C]">
                                             {formatBdt(item.total_price)}
                                         </span>
-                                        <span className="block text-[11px] text-gray-400">
+                                        <span className="block text-[11px] text-stone-400">
                                             {formatBdt(item.unit_price)} প্রতি পিস
                                         </span>
                                     </div>
@@ -157,17 +157,17 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                     </div>
 
                     {/* Pricing Calculation Breakdown */}
-                    <div className="p-4 bg-[#FAF7F2] border border-stone-200/70 rounded-2xl space-y-2.5 text-sm">
-                        <div className="flex justify-between text-gray-600">
+                    <div className="p-4 bg-[#FAF7F2] border border-stone-200/70 rounded-xl space-y-2.5 text-sm">
+                        <div className="flex justify-between text-stone-600">
                             <span>সাবটোটাল</span>
-                            <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-stone-900">
                                 {formatBdt(order.subtotal)}
                             </span>
                         </div>
 
-                        <div className="flex justify-between text-gray-600">
+                        <div className="flex justify-between text-stone-600">
                             <span>ডেলিভারি চার্জ</span>
-                            <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-stone-900">
                                 {formatBdt(order.shipping_fee)}
                             </span>
                         </div>
@@ -181,14 +181,14 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
 
                         <div className="pt-2.5 border-t border-stone-200 flex justify-between items-baseline">
                             <div>
-                                <span className="text-base font-bold text-gray-900 block">
+                                <span className="text-base font-bold text-stone-900 block">
                                     সর্বমোট প্রদেয়
                                 </span>
                                 <span className="text-[11px] text-[#0B3B2E] font-medium">
                                     ক্যাশ অন ডেলিভারি (পণ্য হাতে পেয়ে টাকা দিন)
                                 </span>
                             </div>
-                            <span className="text-xl font-extrabold text-[#EA580C]">
+                            <span className="text-xl font-bold text-[#EA580C]">
                                 {formatBdt(order.total)}
                             </span>
                         </div>
@@ -196,15 +196,15 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
 
                     {/* Customer & Delivery Address Snapshot */}
                     <div>
-                        <h2 className="font-serif text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <h2 className="font-serif text-lg font-bold text-stone-900 mb-3 flex items-center gap-2">
                             <MapPin className="w-5 h-5 text-[#F96D16]" />
                             <span>ডেলিভারি ঠিকানা ও গ্রাহক তথ্য</span>
                         </h2>
 
-                        <div className="p-4 bg-[#FAF7F2] border border-stone-200/70 rounded-2xl space-y-2 text-sm text-gray-700">
+                        <div className="p-4 bg-[#FAF7F2] border border-stone-200/70 rounded-xl space-y-2 text-sm text-stone-700">
                             <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-[#0B3B2E] shrink-0" />
-                                <span className="font-medium text-gray-900">
+                                <span className="font-medium text-stone-900">
                                     {order.customer_name}
                                 </span>
                             </div>
@@ -217,10 +217,10 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                             <div className="flex items-start gap-2 pt-1">
                                 <MapPin className="w-4 h-4 text-[#0B3B2E] shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="font-medium text-gray-900">
+                                    <p className="font-medium text-stone-900">
                                         {order.delivery_address}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-0.5">
+                                    <p className="text-xs text-stone-500 mt-0.5">
                                         {order.upazila ? `${order.upazila}, ` : ''}
                                         {order.district}
                                     </p>
@@ -229,12 +229,12 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
 
                             {order.notes && (
                                 <div className="flex items-start gap-2 pt-2 border-t border-stone-200/70 mt-2 text-xs">
-                                    <FileText className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                                    <FileText className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
                                     <div>
-                                        <span className="font-semibold text-gray-700">
+                                        <span className="font-semibold text-stone-700">
                                             বিশেষ নির্দেশনা:
                                         </span>{' '}
-                                        <span className="text-gray-600">{order.notes}</span>
+                                        <span className="text-stone-600">{order.notes}</span>
                                     </div>
                                 </div>
                             )}
@@ -242,7 +242,7 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                     </div>
 
                     {/* Trust Footnote */}
-                    <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70 flex items-center gap-2 text-xs text-[#0B3B2E]">
+                    <div className="p-3.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70 flex items-center gap-2 text-xs text-[#0B3B2E]">
                         <ShieldCheck className="w-4 h-4 text-[#0B3B2E] shrink-0" />
                         <span>
                             পণ্য রিসিভ করার সময় ভালো করে দেখে বুঝে নিন। কোনো সমস্যা হলে আমাদের সাথে
@@ -254,14 +254,14 @@ export default function ThankYou({ order, merchantWhatsapp }: ThankYouProps) {
                     <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                         <Link
                             href="/"
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#F96D16] hover:bg-[#EA580C] text-white text-sm font-bold shadow-xs transition-colors w-full sm:w-auto"
+                            className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-sm font-semibold transition-colors w-full sm:w-auto"
                         >
                             <Home className="w-4 h-4" />
                             <span>হোম পেইজে ফিরে যান</span>
                         </Link>
                         <Link
                             href="/track-order"
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-[#FAF7F2] border border-stone-300 text-[#0B3B2E] text-sm font-semibold transition-colors w-full sm:w-auto"
+                            className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-white hover:bg-[#FAF7F2] border border-stone-300 text-[#0B3B2E] text-sm font-semibold transition-colors w-full sm:w-auto"
                         >
                             <span>অর্ডার ট্র্যাক করুন</span>
                         </Link>

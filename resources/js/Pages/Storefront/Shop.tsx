@@ -576,14 +576,14 @@ export default function Shop({
                                 </button>
 
                                 <div className="flex items-center gap-2">
-                                    <label htmlFor="shop-sort" className="text-xs text-gray-500 hidden sm:inline">
+                                    <label htmlFor="shop-sort" className="text-xs text-stone-500 hidden sm:inline">
                                         Sort by:
                                     </label>
                                     <select
                                         id="shop-sort"
                                         value={sort}
                                         onChange={(e) => handleSortChange(e.target.value)}
-                                        className="px-3 py-2 bg-white border border-stone-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16]"
+                                        className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E]"
                                     >
                                         <option value="popular">Popular</option>
                                         <option value="latest">Newest</option>
@@ -597,10 +597,10 @@ export default function Shop({
                                         type="button"
                                         onClick={() => setViewMode('grid')}
                                         aria-label="Grid view"
-                                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${
+                                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition ${
                                             viewMode === 'grid'
-                                                ? 'bg-[#F96D16] text-white shadow-xs'
-                                                : 'bg-white border border-stone-200 text-gray-600 hover:bg-stone-50'
+                                                ? 'bg-[#0B3B2E] text-white'
+                                                : 'bg-white border border-stone-200 text-stone-600 hover:bg-[#FAF7F2]'
                                         }`}
                                     >
                                         <LayoutGrid className="w-4 h-4" />
@@ -609,10 +609,10 @@ export default function Shop({
                                         type="button"
                                         onClick={() => setViewMode('list')}
                                         aria-label="List view"
-                                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${
+                                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition ${
                                             viewMode === 'list'
-                                                ? 'bg-[#F96D16] text-white shadow-xs'
-                                                : 'bg-white border border-stone-200 text-gray-600 hover:bg-stone-50'
+                                                ? 'bg-[#0B3B2E] text-white'
+                                                : 'bg-white border border-stone-200 text-stone-600 hover:bg-[#FAF7F2]'
                                         }`}
                                     >
                                         <List className="w-4 h-4" />
@@ -623,17 +623,17 @@ export default function Shop({
 
                         {/* Product Results */}
                         {products.data.length === 0 ? (
-                            <div className="bg-white rounded-2xl border border-stone-200/80 p-12 text-center">
+                            <div className="bg-white rounded-xl border border-stone-200/80 p-12 text-center">
                                 <FolderTree className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                                <h3 className="text-base font-bold text-gray-900">No products found</h3>
-                                <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-sm mx-auto">
+                                <h3 className="text-base font-serif font-bold text-[#0B3B2E]">No products found</h3>
+                                <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-sm mx-auto">
                                     No products matched your selected filters. Try clearing filters or browsing another category.
                                 </p>
                                 <div className="mt-5">
                                     <button
                                         type="button"
                                         onClick={clearAllFilters}
-                                        className="px-5 py-2.5 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-xl text-xs font-bold transition"
+                                        className="px-5 py-2.5 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg text-xs font-semibold transition"
                                     >
                                         View All Products
                                     </button>
@@ -642,7 +642,7 @@ export default function Shop({
                         ) : (
                             <>
                                 {viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                                         {products.data.map((product) => (
                                             <ProductCard key={product.id} product={product} />
                                         ))}
@@ -658,27 +658,27 @@ export default function Shop({
                                             return (
                                                 <div
                                                     key={product.id}
-                                                    className="bg-white rounded-2xl border border-stone-200/80 p-3.5 flex items-center gap-4 hover:shadow-md transition"
+                                                    className="bg-white rounded-xl border border-stone-200/80 hover:border-stone-300 p-3.5 flex items-center gap-4 transition"
                                                 >
                                                     <Link
                                                         href={`/product/${product.slug}`}
-                                                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-[#F6F3EE] overflow-hidden shrink-0"
+                                                        className="w-22 h-28 sm:w-24 sm:h-30 rounded-lg bg-[#F3EDE4] overflow-hidden shrink-0"
                                                     >
                                                         <SafeImage
                                                             src={product.primaryImage?.url || product.primary_image?.url}
                                                             alt={product.title}
-                                                            className="w-full h-full object-contain p-2"
+                                                            className="w-full h-full object-cover"
                                                             fallbackText={product.title}
                                                         />
                                                     </Link>
                                                     <div className="flex-1 min-w-0">
                                                         <Link href={`/product/${product.slug}`}>
-                                                            <h3 className="text-sm sm:text-base font-semibold text-gray-900 hover:text-[#0B3B2E] truncate">
+                                                            <h3 className="text-sm sm:text-base font-semibold text-stone-900 hover:text-[#0B3B2E] truncate">
                                                                 {product.title}
                                                             </h3>
                                                         </Link>
                                                         {product.categories && product.categories.length > 0 && (
-                                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                            <p className="text-xs text-stone-400 mt-0.5">
                                                                 {product.categories[0].name}
                                                             </p>
                                                         )}
@@ -687,7 +687,7 @@ export default function Shop({
                                                                 {formatBdt(activePrice)}
                                                             </span>
                                                             {hasDiscount && (
-                                                                <span className="text-xs text-gray-400 line-through">
+                                                                <span className="text-xs text-stone-400 line-through">
                                                                     {formatBdt(product.regular_price)}
                                                                 </span>
                                                             )}
@@ -695,7 +695,7 @@ export default function Shop({
                                                     </div>
                                                     <Link
                                                         href={`/product/${product.slug}`}
-                                                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-bold transition shrink-0"
+                                                        className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-semibold transition shrink-0"
                                                     >
                                                         <ShoppingCart className="w-3.5 h-3.5" />
                                                         <span className="hidden sm:inline">View</span>
@@ -727,16 +727,16 @@ export default function Shop({
             {isMobileFilterOpen && (
                 <div className="fixed inset-0 z-50 flex lg:hidden">
                     <div
-                        className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm"
+                        className="fixed inset-0 bg-stone-900/50 backdrop-blur-xs"
                         onClick={() => setIsMobileFilterOpen(false)}
                     />
-                    <div className="relative ml-auto w-4/5 max-w-sm bg-white h-full shadow-2xl p-6 z-10 overflow-y-auto">
+                    <div className="relative ml-auto w-4/5 max-w-sm bg-white h-full shadow-xl p-6 z-10 overflow-y-auto">
                         <div className="flex items-center justify-between pb-4 mb-4 border-b border-stone-100">
-                            <span className="font-bold text-gray-900 text-base">Filters</span>
+                            <span className="font-serif font-bold text-[#0B3B2E] text-base">Filters</span>
                             <button
                                 type="button"
                                 onClick={() => setIsMobileFilterOpen(false)}
-                                className="p-1 text-gray-400 hover:text-gray-600"
+                                className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg"
                             >
                                 <X className="w-5 h-5" />
                             </button>

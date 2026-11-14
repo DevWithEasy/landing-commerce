@@ -126,32 +126,32 @@ export default function TrackOrder({
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
 
-            <div className="bg-gradient-to-b from-indigo-50/50 via-white to-gray-50 py-10 md:py-16 min-h-[calc(100vh-280px)]">
+            <div className="bg-[#FAF7F2] py-10 md:py-16 min-h-[calc(100vh-280px)]">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
                     {/* Header Banner */}
-                    <div className="text-center space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-xs font-bold">
+                    <div className="text-center space-y-2.5">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-50 border border-emerald-200/80 rounded-full text-[#0B3B2E] text-xs font-bold">
                             <Truck className="w-3.5 h-3.5" />
                             <span>লাইভ ডেলিভারি ট্র্যাকিং</span>
                         </div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#0B3B2E] tracking-tight">
                             আপনার অর্ডার ট্র্যাক করুন
                         </h1>
-                        <p className="text-sm text-gray-500 max-w-lg mx-auto">
+                        <p className="text-sm text-stone-600 max-w-lg mx-auto">
                             অর্ডার নম্বর এবং মোবাইল নম্বর প্রদান করে আপনার অর্ডারের বর্তমান অবস্থা জেনে নিন।
                         </p>
                     </div>
 
                     {/* Search Form Card */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm">
-                        <div className="flex border-b border-gray-100 pb-4 mb-6 gap-6 text-sm">
+                    <div className="bg-white rounded-2xl border border-stone-200/80 p-6 md:p-8 shadow-xs">
+                        <div className="flex border-b border-stone-200/80 pb-4 mb-6 gap-6 text-sm">
                             <button
                                 type="button"
                                 onClick={() => setTrackingMode('standard')}
                                 className={`font-bold transition pb-2 -mb-4 border-b-2 ${
                                     trackingMode === 'standard'
-                                        ? 'border-indigo-600 text-indigo-600'
-                                        : 'border-transparent text-gray-400 hover:text-gray-700'
+                                        ? 'border-[#0B3B2E] text-[#0B3B2E]'
+                                        : 'border-transparent text-stone-400 hover:text-stone-700'
                                 }`}
                             >
                                 অর্ডার নম্বর ও মোবাইল নম্বর দিয়ে খুঁজুন
@@ -161,8 +161,8 @@ export default function TrackOrder({
                                 onClick={() => setTrackingMode('token')}
                                 className={`font-bold transition pb-2 -mb-4 border-b-2 ${
                                     trackingMode === 'token'
-                                        ? 'border-indigo-600 text-indigo-600'
-                                        : 'border-transparent text-gray-400 hover:text-gray-700'
+                                        ? 'border-[#0B3B2E] text-[#0B3B2E]'
+                                        : 'border-transparent text-stone-400 hover:text-stone-700'
                                 }`}
                             >
                                 ট্র্যাকিং লিংক / টোকেন দিয়ে খুঁজুন
@@ -177,14 +177,14 @@ export default function TrackOrder({
                                             অর্ডার নম্বর (Order Number)
                                         </label>
                                         <div className="relative">
-                                            <Hash className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                            <Hash className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                             <input
                                                 type="text"
                                                 required
                                                 placeholder="উদা: ORD-20261019-XXXX"
                                                 value={orderNumber}
                                                 onChange={(e) => setOrderNumber(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                                                className="w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2] border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16] focus:bg-white transition"
                                             />
                                         </div>
                                     </div>
@@ -194,14 +194,14 @@ export default function TrackOrder({
                                             মোবাইল নম্বর (Customer Phone)
                                         </label>
                                         <div className="relative">
-                                            <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                            <Phone className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                             <input
                                                 type="text"
                                                 required
                                                 placeholder="উদা: 01700000000"
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                                                className="w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2] border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16] focus:bg-white transition"
                                             />
                                         </div>
                                     </div>
@@ -212,14 +212,14 @@ export default function TrackOrder({
                                         নিরাপদ ট্র্যাকিং টোকেন (Security Token)
                                     </label>
                                     <div className="relative">
-                                        <ShieldCheck className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                                        <ShieldCheck className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                         <input
                                             type="text"
                                             required
                                             placeholder="আপনার অর্ডার কনফার্মেশন লিংকের টোকেন প্রদান করুন"
                                             value={token}
                                             onChange={(e) => setToken(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition font-mono text-xs"
+                                            className="w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2] border border-stone-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16] focus:bg-white transition font-mono text-xs"
                                         />
                                     </div>
                                 </div>
@@ -236,7 +236,7 @@ export default function TrackOrder({
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full md:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full md:w-auto h-11 px-8 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     <Search className="w-4 h-4" />
                                     <span>{isLoading ? 'অনুসন্ধান করা হচ্ছে...' : 'অর্ডার ট্র্যাক করুন'}</span>
@@ -249,29 +249,29 @@ export default function TrackOrder({
                     {trackingData && (
                         <div className="space-y-6">
                             {/* Order Status Banner */}
-                            <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-8">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+                            <div className="bg-white rounded-xl border border-stone-200/80 p-6 md:p-8 space-y-8">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
                                     <div>
                                         <div className="flex items-center gap-3">
-                                            <h2 className="text-xl font-extrabold text-gray-900">
+                                            <h2 className="text-xl font-serif font-bold text-[#0B3B2E]">
                                                 অর্ডার #{trackingData.order_number}
                                             </h2>
-                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-[#0B3B2E] border border-emerald-200">
                                                 {trackingData.status_label.bn}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                        <p className="text-xs text-stone-500 mt-1 flex items-center gap-2">
+                                            <Calendar className="w-3.5 h-3.5 text-stone-400" />
                                             <span>তারিখ: {trackingData.created_at_human}</span>
                                             <span>•</span>
-                                            <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                                            <MapPin className="w-3.5 h-3.5 text-stone-400" />
                                             <span>জেলা: {trackingData.district}</span>
                                         </p>
                                     </div>
 
                                     <div className="text-right sm:self-center">
-                                        <p className="text-xs text-gray-500">সর্বমোট প্রদেয়</p>
-                                        <p className="text-lg font-black text-indigo-600">
+                                        <p className="text-xs text-stone-500">সর্বমোট প্রদেয়</p>
+                                        <p className="text-lg font-bold text-[#EA580C]">
                                             {formatBdt(trackingData.total)}
                                         </p>
                                     </div>
@@ -282,9 +282,9 @@ export default function TrackOrder({
                                     <div className="space-y-4">
                                         <div className="relative">
                                             {/* Progress Background Line */}
-                                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 -z-0" />
+                                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-stone-200/70 -translate-y-1/2 -z-0" />
                                             <div
-                                                className="absolute top-1/2 left-0 h-1 bg-indigo-600 -translate-y-1/2 transition-all duration-500 -z-0"
+                                                className="absolute top-1/2 left-0 h-1 bg-[#0B3B2E] -translate-y-1/2 transition-all duration-500 -z-0"
                                                 style={{
                                                     width: `${Math.max(0, (currentStepIndex / (steps.length - 1)) * 100)}%`,
                                                 }}
@@ -300,10 +300,10 @@ export default function TrackOrder({
                                                             <div
                                                                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition duration-300 ${
                                                                     isCurrent
-                                                                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-100 shadow'
+                                                                        ? 'bg-[#F96D16] text-white ring-4 ring-orange-100 shadow-xs'
                                                                         : isCompleted
-                                                                        ? 'bg-indigo-600 text-white'
-                                                                        : 'bg-white text-gray-400 border-2 border-gray-200'
+                                                                        ? 'bg-[#0B3B2E] text-white'
+                                                                        : 'bg-white text-stone-400 border-2 border-stone-200'
                                                                 }`}
                                                             >
                                                                 {isCompleted ? (
@@ -315,10 +315,10 @@ export default function TrackOrder({
                                                             <span
                                                                 className={`mt-2 text-xs font-bold max-w-[80px] sm:max-w-none ${
                                                                     isCurrent
-                                                                        ? 'text-indigo-600'
+                                                                        ? 'text-[#EA580C]'
                                                                         : isCompleted
-                                                                        ? 'text-gray-800'
-                                                                        : 'text-gray-400'
+                                                                        ? 'text-[#0B3B2E]'
+                                                                        : 'text-stone-400'
                                                                 }`}
                                                             >
                                                                 {step.title}
@@ -343,17 +343,17 @@ export default function TrackOrder({
 
                                 {/* Courier Shipment Info */}
                                 {trackingData.courier_name && (
-                                    <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center flex-shrink-0">
+                                            <div className="w-10 h-10 rounded-lg bg-[#0B3B2E] text-white flex items-center justify-center flex-shrink-0">
                                                 <Truck className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <p className="text-xs font-bold text-indigo-950">
+                                                <p className="text-xs font-bold text-[#0B3B2E]">
                                                     শিপমেন্ট কুরিয়ার: {trackingData.courier_name.toUpperCase()}
                                                 </p>
                                                 {trackingData.courier_tracking_id && (
-                                                    <p className="text-xs text-indigo-700 font-mono mt-0.5">
+                                                    <p className="text-xs text-emerald-800 font-mono mt-0.5">
                                                         ট্র্যাকিং আইডি: {trackingData.courier_tracking_id}
                                                     </p>
                                                 )}
@@ -365,7 +365,7 @@ export default function TrackOrder({
                                                 href={trackingData.courier_tracking_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition self-start sm:self-auto shadow-xs"
+                                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-full text-xs font-bold transition self-start sm:self-auto shadow-xs"
                                             >
                                                 <span>কুরিয়ার ওয়েবসাইটে সরাসরি দেখুন</span>
                                                 <ExternalLink className="w-3.5 h-3.5" />
@@ -376,16 +376,16 @@ export default function TrackOrder({
                             </div>
 
                             {/* Order Items & Summary */}
-                            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                                        <Package className="w-4 h-4 text-indigo-600" />
+                            <div className="bg-white rounded-2xl border border-stone-200/80 overflow-hidden shadow-xs">
+                                <div className="p-5 border-b border-stone-100 flex items-center justify-between">
+                                    <h3 className="font-serif font-bold text-[#0B3B2E] text-base flex items-center gap-2">
+                                        <Package className="w-4 h-4 text-[#0B3B2E]" />
                                         <span>অর্ডারকৃত পণ্যের বিবরণ</span>
                                     </h3>
-                                    <span className="text-xs text-gray-500">ফোন: {trackingData.masked_phone}</span>
+                                    <span className="text-xs text-stone-500">ফোন: {trackingData.masked_phone}</span>
                                 </div>
 
-                                <div className="divide-y divide-gray-100">
+                                <div className="divide-y divide-stone-100">
                                     {trackingData.items.map((item) => (
                                         <div key={item.id} className="p-4 flex items-center justify-between gap-4">
                                             <div>
@@ -393,11 +393,11 @@ export default function TrackOrder({
                                                     {item.product_title}
                                                 </h4>
                                                 {item.variant_name && (
-                                                    <p className="text-xs text-indigo-600 font-medium">
+                                                    <p className="text-xs text-[#0B3B2E] font-medium">
                                                         ভেরিয়েন্ট: {item.variant_name}
                                                     </p>
                                                 )}
-                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                <p className="text-xs text-stone-500 mt-0.5">
                                                     {formatBdt(item.unit_price)} × {item.quantity} টি
                                                 </p>
                                             </div>
@@ -408,24 +408,24 @@ export default function TrackOrder({
                                     ))}
                                 </div>
 
-                                <div className="p-5 bg-gray-50/70 border-t border-gray-100 space-y-2 text-xs">
-                                    <div className="flex justify-between text-gray-600">
+                                <div className="p-5 bg-[#FAF7F2]/80 border-t border-stone-200/70 space-y-2 text-xs">
+                                    <div className="flex justify-between text-stone-600">
                                         <span>সাবটোটাল:</span>
                                         <span className="font-semibold text-gray-900">{formatBdt(trackingData.subtotal)}</span>
                                     </div>
-                                    <div className="flex justify-between text-gray-600">
+                                    <div className="flex justify-between text-stone-600">
                                         <span>ডেলিভারি চার্জ:</span>
                                         <span className="font-semibold text-gray-900">+{formatBdt(trackingData.shipping_fee)}</span>
                                     </div>
                                     {Number(trackingData.discount) > 0 && (
-                                        <div className="flex justify-between text-emerald-600">
+                                        <div className="flex justify-between text-[#0B3B2E]">
                                             <span>ছাড়:</span>
                                             <span className="font-semibold">-{formatBdt(trackingData.discount)}</span>
                                         </div>
                                     )}
-                                    <div className="pt-2 border-t border-gray-200 flex justify-between text-sm font-extrabold text-gray-900">
+                                    <div className="pt-2 border-t border-stone-200 flex justify-between text-sm font-extrabold text-gray-900">
                                         <span>সর্বমোট প্রদেয়:</span>
-                                        <span className="text-indigo-600 text-base">{formatBdt(trackingData.total)}</span>
+                                        <span className="text-[#EA580C] text-base">{formatBdt(trackingData.total)}</span>
                                     </div>
                                 </div>
                             </div>

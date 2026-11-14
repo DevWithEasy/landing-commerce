@@ -4,6 +4,7 @@ import type {
     PaginatedData,
     PolicyPage,
     Product,
+    PromoBannersConfig,
     SharedProps,
     Slider,
 } from '@/types';
@@ -33,6 +34,7 @@ export interface SectionsConfig {
 export interface StorefrontHomeProps extends SharedProps {
     sliders: Slider[];
     defaultHero?: DefaultHeroConfig;
+    promoBanners?: PromoBannersConfig;
     categories: Category[];
     featuredProducts: Product[];
     newArrivals: Product[];

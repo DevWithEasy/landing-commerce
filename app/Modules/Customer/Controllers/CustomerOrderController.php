@@ -28,7 +28,7 @@ class CustomerOrderController extends Controller
         $customer = $request->user('customer');
 
         $theme = $this->settings->getStorefrontTheme();
-        $categories = Category::active()->root()->get();
+        $categories = Category::toTree(true);
 
         $orders = $customer->orders()
             ->with(['items.product.images'])
@@ -57,7 +57,7 @@ class CustomerOrderController extends Controller
             ->firstOrFail();
 
         $theme = $this->settings->getStorefrontTheme();
-        $categories = Category::active()->root()->get();
+        $categories = Category::toTree(true);
 
         return Inertia::render('Customer/OrderDetail', [
             'theme' => $theme,

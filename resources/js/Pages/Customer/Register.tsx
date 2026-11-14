@@ -97,12 +97,12 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
                 {/* Right Form Panel (Warm Cream + White Card) */}
                 <div className="lg:w-1/2 bg-[#FAF7F2] flex items-center justify-center py-12 px-4 sm:px-8">
-                    <div className="max-w-md w-full bg-white rounded-3xl shadow-[0_8px_32px_rgba(15,23,42,0.06)] border border-stone-200/70 p-8 sm:p-10">
+                    <div className="max-w-md w-full bg-white rounded-xl border border-stone-200/80 p-8 sm:p-10">
                         <div className="text-center mb-6">
-                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#0B3B2E]">
                                 Create Your Account
                             </h2>
-                            <p className="text-xs sm:text-sm text-gray-500 mt-1.5">
+                            <p className="text-xs sm:text-sm text-stone-500 mt-1.5">
                                 Sign up to track orders and save your favorite items.
                             </p>
                         </div>
@@ -112,7 +112,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                             <div>
                                 <div className="relative">
                                     <UserIcon
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -124,7 +124,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('name', e.target.value)}
                                         required
                                         placeholder="Full Name"
-                                        className={`w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
                                             errors.name ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
                                         }`}
                                     />
@@ -138,7 +138,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                             <div>
                                 <div className="relative">
                                     <Mail
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -150,7 +150,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('email', e.target.value)}
                                         required
                                         placeholder="Email address"
-                                        className={`w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
                                             errors.email ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
                                         }`}
                                     />
@@ -164,7 +164,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                             <div>
                                 <div className="relative">
                                     <Phone
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -174,7 +174,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         value={data.phone}
                                         onChange={(e) => setData('phone', e.target.value)}
                                         placeholder="Phone Number (Optional)"
-                                        className={`w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
                                             errors.phone ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
                                         }`}
                                     />
@@ -188,7 +188,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                             <div>
                                 <div className="relative">
                                     <Lock
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -200,7 +200,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('password', e.target.value)}
                                         required
                                         placeholder="Password (min. 8 characters)"
-                                        className={`w-full pl-10 pr-10 py-2.5 bg-[#FAF7F2]/70 border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition ${
+                                        className={`w-full h-11 pl-10 pr-10 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
                                             errors.password ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
                                         }`}
                                     />
@@ -208,7 +208,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         type="button"
                                         onClick={() => setShowPassword((prev) => !prev)}
                                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
                                     >
                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
@@ -222,7 +222,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                             <div>
                                 <div className="relative">
                                     <Lock
-                                        className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2"
+                                        className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"
                                         aria-hidden="true"
                                     />
                                     <input
@@ -234,7 +234,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('password_confirmation', e.target.value)}
                                         required
                                         placeholder="Confirm Password"
-                                        className="w-full pl-10 pr-4 py-2.5 bg-[#FAF7F2]/70 border border-stone-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white transition"
+                                        className="w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border border-stone-200 rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition"
                                     />
                                 </div>
                             </div>
@@ -244,7 +244,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="w-full py-3 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-xl text-sm font-bold shadow-sm transition disabled:opacity-50"
+                                    className="w-full h-11 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg text-sm font-semibold transition disabled:opacity-50"
                                 >
                                     {processing ? 'Creating account...' : 'Create Account'}
                                 </button>

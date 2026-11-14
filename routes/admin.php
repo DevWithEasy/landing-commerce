@@ -103,6 +103,8 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
     // Hero Sliders Management
     Route::post('sliders/default-hero', [SliderController::class, 'updateDefaultHero'])
         ->name('sliders.default-hero');
+    Route::post('sliders/promo-banners', [SliderController::class, 'updatePromoBanners'])
+        ->name('sliders.promo-banners');
     Route::post('sliders/{slider}/toggle', [SliderController::class, 'toggle'])
         ->name('sliders.toggle');
     Route::resource('sliders', SliderController::class)->except(['create', 'show', 'edit']);

@@ -26,7 +26,8 @@ export function CustomerLayout({
     theme,
     categories,
 }: CustomerLayoutProps) {
-    const { auth, flash } = usePage<SharedProps>().props;
+    const page = usePage<SharedProps>();
+    const { auth, flash } = page.props;
     const customer = auth?.customer;
 
     const navLinks = [
@@ -34,25 +35,25 @@ export function CustomerLayout({
             name: 'ড্যাশবোর্ড (Dashboard)',
             href: '/customer/dashboard',
             icon: LayoutDashboard,
-            active: typeof window !== 'undefined' && window.location.pathname === '/customer/dashboard',
+            active: page.url.startsWith('/customer/dashboard'),
         },
         {
             name: 'আমার অর্ডারসমূহ (Orders)',
             href: '/customer/orders',
             icon: Package,
-            active: typeof window !== 'undefined' && window.location.pathname.startsWith('/customer/orders'),
+            active: page.url.startsWith('/customer/orders'),
         },
         {
             name: 'উইশলিস্ট (Wishlist)',
             href: '/customer/wishlist',
             icon: Heart,
-            active: typeof window !== 'undefined' && window.location.pathname === '/customer/wishlist',
+            active: page.url.startsWith('/customer/wishlist'),
         },
         {
             name: 'অর্ডার ট্র্যাক করুন (Track)',
             href: '/track-order',
             icon: Search,
-            active: typeof window !== 'undefined' && window.location.pathname === '/track-order',
+            active: page.url.startsWith('/track-order'),
         },
     ];
 
@@ -71,23 +72,23 @@ export function CustomerLayout({
                     </div>
                 )}
                 {flash?.error && (
-                    <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium flex items-center justify-between">
+                    <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-medium flex items-center justify-between">
                         <span>{flash.error}</span>
                     </div>
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Sidebar Navigation */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                        <div className="flex items-center gap-3.5 pb-6 border-b border-gray-100">
-                            <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                    <div className="bg-white rounded-xl border border-stone-200/80 p-6">
+                        <div className="flex items-center gap-3.5 pb-6 border-b border-stone-100">
+                            <div className="w-12 h-12 rounded-full bg-[#0B3B2E] text-white flex items-center justify-center font-serif font-bold text-lg shrink-0">
                                 {customer?.name ? customer.name.charAt(0).toUpperCase() : <UserIcon className="w-6 h-6" />}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <h3 className="font-bold text-gray-900 truncate text-base">
+                                <h3 className="font-serif font-bold text-[#0B3B2E] truncate text-base">
                                     {customer?.name || 'গ্রাহক একাউন্ট'}
                                 </h3>
-                                <p className="text-xs text-gray-500 truncate">
+                                <p className="text-xs text-stone-500 truncate">
                                     {customer?.email || ''}
                                 </p>
                             </div>
@@ -100,13 +101,13 @@ export function CustomerLayout({
                                     <Link
                                         key={item.href}
                                         href={item.href}
-                                        className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                                        className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition ${
                                             item.active
-                                                ? 'bg-indigo-50 text-indigo-700 font-bold'
-                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                ? 'bg-[#FAF7F2] text-[#0B3B2E] font-semibold border border-stone-200/80'
+                                                : 'text-stone-600 hover:bg-[#FAF7F2]/60 hover:text-stone-900'
                                         }`}
                                     >
-                                        <Icon className={`w-4 h-4 ${item.active ? 'text-indigo-600' : 'text-gray-400'}`} />
+                                        <Icon className={`w-4 h-4 ${item.active ? 'text-[#F96D16]' : 'text-stone-400'}`} />
                                         <span>{item.name}</span>
                                     </Link>
                                 );
@@ -115,9 +116,9 @@ export function CustomerLayout({
                             <button
                                 type="button"
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition mt-2"
+                                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium text-rose-600 hover:bg-rose-50 transition mt-2"
                             >
-                                <LogOut className="w-4 h-4 text-red-500" />
+                                <LogOut className="w-4 h-4 text-rose-500" />
                                 <span>লগআউট (Logout)</span>
                             </button>
                         </nav>

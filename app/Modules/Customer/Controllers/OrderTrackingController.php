@@ -30,7 +30,7 @@ class OrderTrackingController extends Controller
     public function show(Request $request): Response
     {
         $theme = $this->settings->getStorefrontTheme();
-        $categories = Category::active()->root()->get();
+        $categories = Category::toTree(true);
 
         $token = (string) $request->query('token', '');
         $orderNumber = (string) $request->query('order_number', '');

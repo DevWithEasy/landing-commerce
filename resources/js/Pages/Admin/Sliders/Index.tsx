@@ -2,6 +2,7 @@
 import {
     AlertCircle,
     ExternalLink,
+    FolderOpen,
     Images,
     Pencil,
     Plus,
@@ -14,12 +15,18 @@ import {
 } from 'lucide-react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
+import { MediaPickerModal } from '@/Builder/components/MediaPickerModal';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Pagination } from '@/Shared/Pagination';
-import type { Slider, SliderIndexProps } from '@/types';
+import type { MediaLibraryItem, Slider, SliderIndexProps } from '@/types';
 
-export default function SliderIndex({ sliders, defaultHero, filters }: SliderIndexProps) {
+export default function SliderIndex({
+    sliders,
+    defaultHero,
+    promoBanners,
+    filters,
+}: SliderIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
 
     // Default Fallback Hero State
@@ -33,11 +40,99 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
     const [heroCardTitle, setHeroCardTitle] = useState(defaultHero.card_title);
     const [heroCardSubtitle, setHeroCardSubtitle] = useState(defaultHero.card_subtitle);
     const [heroImage, setHeroImage] = useState<File | null>(null);
+    const [heroImagePath, setHeroImagePath] = useState<string | null>(null);
     const [heroImagePreview, setHeroImagePreview] = useState<string | null>(defaultHero.image_url || null);
     const [removeHeroImage, setRemoveHeroImage] = useState(false);
     const [isSavingHero, setIsSavingHero] = useState(false);
     const [heroErrors, setHeroErrors] = useState<Record<string, string>>({});
     const [heroSaved, setHeroSaved] = useState(false);
+
+    // Promo Banners (Seasonal Sale & Combo Deals) State
+    const [promoEnabled, setPromoEnabled] = useState(promoBanners.enabled);
+    const [seasonalBadge, setSeasonalBadge] = useState(promoBanners.seasonal.badge);
+    const [seasonalTitle, setSeasonalTitle] = useState(promoBanners.seasonal.title);
+    const [seasonalSubtitle, setSeasonalSubtitle] = useState(promoBanners.seasonal.subtitle);
+    const [seasonalBtnText, setSeasonalBtnText] = useState(promoBanners.seasonal.button_text);
+    const [seasonalBtnUrl, setSeasonalBtnUrl] = useState(promoBanners.seasonal.button_url);
+    const [seasonalImage, setSeasonalImage] = useState<File | null>(null);
+    const [seasonalImagePath, setSeasonalImagePath] = useState<string | null>(null);
+    const [seasonalImagePreview, setSeasonalImagePreview] = useState<string | null>(
+        promoBanners.seasonal.image_url || null
+    );
+    const [removeSeasonalImage, setRemoveSeasonalImage] = useState(false);
+
+    const [comboTitle, setComboTitle] = useState(promoBanners.combo.title);
+    const [comboSubtitle, setComboSubtitle] = useState(promoBanners.combo.subtitle);
+    const [comboBtnText, setComboBtnText] = useState(promoBanners.combo.button_text);
+    const [comboBtnUrl, setComboBtnUrl] = useState(promoBanners.combo.button_url);
+    const [comboBadgeLabel, setComboBadgeLabel] = useState(promoBanners.combo.badge_label);
+    const [comboBadgeValue, setComboBadgeValue] = useState(promoBanners.combo.badge_value);
+    const [comboImage, setComboImage] = useState<File | null>(null);
+    const [comboImagePath, setComboImagePath] = useState<string | null>(null);
+    const [comboImagePreview, setComboImagePreview] = useState<string | null>(
+        promoBanners.combo.image_url || null
+    );
+    const [removeComboImage, setRemoveComboImage] = useState(false);
+
+    const [isSavingPromo, setIsSavingPromo] = useState(false);
+    const [promoErrors, setPromoErrors] = useState<Record<string, string>>({});
+    const [promoSaved, setPromoSaved] = useState(false);
+
+    // Shared Media Library Picker State
+    type MediaTarget =
+        | 'create_desktop'
+        | 'create_mobile'
+        | 'edit_desktop'
+        | 'edit_mobile'
+        | 'default_hero'
+        | 'promo_seasonal'
+        | 'promo_combo'
+        | null;
+    const [mediaPickerTarget, setMediaPickerTarget] = useState<MediaTarget>(null);
+
+    const handleMediaSelect = (item: MediaLibraryItem) => {
+        switch (mediaPickerTarget) {
+            case 'create_desktop':
+                setCreateImage(null);
+                setCreateImagePath(item.file_path);
+                setCreateImagePreview(item.url);
+                break;
+            case 'create_mobile':
+                setCreateMobileImage(null);
+                setCreateMobileImagePath(item.file_path);
+                setCreateMobileImagePreview(item.url);
+                break;
+            case 'edit_desktop':
+                setEditImage(null);
+                setEditImagePath(item.file_path);
+                setEditImagePreview(item.url);
+                break;
+            case 'edit_mobile':
+                setEditMobileImage(null);
+                setEditMobileImagePath(item.file_path);
+                setEditMobileImagePreview(item.url);
+                break;
+            case 'default_hero':
+                setHeroImage(null);
+                setHeroImagePath(item.file_path);
+                setHeroImagePreview(item.url);
+                setRemoveHeroImage(false);
+                break;
+            case 'promo_seasonal':
+                setSeasonalImage(null);
+                setSeasonalImagePath(item.file_path);
+                setSeasonalImagePreview(item.url);
+                setRemoveSeasonalImage(false);
+                break;
+            case 'promo_combo':
+                setComboImage(null);
+                setComboImagePath(item.file_path);
+                setComboImagePreview(item.url);
+                setRemoveComboImage(false);
+                break;
+        }
+        setMediaPickerTarget(null);
+    };
 
     // Create Modal State
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -48,8 +143,10 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
     const [createSortOrder, setCreateSortOrder] = useState('0');
     const [createIsActive, setCreateIsActive] = useState(true);
     const [createImage, setCreateImage] = useState<File | null>(null);
+    const [createImagePath, setCreateImagePath] = useState<string | null>(null);
     const [createImagePreview, setCreateImagePreview] = useState<string | null>(null);
     const [createMobileImage, setCreateMobileImage] = useState<File | null>(null);
+    const [createMobileImagePath, setCreateMobileImagePath] = useState<string | null>(null);
     const [createMobileImagePreview, setCreateMobileImagePreview] = useState<string | null>(null);
 
     // Edit Modal State
@@ -62,8 +159,10 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
     const [editSortOrder, setEditSortOrder] = useState('0');
     const [editIsActive, setEditIsActive] = useState(true);
     const [editImage, setEditImage] = useState<File | null>(null);
+    const [editImagePath, setEditImagePath] = useState<string | null>(null);
     const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
     const [editMobileImage, setEditMobileImage] = useState<File | null>(null);
+    const [editMobileImagePath, setEditMobileImagePath] = useState<string | null>(null);
     const [editMobileImagePreview, setEditMobileImagePreview] = useState<string | null>(null);
 
     // Delete Modal State
@@ -87,6 +186,7 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         const file = e.target.files?.[0];
         if (file) {
             setCreateImage(file);
+            setCreateImagePath(null);
             setCreateImagePreview(URL.createObjectURL(file));
         }
     };
@@ -95,6 +195,7 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         const file = e.target.files?.[0];
         if (file) {
             setCreateMobileImage(file);
+            setCreateMobileImagePath(null);
             setCreateMobileImagePreview(URL.createObjectURL(file));
         }
     };
@@ -103,6 +204,7 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         const file = e.target.files?.[0];
         if (file) {
             setEditImage(file);
+            setEditImagePath(null);
             setEditImagePreview(URL.createObjectURL(file));
         }
     };
@@ -111,6 +213,7 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         const file = e.target.files?.[0];
         if (file) {
             setEditMobileImage(file);
+            setEditMobileImagePath(null);
             setEditMobileImagePreview(URL.createObjectURL(file));
         }
     };
@@ -124,8 +227,10 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         setEditSortOrder(String(slider.sort_order));
         setEditIsActive(slider.is_active);
         setEditImage(null);
+        setEditImagePath(null);
         setEditImagePreview(slider.image_url || null);
         setEditMobileImage(null);
+        setEditMobileImagePath(null);
         setEditMobileImagePreview(slider.mobile_image_url || null);
         setFormErrors({});
         setIsEditOpen(true);
@@ -143,8 +248,16 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         if (createButtonText) formData.append('button_text', createButtonText);
         formData.append('sort_order', createSortOrder);
         formData.append('is_active', createIsActive ? '1' : '0');
-        if (createImage) formData.append('image', createImage);
-        if (createMobileImage) formData.append('mobile_image', createMobileImage);
+        if (createImage) {
+            formData.append('image', createImage);
+        } else if (createImagePath) {
+            formData.append('image_path', createImagePath);
+        }
+        if (createMobileImage) {
+            formData.append('mobile_image', createMobileImage);
+        } else if (createMobileImagePath) {
+            formData.append('mobile_image_path', createMobileImagePath);
+        }
 
         router.post('/admin/sliders', formData, {
             onSuccess: () => {
@@ -156,8 +269,10 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                 setCreateSortOrder('0');
                 setCreateIsActive(true);
                 setCreateImage(null);
+                setCreateImagePath(null);
                 setCreateImagePreview(null);
                 setCreateMobileImage(null);
+                setCreateMobileImagePath(null);
                 setCreateMobileImagePreview(null);
             },
             onError: (errs) => {
@@ -184,8 +299,16 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         if (editButtonText) formData.append('button_text', editButtonText);
         formData.append('sort_order', editSortOrder);
         formData.append('is_active', editIsActive ? '1' : '0');
-        if (editImage) formData.append('image', editImage);
-        if (editMobileImage) formData.append('mobile_image', editMobileImage);
+        if (editImage) {
+            formData.append('image', editImage);
+        } else if (editImagePath) {
+            formData.append('image_path', editImagePath);
+        }
+        if (editMobileImage) {
+            formData.append('mobile_image', editMobileImage);
+        } else if (editMobileImagePath) {
+            formData.append('mobile_image_path', editMobileImagePath);
+        }
 
         router.post(`/admin/sliders/${editingSlider.id}`, formData, {
             onSuccess: () => {
@@ -224,6 +347,7 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         const file = e.target.files?.[0];
         if (file) {
             setHeroImage(file);
+            setHeroImagePath(null);
             setHeroImagePreview(URL.createObjectURL(file));
             setRemoveHeroImage(false);
         }
@@ -248,12 +372,15 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
         formData.append('remove_image', removeHeroImage ? '1' : '0');
         if (heroImage) {
             formData.append('image', heroImage);
+        } else if (heroImagePath) {
+            formData.append('image_path', heroImagePath);
         }
 
         router.post('/admin/sliders/default-hero', formData, {
             preserveScroll: true,
             onSuccess: () => {
                 setHeroImage(null);
+                setHeroImagePath(null);
                 setRemoveHeroImage(false);
                 setHeroSaved(true);
             },
@@ -262,6 +389,59 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
             },
             onFinish: () => {
                 setIsSavingHero(false);
+            },
+        });
+    };
+
+    const handlePromoSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        setIsSavingPromo(true);
+        setPromoErrors({});
+        setPromoSaved(false);
+
+        const formData = new FormData();
+        formData.append('enabled', promoEnabled ? '1' : '0');
+        formData.append('seasonal_badge', seasonalBadge);
+        formData.append('seasonal_title', seasonalTitle);
+        formData.append('seasonal_subtitle', seasonalSubtitle);
+        formData.append('seasonal_button_text', seasonalBtnText);
+        formData.append('seasonal_button_url', seasonalBtnUrl);
+        formData.append('remove_seasonal_image', removeSeasonalImage ? '1' : '0');
+        if (seasonalImage) {
+            formData.append('seasonal_image', seasonalImage);
+        } else if (seasonalImagePath) {
+            formData.append('seasonal_image_path', seasonalImagePath);
+        }
+
+        formData.append('combo_title', comboTitle);
+        formData.append('combo_subtitle', comboSubtitle);
+        formData.append('combo_button_text', comboBtnText);
+        formData.append('combo_button_url', comboBtnUrl);
+        formData.append('combo_badge_label', comboBadgeLabel);
+        formData.append('combo_badge_value', comboBadgeValue);
+        formData.append('remove_combo_image', removeComboImage ? '1' : '0');
+        if (comboImage) {
+            formData.append('combo_image', comboImage);
+        } else if (comboImagePath) {
+            formData.append('combo_image_path', comboImagePath);
+        }
+
+        router.post('/admin/sliders/promo-banners', formData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setSeasonalImage(null);
+                setSeasonalImagePath(null);
+                setComboImage(null);
+                setComboImagePath(null);
+                setRemoveSeasonalImage(false);
+                setRemoveComboImage(false);
+                setPromoSaved(true);
+            },
+            onError: (errs) => {
+                setPromoErrors(errs);
+            },
+            onFinish: () => {
+                setIsSavingPromo(false);
             },
         });
     };
@@ -620,7 +800,7 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex flex-wrap items-center justify-center gap-2">
                                             <label className="cursor-pointer px-3 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-semibold text-gray-700 hover:bg-stone-50 transition">
                                                 Change Image
                                                 <input
@@ -632,8 +812,17 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                             </label>
                                             <button
                                                 type="button"
+                                                onClick={() => setMediaPickerTarget('default_hero')}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition"
+                                            >
+                                                <FolderOpen className="w-3.5 h-3.5" />
+                                                Media Library
+                                            </button>
+                                            <button
+                                                type="button"
                                                 onClick={() => {
                                                     setHeroImage(null);
+                                                    setHeroImagePath(null);
                                                     setHeroImagePreview(null);
                                                     setRemoveHeroImage(true);
                                                 }}
@@ -644,23 +833,33 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                         </div>
                                     </div>
                                 ) : (
-                                    <label className="cursor-pointer flex flex-col items-center justify-center py-6 space-y-2">
-                                        <div className="w-11 h-11 rounded-full bg-[#0B3B2E]/10 text-[#0B3B2E] flex items-center justify-center">
-                                            <Images className="w-5 h-5" />
-                                        </div>
-                                        <span className="text-xs font-semibold text-gray-800">
-                                            Upload Default Hero Image
-                                        </span>
-                                        <span className="text-[11px] text-gray-500">
-                                            JPG, PNG or WebP (max 5MB)
-                                        </span>
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,image/webp"
-                                            onChange={handleHeroImageChange}
-                                            className="sr-only"
-                                        />
-                                    </label>
+                                    <div className="flex flex-col items-center justify-center py-5 space-y-3">
+                                        <label className="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                                            <div className="w-11 h-11 rounded-full bg-[#0B3B2E]/10 text-[#0B3B2E] flex items-center justify-center">
+                                                <Images className="w-5 h-5" />
+                                            </div>
+                                            <span className="text-xs font-semibold text-gray-800">
+                                                Upload Default Hero Image
+                                            </span>
+                                            <span className="text-[11px] text-gray-500">
+                                                JPG, PNG or WebP (max 5MB)
+                                            </span>
+                                            <input
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/webp"
+                                                onChange={handleHeroImageChange}
+                                                className="sr-only"
+                                            />
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMediaPickerTarget('default_hero')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition"
+                                        >
+                                            <FolderOpen className="w-3.5 h-3.5" />
+                                            Choose from Media Library
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                             {heroErrors.image && (
@@ -669,6 +868,343 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                             <p className="text-[11px] text-gray-500 leading-relaxed">
                                 If an image is uploaded, it fills the right-side arch frame on the homepage fallback hero. Otherwise, the cream brand card is shown.
                             </p>
+                        </div>
+                    </div>
+                </form>
+
+                {/* Homepage Promo Banners (Seasonal Sale & Combo Deals) */}
+                <form
+                    onSubmit={handlePromoSubmit}
+                    className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"
+                >
+                    <div className="px-6 py-4 bg-[#FAF7F2] border-b border-stone-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                            <div className="w-9 h-9 rounded-lg bg-[#F96D16] text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <Images className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-bold text-gray-900">
+                                    Homepage Promo Banners (Seasonal Sale &amp; Combo Deals)
+                                </h2>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    Customize the 2 promotional banners shown on the storefront homepage.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <label className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={promoEnabled}
+                                    onChange={(e) => setPromoEnabled(e.target.checked)}
+                                    className="rounded border-stone-300 text-[#0B3B2E] focus:ring-[#0B3B2E]"
+                                />
+                                <span>Show on Homepage</span>
+                            </label>
+                            {promoSaved && (
+                                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                                    Saved
+                                </span>
+                            )}
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                disabled={isSavingPromo}
+                                className="inline-flex items-center gap-2"
+                            >
+                                <Save className="w-4 h-4" />
+                                {isSavingPromo ? 'Saving...' : 'Save Promo Banners'}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left: Seasonal Sale */}
+                        <div className="rounded-xl border border-stone-200 p-5 space-y-4 bg-[#FAF7F2]/40">
+                            <div className="flex items-center justify-between border-b border-stone-200 pb-2.5">
+                                <h3 className="text-sm font-bold text-[#0B3B2E]">
+                                    1. Left Banner (Seasonal Sale)
+                                </h3>
+                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#0B3B2E] text-white">
+                                    Green Card
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Eyebrow Badge
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={seasonalBadge}
+                                        onChange={(e) => setSeasonalBadge(e.target.value)}
+                                        placeholder="SEASONAL SALE"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Title <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={seasonalTitle}
+                                        onChange={(e) => setSeasonalTitle(e.target.value)}
+                                        placeholder="Up to 50% OFF"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                    {promoErrors.seasonal_title && (
+                                        <p className="mt-1 text-xs text-rose-600">{promoErrors.seasonal_title}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    Subtitle
+                                </label>
+                                <input
+                                    type="text"
+                                    value={seasonalSubtitle}
+                                    onChange={(e) => setSeasonalSubtitle(e.target.value)}
+                                    placeholder="On Selected Items"
+                                    className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Button Text
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={seasonalBtnText}
+                                        onChange={(e) => setSeasonalBtnText(e.target.value)}
+                                        placeholder="Shop the Sale"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Button Link
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={seasonalBtnUrl}
+                                        onChange={(e) => setSeasonalBtnUrl(e.target.value)}
+                                        placeholder="/shop"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Optional Banner Image
+                                </label>
+                                <div className="flex flex-wrap items-center gap-2.5">
+                                    {seasonalImagePreview && (
+                                        <img
+                                            src={seasonalImagePreview}
+                                            alt="Seasonal Sale preview"
+                                            className="w-14 h-14 rounded-lg object-cover border border-stone-200 bg-white"
+                                        />
+                                    )}
+                                    <label className="cursor-pointer px-3 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-semibold text-gray-700 hover:bg-stone-50 transition">
+                                        {seasonalImagePreview ? 'Change File' : 'Upload File'}
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={(e) => {
+                                                const f = e.target.files?.[0];
+                                                if (f) {
+                                                    setSeasonalImage(f);
+                                                    setSeasonalImagePath(null);
+                                                    setSeasonalImagePreview(URL.createObjectURL(f));
+                                                    setRemoveSeasonalImage(false);
+                                                }
+                                            }}
+                                            className="sr-only"
+                                        />
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setMediaPickerTarget('promo_seasonal')}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition"
+                                    >
+                                        <FolderOpen className="w-3.5 h-3.5" />
+                                        Media Library
+                                    </button>
+                                    {seasonalImagePreview && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSeasonalImage(null);
+                                                setSeasonalImagePath(null);
+                                                setSeasonalImagePreview(null);
+                                                setRemoveSeasonalImage(true);
+                                            }}
+                                            className="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right: Combo Deals */}
+                        <div className="rounded-xl border border-stone-200 p-5 space-y-4 bg-[#FAF7F2]/40">
+                            <div className="flex items-center justify-between border-b border-stone-200 pb-2.5">
+                                <h3 className="text-sm font-bold text-gray-900">
+                                    2. Right Banner (Combo Deals)
+                                </h3>
+                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#F2ECE1] text-gray-800 border border-stone-300">
+                                    Cream Card
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Title <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={comboTitle}
+                                        onChange={(e) => setComboTitle(e.target.value)}
+                                        placeholder="Combo Deals"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                    {promoErrors.combo_title && (
+                                        <p className="mt-1 text-xs text-rose-600">{promoErrors.combo_title}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Subtitle
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={comboSubtitle}
+                                        onChange={(e) => setComboSubtitle(e.target.value)}
+                                        placeholder="Buy More, Save More"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Circle Badge Top Label
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={comboBadgeLabel}
+                                        onChange={(e) => setComboBadgeLabel(e.target.value)}
+                                        placeholder="SAVE"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Circle Badge Value
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={comboBadgeValue}
+                                        onChange={(e) => setComboBadgeValue(e.target.value)}
+                                        placeholder="30%"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Button Text
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={comboBtnText}
+                                        onChange={(e) => setComboBtnText(e.target.value)}
+                                        placeholder="Shop Combo"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Button Link
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={comboBtnUrl}
+                                        onChange={(e) => setComboBtnUrl(e.target.value)}
+                                        placeholder="/shop"
+                                        className="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 focus:border-[#F96D16]"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Optional Banner Image
+                                </label>
+                                <div className="flex flex-wrap items-center gap-2.5">
+                                    {comboImagePreview && (
+                                        <img
+                                            src={comboImagePreview}
+                                            alt="Combo Deals preview"
+                                            className="w-14 h-14 rounded-lg object-cover border border-stone-200 bg-white"
+                                        />
+                                    )}
+                                    <label className="cursor-pointer px-3 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-semibold text-gray-700 hover:bg-stone-50 transition">
+                                        {comboImagePreview ? 'Change File' : 'Upload File'}
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={(e) => {
+                                                const f = e.target.files?.[0];
+                                                if (f) {
+                                                    setComboImage(f);
+                                                    setComboImagePath(null);
+                                                    setComboImagePreview(URL.createObjectURL(f));
+                                                    setRemoveComboImage(false);
+                                                }
+                                            }}
+                                            className="sr-only"
+                                        />
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setMediaPickerTarget('promo_combo')}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition"
+                                    >
+                                        <FolderOpen className="w-3.5 h-3.5" />
+                                        Media Library
+                                    </button>
+                                    {comboImagePreview && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setComboImage(null);
+                                                setComboImagePath(null);
+                                                setComboImagePreview(null);
+                                                setRemoveComboImage(true);
+                                            }}
+                                            className="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -737,13 +1273,23 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         Desktop Image <span className="text-rose-500">*</span>
                                     </label>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        required
-                                        onChange={handleCreateDesktopImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                    />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            required={!createImagePath}
+                                            onChange={handleCreateDesktopImage}
+                                            className="flex-1 min-w-0 text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setMediaPickerTarget('create_desktop')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition shrink-0"
+                                        >
+                                            <FolderOpen className="w-3.5 h-3.5" />
+                                            Media
+                                        </button>
+                                    </div>
                                     <p className="text-xs text-gray-400 mt-1">Recommended: 1920x600px (WebP/JPEG/PNG)</p>
                                     {createImagePreview && (
                                         <div className="mt-2 w-full h-24 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
@@ -760,12 +1306,22 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         Mobile Image (Optional)
                                     </label>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        onChange={handleCreateMobileImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                    />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleCreateMobileImage}
+                                            className="flex-1 min-w-0 text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setMediaPickerTarget('create_mobile')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition shrink-0"
+                                        >
+                                            <FolderOpen className="w-3.5 h-3.5" />
+                                            Media
+                                        </button>
+                                    </div>
                                     <p className="text-xs text-gray-400 mt-1">Recommended: 768x600px (WebP/JPEG/PNG)</p>
                                     {createMobileImagePreview && (
                                         <div className="mt-2 w-full h-24 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
@@ -916,12 +1472,22 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         Desktop Image (Optional Replace)
                                     </label>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        onChange={handleEditDesktopImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                    />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleEditDesktopImage}
+                                            className="flex-1 min-w-0 text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setMediaPickerTarget('edit_desktop')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition shrink-0"
+                                        >
+                                            <FolderOpen className="w-3.5 h-3.5" />
+                                            Media
+                                        </button>
+                                    </div>
                                     {editImagePreview && (
                                         <div className="mt-2 w-full h-24 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
                                             <img
@@ -937,12 +1503,22 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         Mobile Image (Optional Replace)
                                     </label>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        onChange={handleEditMobileImage}
-                                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                    />
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            onChange={handleEditMobileImage}
+                                            className="flex-1 min-w-0 text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setMediaPickerTarget('edit_mobile')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#0B3B2E]/30 bg-white text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50 transition shrink-0"
+                                        >
+                                            <FolderOpen className="w-3.5 h-3.5" />
+                                            Media
+                                        </button>
+                                    </div>
                                     {editMobileImagePreview && (
                                         <div className="mt-2 w-full h-24 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
                                             <img
@@ -1059,6 +1635,13 @@ export default function SliderIndex({ sliders, defaultHero, filters }: SliderInd
                     </div>
                 </div>
             )}
+
+            <MediaPickerModal
+                open={mediaPickerTarget !== null}
+                onClose={() => setMediaPickerTarget(null)}
+                onSelect={handleMediaSelect}
+                title="Select Image from Media Library"
+            />
         </AdminLayout>
     );
 }

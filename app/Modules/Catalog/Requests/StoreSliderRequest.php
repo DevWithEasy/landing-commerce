@@ -26,8 +26,10 @@ class StoreSliderRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'subtitle' => ['nullable', 'string', 'max:255'],
-            'image' => ['required', 'file', 'mimes:jpeg,png,webp', 'max:10240'],
+            'image' => ['required_without:image_path', 'nullable', 'file', 'mimes:jpeg,png,webp', 'max:10240'],
+            'image_path' => ['nullable', 'string', 'max:500'],
             'mobile_image' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:10240'],
+            'mobile_image_path' => ['nullable', 'string', 'max:500'],
             'link_url' => ['nullable', 'string', 'max:2048'],
             'button_text' => ['nullable', 'string', 'max:100'],
             'sort_order' => ['nullable', 'integer', 'min:0'],

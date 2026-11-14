@@ -46,10 +46,36 @@ class SliderController extends Controller
         return Inertia::render('Admin/Sliders/Index', [
             'sliders' => $sliders,
             'defaultHero' => $this->settingsService->getDefaultHeroConfig(),
+            'promoBanners' => $this->settingsService->getPromoBannersConfig(),
             'filters' => [
                 'search' => $request->input('search', ''),
             ],
         ]);
+    }
+
+    /**
+     * Sanitize a relative storage path selected from the Media Library.
+     */
+    protected function sanitizeMediaPath(?string $path): ?string
+    {
+        if ($path === null) {
+            return null;
+        }
+
+        $trimmed = ltrim(trim($path), '/');
+        if (
+            $trimmed === ''
+            || str_contains($trimmed, '..')
+            || preg_match('#^(https?:|javascript:|data:|vbscript:)#i', $trimmed) === 1
+        ) {
+            return null;
+        }
+
+        if (str_starts_with($trimmed, 'storage/')) {
+            $trimmed = substr($trimmed, strlen('storage/'));
+        }
+
+        return Storage::disk('public')->exists($trimmed) ? $trimmed : null;
     }
 
     /**
@@ -59,11 +85,20 @@ class SliderController extends Controller
     {
         $validated = $request->validated();
 
-        $imageUpload = $this->mediaUploadService->upload($request->file('image'), 'sliders', [
-            'thumb' => 300,
-            'medium' => 800,
-        ]);
-        $imagePath = $imageUpload['file_path'];
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imageUpload = $this->mediaUploadService->upload($request->file('image'), 'sliders', [
+                'thumb' => 300,
+                'medium' => 800,
+            ]);
+            $imagePath = $imageUpload['file_path'];
+        } else {
+            $imagePath = $this->sanitizeMediaPath($validated['image_path'] ?? null);
+        }
+
+        if (! $imagePath) {
+            return back()->withErrors(['image' => 'Please upload a valid image or select one from the Media Library.']);
+        }
 
         $mobileImagePath = null;
         if ($request->hasFile('mobile_image')) {
@@ -72,6 +107,8 @@ class SliderController extends Controller
                 'medium' => 600,
             ]);
             $mobileImagePath = $mobileUpload['file_path'];
+        } elseif (! empty($validated['mobile_image_path'])) {
+            $mobileImagePath = $this->sanitizeMediaPath($validated['mobile_image_path']);
         }
 
         $slider = Slider::create([
@@ -99,7 +136,7 @@ class SliderController extends Controller
 
         $imagePath = $slider->image_path;
         if ($request->hasFile('image')) {
-            if ($slider->image_path) {
+            if ($slider->image_path && str_starts_with($slider->image_path, 'sliders/')) {
                 $this->mediaUploadService->delete($slider->image_path);
             }
             $imageUpload = $this->mediaUploadService->upload($request->file('image'), 'sliders', [
@@ -107,11 +144,16 @@ class SliderController extends Controller
                 'medium' => 800,
             ]);
             $imagePath = $imageUpload['file_path'];
+        } elseif (! empty($validated['image_path'])) {
+            $mediaPath = $this->sanitizeMediaPath($validated['image_path']);
+            if ($mediaPath) {
+                $imagePath = $mediaPath;
+            }
         }
 
         $mobileImagePath = $slider->mobile_image_path;
         if ($request->hasFile('mobile_image')) {
-            if ($slider->mobile_image_path) {
+            if ($slider->mobile_image_path && str_starts_with($slider->mobile_image_path, 'sliders/')) {
                 $this->mediaUploadService->delete($slider->mobile_image_path);
             }
             $mobileUpload = $this->mediaUploadService->upload($request->file('mobile_image'), 'sliders', [
@@ -119,6 +161,11 @@ class SliderController extends Controller
                 'medium' => 600,
             ]);
             $mobileImagePath = $mobileUpload['file_path'];
+        } elseif (! empty($validated['mobile_image_path'])) {
+            $mediaMobilePath = $this->sanitizeMediaPath($validated['mobile_image_path']);
+            if ($mediaMobilePath) {
+                $mobileImagePath = $mediaMobilePath;
+            }
         }
 
         $slider->update([
@@ -195,6 +242,7 @@ class SliderController extends Controller
             'card_title' => ['nullable', 'string', 'max:120'],
             'card_subtitle' => ['nullable', 'string', 'max:200'],
             'image' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:5120'],
+            'image_path' => ['nullable', 'string', 'max:500'],
             'remove_image' => ['nullable', 'boolean'],
         ]);
 
@@ -229,13 +277,13 @@ class SliderController extends Controller
         $oldImagePath = (string) $this->settingsService->get('homepage.default_hero.image_path', '');
 
         if ($request->boolean('remove_image')) {
-            if ($oldImagePath !== '') {
+            if ($oldImagePath !== '' && str_starts_with($oldImagePath, 'sliders/')) {
                 $this->mediaUploadService->delete($oldImagePath);
             }
             $this->settingsService->set('homepage.default_hero.image_path', null, 'homepage');
             $this->settingsService->set('homepage.default_hero.image_url', null, 'homepage');
         } elseif ($request->hasFile('image')) {
-            if ($oldImagePath !== '') {
+            if ($oldImagePath !== '' && str_starts_with($oldImagePath, 'sliders/')) {
                 $this->mediaUploadService->delete($oldImagePath);
             }
             $upload = $this->mediaUploadService->upload($request->file('image'), 'sliders', [
@@ -247,10 +295,113 @@ class SliderController extends Controller
 
             $this->settingsService->set('homepage.default_hero.image_path', $imagePath, 'homepage');
             $this->settingsService->set('homepage.default_hero.image_url', $imageUrl, 'homepage');
+        } elseif (! empty($validated['image_path'])) {
+            $mediaPath = $this->sanitizeMediaPath($validated['image_path']);
+            if ($mediaPath) {
+                $this->settingsService->set('homepage.default_hero.image_path', $mediaPath, 'homepage');
+                $this->settingsService->set('homepage.default_hero.image_url', Storage::disk('public')->url($mediaPath), 'homepage');
+            }
         }
 
         return redirect()
             ->route('admin.sliders.index')
             ->with('success', 'Default fallback hero updated successfully.');
+    }
+
+    /**
+     * Update the homepage dual promo banners (Seasonal Sale & Combo Deals).
+     */
+    public function updatePromoBanners(Request $request): RedirectResponse
+    {
+        Gate::authorize('manage-appearance');
+
+        $validated = $request->validate([
+            'enabled' => ['nullable', 'boolean'],
+            'seasonal_badge' => ['nullable', 'string', 'max:100'],
+            'seasonal_title' => ['required', 'string', 'max:160'],
+            'seasonal_subtitle' => ['nullable', 'string', 'max:255'],
+            'seasonal_button_text' => ['nullable', 'string', 'max:80'],
+            'seasonal_button_url' => ['nullable', 'string', 'max:255'],
+            'seasonal_image' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:5120'],
+            'seasonal_image_path' => ['nullable', 'string', 'max:500'],
+            'remove_seasonal_image' => ['nullable', 'boolean'],
+            'combo_title' => ['required', 'string', 'max:160'],
+            'combo_subtitle' => ['nullable', 'string', 'max:255'],
+            'combo_button_text' => ['nullable', 'string', 'max:80'],
+            'combo_button_url' => ['nullable', 'string', 'max:255'],
+            'combo_badge_label' => ['nullable', 'string', 'max:40'],
+            'combo_badge_value' => ['nullable', 'string', 'max:40'],
+            'combo_image' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:5120'],
+            'combo_image_path' => ['nullable', 'string', 'max:500'],
+            'remove_combo_image' => ['nullable', 'boolean'],
+        ]);
+
+        $sanitizeUrl = static function (?string $url, string $fallback): string {
+            $trimmed = trim((string) $url);
+            if ($trimmed === '' || preg_match('/^(javascript|data|vbscript):/i', $trimmed) === 1) {
+                return $fallback;
+            }
+
+            return $trimmed;
+        };
+
+        $this->settingsService->set(
+            'homepage.promo_banners.enabled',
+            $request->boolean('enabled', true) ? '1' : '0',
+            'homepage'
+        );
+
+        $fields = [
+            'homepage.promo_banners.seasonal.badge' => trim((string) ($validated['seasonal_badge'] ?? '')),
+            'homepage.promo_banners.seasonal.title' => trim((string) $validated['seasonal_title']),
+            'homepage.promo_banners.seasonal.subtitle' => trim((string) ($validated['seasonal_subtitle'] ?? '')),
+            'homepage.promo_banners.seasonal.button_text' => trim((string) ($validated['seasonal_button_text'] ?? '')),
+            'homepage.promo_banners.seasonal.button_url' => $sanitizeUrl($validated['seasonal_button_url'] ?? null, '/shop'),
+            'homepage.promo_banners.combo.title' => trim((string) $validated['combo_title']),
+            'homepage.promo_banners.combo.subtitle' => trim((string) ($validated['combo_subtitle'] ?? '')),
+            'homepage.promo_banners.combo.button_text' => trim((string) ($validated['combo_button_text'] ?? '')),
+            'homepage.promo_banners.combo.button_url' => $sanitizeUrl($validated['combo_button_url'] ?? null, '/shop'),
+            'homepage.promo_banners.combo.badge_label' => trim((string) ($validated['combo_badge_label'] ?? '')),
+            'homepage.promo_banners.combo.badge_value' => trim((string) ($validated['combo_badge_value'] ?? '')),
+        ];
+
+        foreach ($fields as $key => $value) {
+            $this->settingsService->set($key, $value, 'homepage');
+        }
+
+        foreach (['seasonal' => 'seasonal_image', 'combo' => 'combo_image'] as $prefix => $fileInput) {
+            $pathKey = "homepage.promo_banners.{$prefix}.image_path";
+            $urlKey = "homepage.promo_banners.{$prefix}.image_url";
+            $oldPath = (string) $this->settingsService->get($pathKey, '');
+
+            if ($request->boolean("remove_{$prefix}_image")) {
+                if ($oldPath !== '' && str_starts_with($oldPath, 'sliders/')) {
+                    $this->mediaUploadService->delete($oldPath);
+                }
+                $this->settingsService->set($pathKey, null, 'homepage');
+                $this->settingsService->set($urlKey, null, 'homepage');
+            } elseif ($request->hasFile($fileInput)) {
+                if ($oldPath !== '' && str_starts_with($oldPath, 'sliders/')) {
+                    $this->mediaUploadService->delete($oldPath);
+                }
+                $upload = $this->mediaUploadService->upload($request->file($fileInput), 'sliders', [
+                    'thumb' => 300,
+                    'medium' => 800,
+                ]);
+                $imagePath = $upload['file_path'];
+                $this->settingsService->set($pathKey, $imagePath, 'homepage');
+                $this->settingsService->set($urlKey, Storage::disk('public')->url($imagePath), 'homepage');
+            } elseif (! empty($validated["{$prefix}_image_path"])) {
+                $mediaPath = $this->sanitizeMediaPath($validated["{$prefix}_image_path"]);
+                if ($mediaPath) {
+                    $this->settingsService->set($pathKey, $mediaPath, 'homepage');
+                    $this->settingsService->set($urlKey, Storage::disk('public')->url($mediaPath), 'homepage');
+                }
+            }
+        }
+
+        return redirect()
+            ->route('admin.sliders.index')
+            ->with('success', 'Homepage promo banners updated successfully.');
     }
 }

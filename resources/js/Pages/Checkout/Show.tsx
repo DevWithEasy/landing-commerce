@@ -351,7 +351,7 @@ export default function CheckoutShow({
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
                     {/* Left Column: Unified 4-Step Checkout Form Card */}
-                    <div className="lg:col-span-8 bg-white rounded-3xl shadow-[0_2px_14px_rgba(15,23,42,0.04)] border border-stone-200/80 p-6 sm:p-8">
+                    <div className="lg:col-span-8 bg-white rounded-xl border border-stone-200/80 p-6 sm:p-8">
                         <form onSubmit={handleSubmit} className="space-y-7">
                             {/* Invisible Honeypot Field */}
                             <input
@@ -692,7 +692,7 @@ export default function CheckoutShow({
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || activePaymentMethods.length === 0 || !agreedTerms}
-                                    className="inline-flex items-center justify-center gap-2 py-3 px-7 bg-[#F96D16] hover:bg-[#EA580C] text-white font-bold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                                    className="inline-flex items-center justify-center gap-2 h-11 px-7 bg-[#F96D16] hover:bg-[#EA580C] text-white font-semibold text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -713,7 +713,7 @@ export default function CheckoutShow({
                     {/* Right Column: Order Summary & Trust Card (4 cols) */}
                     <div className="lg:col-span-4 space-y-5">
                         {/* Unified Order Summary Card */}
-                        <div className="bg-white rounded-3xl shadow-[0_2px_14px_rgba(15,23,42,0.04)] border border-stone-200/80 p-6">
+                        <div className="bg-white rounded-xl border border-stone-200/80 p-6">
                             <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-stone-100">
                                 <h3 className="font-serif text-lg font-bold text-gray-900">Order Summary</h3>
                                 <span className="text-xs font-medium text-gray-500">
