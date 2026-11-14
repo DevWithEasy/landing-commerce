@@ -996,7 +996,7 @@
                             Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our privacy policy.
                         </p>
 
-                        <div>
+                        <div id="cod-submit-btn-wrap" class="relative">
                             <button type="submit" id="cod-submit-btn"
                                 data-default-text="{{ e($buttonText) }}" data-lc-el="button" {!! $buttonStyle !!}
                                 class="cod-submit-btn flex w-full cursor-pointer items-center justify-center space-x-2 text-white transition disabled:cursor-not-allowed disabled:opacity-60 {{ $buttonPulse ? 'animate-pulse' : '' }}">
@@ -1010,6 +1010,7 @@
                                 </span>
                                 <span id="cod-btn-text">{{ $buttonText }}</span>
                             </button>
+                            <div id="cod-combo-incomplete-notice" class="hidden mt-2 text-center text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg py-2 px-3"></div>
                         </div>
 
                         @if ($showTrustBadges)
@@ -1040,8 +1041,8 @@
 
     {{-- Checkout Combo Color Selection Modal --}}
     <div id="cod-combo-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-xs">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100" onclick="event.stopPropagation()">
-            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-100" onclick="event.stopPropagation()">
+            <div class="relative z-30 flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
                 <div>
                     <span id="cod-combo-modal-eyebrow" class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Combo Pack Selection</span>
                     <h3 id="cod-combo-modal-title" class="text-sm sm:text-base font-bold text-slate-900">বক্স #1-এর জন্য কালার সিলেক্ট করুন</h3>
@@ -1050,7 +1051,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div class="p-4 space-y-4 max-h-[75vh] overflow-y-auto">
+            <div class="relative z-10 p-4 space-y-4 flex-1 min-h-0 overflow-y-auto">
                 <div id="cod-combo-modal-slots" class="flex flex-wrap items-center gap-2"></div>
                 <div id="cod-combo-modal-colors" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
                 <div id="cod-combo-modal-sizes-wrap" class="hidden pt-3 border-t border-slate-100">
@@ -1084,6 +1085,8 @@
             var districtInput = document.getElementById('cod_district');
             var variantBtns = form.querySelectorAll('.cod-variant-btn');
             var defaultButtonText = submitBtn ? (submitBtn.getAttribute('data-default-text') || 'Confirm Order - Cash on Delivery') : 'Confirm Order - Cash on Delivery';
+            var submitWrap = document.getElementById('cod-submit-btn-wrap');
+            var comboIncompleteNotice = document.getElementById('cod-combo-incomplete-notice');
 
             // Combo modal elements & state
             var comboModal = document.getElementById('cod-combo-modal');
@@ -1240,7 +1243,7 @@
                                 : (slot ? 'border-slate-300 bg-white' : 'border-dashed border-amber-400 bg-amber-100/60'));
 
                         var badgeNum = document.createElement('span');
-                        badgeNum.className = 'absolute top-0.5 left-0.5 z-10 w-3.5 h-3.5 rounded-full bg-slate-900/75 text-white text-[8px] font-bold flex items-center justify-center';
+                        badgeNum.className = 'absolute top-0.5 left-0.5 z-[2] w-3.5 h-3.5 rounded-full bg-slate-900/75 text-white text-[8px] font-bold flex items-center justify-center';
                         badgeNum.textContent = String(sIdx + 1);
                         box.appendChild(badgeNum);
 
@@ -1537,18 +1540,87 @@
                 return radio ? parseFloat(radio.getAttribute('data-rate') || '70') : 70;
             }
 
+            function checkComboIncompleteness() {
+                var itemInputs = itemsContainer ? itemsContainer.querySelectorAll('.cod-item-input') : [];
+                if (itemInputs.length === 0) {
+                    return { isIncomplete: false, reason: null };
+                }
+                for (var idx = 0; idx < itemInputs.length; idx++) {
+                    var pidAttr = parseInt(itemInputs[idx].getAttribute('data-product-id') || '0', 10);
+                    var st = pidAttr ? comboState[pidAttr] : null;
+                    if (st && st.isCombo) {
+                        var emptySlotIdx = st.slots.indexOf(null);
+                        if (emptySlotIdx !== -1) {
+                            return {
+                                isIncomplete: true,
+                                pid: pidAttr,
+                                emptySlotIndex: emptySlotIdx,
+                                packSize: st.packSize,
+                                reason: 'অনুগ্রহ করে কম্বো প্যাকের সবগুলো (' + st.packSize + 'টি) বক্সে পছন্দের কালার সিলেক্ট করুন। (বক্স #' + (emptySlotIdx + 1) + ' খালি আছে)'
+                            };
+                        }
+                        if (st.sizes.length > 0 && !st.selectedSize) {
+                            return {
+                                isIncomplete: true,
+                                pid: pidAttr,
+                                emptySlotIndex: -1,
+                                packSize: st.packSize,
+                                reason: 'অনুগ্রহ করে কম্বো প্যাকের সাইজ (Size) সিলেক্ট করুন।'
+                            };
+                        }
+                    }
+                }
+                return { isIncomplete: false, reason: null };
+            }
+
+            function updateSubmitButtonState() {
+                if (!submitBtn) return;
+                var check = checkComboIncompleteness();
+                var shipFee = getShippingRate();
+                var grandTotal = Math.round(currentSubtotal + shipFee);
+
+                if (check.isIncomplete) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('cursor-not-allowed', 'opacity-50');
+                    submitBtn.classList.remove('cursor-pointer');
+                    if (btnText) {
+                        if (check.emptySlotIndex !== -1) {
+                            btnText.innerText = 'কালার সিলেক্ট করুন (বক্স #' + (check.emptySlotIndex + 1) + ' খালি)';
+                        } else {
+                            btnText.innerText = 'কম্বো সাইজ সিলেক্ট করুন';
+                        }
+                    }
+                    if (comboIncompleteNotice) {
+                        comboIncompleteNotice.textContent = '⚠️ ' + check.reason;
+                        comboIncompleteNotice.classList.remove('hidden');
+                    }
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('cursor-not-allowed', 'opacity-50');
+                    submitBtn.classList.add('cursor-pointer');
+                    if (btnText) {
+                        btnText.innerText = defaultButtonText + ' ৳' + grandTotal.toLocaleString();
+                    }
+                    if (comboIncompleteNotice) {
+                        comboIncompleteNotice.textContent = '';
+                        comboIncompleteNotice.classList.add('hidden');
+                    }
+                }
+            }
+
             function updateTotals() {
                 var shipFee = getShippingRate();
                 var grandTotal = Math.round(currentSubtotal + shipFee);
                 if (shippingEl) shippingEl.innerText = '৳' + Math.round(shipFee).toLocaleString();
                 if (subtotalEl) subtotalEl.innerText = '৳' + Math.round(currentSubtotal).toLocaleString();
                 if (totalEl) totalEl.innerText = '৳' + grandTotal.toLocaleString();
-                if (btnText) btnText.innerText = defaultButtonText + ' ৳' + grandTotal.toLocaleString();
 
                 var radio = getSelectedShippingRadio();
                 if (radio && districtInput) {
                     districtInput.value = radio.getAttribute('data-zone') || 'Dhaka';
                 }
+
+                updateSubmitButtonState();
             }
 
             function rebuildFromItems(items) {
@@ -1919,9 +1991,8 @@
                                 errorBox.classList.remove('hidden');
                             }
 
-                            if (submitBtn) submitBtn.disabled = false;
                             if (btnSpinner) btnSpinner.classList.add('hidden');
-                            if (btnText) btnText.innerText = defaultButtonText;
+                            updateSubmitButtonState();
                             return;
                         }
 
@@ -1940,11 +2011,29 @@
                                 'Network error. Please check your internet connection and try again.';
                             errorBox.classList.remove('hidden');
                         }
-                        if (submitBtn) submitBtn.disabled = false;
                         if (btnSpinner) btnSpinner.classList.add('hidden');
-                        if (btnText) btnText.innerText = defaultButtonText;
+                        updateSubmitButtonState();
                     });
             });
+
+            if (submitWrap) {
+                submitWrap.addEventListener('click', function(e) {
+                    var check = checkComboIncompleteness();
+                    if (check.isIncomplete) {
+                        e.preventDefault();
+                        if (errorBox) {
+                            errorBox.innerText = check.reason;
+                            errorBox.classList.remove('hidden');
+                            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        if (check.pid && check.emptySlotIndex !== -1) {
+                            openComboModal(check.pid, check.emptySlotIndex);
+                        }
+                    }
+                });
+            }
+
+            updateSubmitButtonState();
         }
 
         if (document.readyState === 'loading') {

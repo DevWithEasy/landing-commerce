@@ -446,7 +446,7 @@ export function ProductSelectorBlock({
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 z-20">
+                        <div className="relative z-30 p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
                             <div>
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
                                     {isComboProduct(variantModalProduct)
@@ -470,7 +470,7 @@ export function ProductSelectorBlock({
                         </div>
 
                         {/* Modal Body */}
-                        <div className="p-5 space-y-4 overflow-y-auto flex-1">
+                        <div className="relative z-10 p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
                             {isComboProduct(variantModalProduct)
                                 ? (() => {
                                       const packSize = getComboPackSize(variantModalProduct);
@@ -990,7 +990,7 @@ export function ProductSelectorBlock({
                         className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-150"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0 z-20">
+                        <div className="relative z-30 flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0">
                             <div>
                                 <h3 className="text-sm sm:text-base font-bold text-gray-900">
                                     বক্স #{colorPickerModal.slotIndex + 1}-এর জন্য কালার সিলেক্ট করুন
@@ -1008,7 +1008,7 @@ export function ProductSelectorBlock({
                             </button>
                         </div>
 
-                        <div className="p-5 overflow-y-auto flex-1">
+                        <div className="relative z-10 p-5 overflow-y-auto flex-1 min-h-0">
                             {(() => {
                                 const comboColors = getComboColors(colorPickerModal.product);
                                 const currentSlots = getSlotsForProduct(colorPickerModal.product);

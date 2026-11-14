@@ -177,6 +177,18 @@ export default function Editor({
 
             setSaveSuccess(data.message || 'Revision saved successfully.');
             setTimeout(() => setSaveSuccess(null), 3500);
+
+            // Auto-reload open live preview tabs
+            try {
+                if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                    const ch = new BroadcastChannel(`lc_preview_${landingPage.id}`);
+                    ch.postMessage({ type: 'RELOAD_PREVIEW', pageId: landingPage.id, timestamp: Date.now() });
+                    ch.close();
+                }
+            } catch (_) {}
+            try {
+                localStorage.setItem(`lc_preview_reload_${landingPage.id}`, String(Date.now()));
+            } catch (_) {}
         } catch {
             setSaveError('Network error while saving. Please check your connection.');
         } finally {
@@ -565,6 +577,16 @@ export default function Editor({
                     onRestored={(msg) => {
                         setSaveSuccess(msg);
                         setTimeout(() => setSaveSuccess(null), 4000);
+                        try {
+                            if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+                                const ch = new BroadcastChannel(`lc_preview_${landingPage.id}`);
+                                ch.postMessage({ type: 'RELOAD_PREVIEW', pageId: landingPage.id, timestamp: Date.now() });
+                                ch.close();
+                            }
+                        } catch (_) {}
+                        try {
+                            localStorage.setItem(`lc_preview_reload_${landingPage.id}`, String(Date.now()));
+                        } catch (_) {}
                     }}
                 />
 

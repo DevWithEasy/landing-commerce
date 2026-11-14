@@ -589,6 +589,35 @@ export function CodCheckoutBlock({
         .map((pid) => availableProducts.find((p) => p.id === pid))
         .filter((p): p is Product => Boolean(p && isComboProduct(p)));
 
+    const incompleteCombo = selectedComboProducts
+        .map((prod) => {
+            const slots = getSlotsForProduct(prod);
+            const emptyIdx = slots.findIndex((s) => s === null);
+            const sizes = getComboSizes(prod);
+            const needsSize = sizes.length > 0 && !getSizeForProduct(prod);
+            const packSize = getComboPackSize(prod);
+            if (emptyIdx !== -1) {
+                return {
+                    isIncomplete: true,
+                    product: prod,
+                    reason: `অনুগ্রহ করে কম্বো প্যাকের সবগুলো (${packSize}টি) বক্সে পছন্দের কালার সিলেক্ট করুন। (বক্স #${emptyIdx + 1} খালি আছে)`,
+                    emptySlotIndex: emptyIdx,
+                };
+            }
+            if (needsSize) {
+                return {
+                    isIncomplete: true,
+                    product: prod,
+                    reason: 'অনুগ্রহ করে কম্বো প্যাকের সাইজ (Size) সিলেক্ট করুন।',
+                    emptySlotIndex: -1,
+                };
+            }
+            return null;
+        })
+        .find((item): item is NonNullable<typeof item> => item !== null) || null;
+
+    const hasIncompleteComboSelection = Boolean(incompleteCombo);
+
     const renderComboConfiguratorForProduct = (prod: Product, standalone = false) => {
         const packSize = getComboPackSize(prod);
         const slots = getSlotsForProduct(prod);
@@ -1368,16 +1397,37 @@ export function CodCheckoutBlock({
                                 <div>
                                     <button
                                         type="button"
-                                        disabled={isEditor}
+                                        disabled={isEditor || hasIncompleteComboSelection || selectedProductIds.length === 0}
                                         style={buttonStyle}
                                         data-lc-el="button"
-                                        className={`cod-submit-btn flex cursor-pointer items-center justify-center space-x-2 disabled:cursor-not-allowed disabled:opacity-60 ${buttonPulseClass}`}
+                                        onClick={() => {
+                                            if (incompleteCombo && incompleteCombo.emptySlotIndex !== -1) {
+                                                setComboColorModal({
+                                                    product: incompleteCombo.product,
+                                                    slotIndex: incompleteCombo.emptySlotIndex,
+                                                });
+                                            }
+                                        }}
+                                        className={`cod-submit-btn flex w-full items-center justify-center space-x-2 transition ${
+                                            hasIncompleteComboSelection || selectedProductIds.length === 0
+                                                ? 'cursor-not-allowed opacity-50'
+                                                : 'cursor-pointer'
+                                        } ${hasIncompleteComboSelection ? '' : buttonPulseClass}`}
                                     >
                                         <ShoppingCart className="h-5 w-5" />
                                         <span>
-                                            {buttonText} — ৳{grandTotal.toLocaleString()}
+                                            {hasIncompleteComboSelection && incompleteCombo
+                                                ? incompleteCombo.emptySlotIndex !== -1
+                                                    ? `কালার সিলেক্ট করুন (বক্স #${incompleteCombo.emptySlotIndex + 1} খালি)`
+                                                    : 'কম্বো সাইজ সিলেক্ট করুন'
+                                                : `${buttonText} — ৳${grandTotal.toLocaleString()}`}
                                         </span>
                                     </button>
+                                    {hasIncompleteComboSelection && incompleteCombo && (
+                                        <p className="mt-2 text-center text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg py-2 px-3">
+                                            ⚠️ {incompleteCombo.reason}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {props.showTrustBadges !== false && (
@@ -1409,7 +1459,7 @@ export function CodCheckoutBlock({
                     onClick={() => setComboColorModal(null)}
                 >
                     <div
-                        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-150"
+                        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-150"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {(() => {
@@ -1427,7 +1477,7 @@ export function CodCheckoutBlock({
 
                             return (
                                 <>
-                                    <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50">
+                                    <div className="relative z-30 flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
                                         <div>
                                             <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
                                                 {packSize} Pcs Combo ({filledCount}/{packSize} সিলেক্টেড)
@@ -1445,7 +1495,7 @@ export function CodCheckoutBlock({
                                         </button>
                                     </div>
 
-                                    <div className="p-4 space-y-4 max-h-[75vh] overflow-y-auto">
+                                    <div className="relative z-10 p-4 space-y-4 flex-1 min-h-0 overflow-y-auto">
                                         {/* Slot Tabs Preview */}
                                         <div className="flex flex-wrap items-center gap-2">
                                             {slots.map((slot, sIdx) => {
@@ -1474,7 +1524,7 @@ export function CodCheckoutBlock({
                                                                   : 'border-dashed border-amber-400 bg-amber-100/60'
                                                         }`}
                                                     >
-                                                        <span className="absolute top-0.5 left-0.5 z-10 w-3.5 h-3.5 rounded-full bg-slate-900/75 text-white text-[8px] font-bold flex items-center justify-center">
+                                                        <span className="absolute top-0.5 left-0.5 z-[2] w-3.5 h-3.5 rounded-full bg-slate-900/75 text-white text-[8px] font-bold flex items-center justify-center">
                                                             {sIdx + 1}
                                                         </span>
                                                         {slot ? (

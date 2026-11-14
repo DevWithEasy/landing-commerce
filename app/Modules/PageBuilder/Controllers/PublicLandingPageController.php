@@ -54,26 +54,29 @@ class PublicLandingPageController extends Controller
             abort(404, 'Reserved path cannot be used as landing page.');
         }
 
-        // 2. Query published landing page
-        $landingPage = LandingPage::where('slug', $normalizedSlug)
-            ->where('status', 'published')
-            ->with(['product.variants.images', 'product.images', 'product.primaryImage', 'publishedRevision'])
-            ->first();
+        // 2. Query landing page (allow draft preview for authenticated staff)
+        $isPreview = $request->boolean('preview') && auth()->check() && in_array(auth()->user()->role, ['super_admin', 'store_manager'], true);
+
+        $query = LandingPage::where('slug', $normalizedSlug)
+            ->with(['product.variants.images', 'product.images', 'product.primaryImage', 'publishedRevision']);
+
+        if (! $isPreview) {
+            $query->where('status', 'published');
+        }
+
+        $landingPage = $query->first();
 
         if (! $landingPage) {
             abort(404, 'Landing page not found or unpublished.');
         }
 
-        // 3. Resolve published revision AST
-        $revision = $landingPage->publishedRevision;
-
-        // Fallback to the highest revision if published_revision_id was not explicitly linked
-        if (! $revision) {
-            $revision = $landingPage->revisions()->orderByDesc('revision_number')->first();
-        }
+        // 3. Resolve revision AST (prefer latest revision in preview mode)
+        $revision = $isPreview
+            ? ($landingPage->revisions()->orderByDesc('revision_number')->first() ?? $landingPage->publishedRevision)
+            : ($landingPage->publishedRevision ?? $landingPage->revisions()->orderByDesc('revision_number')->first());
 
         if (! $revision || empty($revision->ast_content) || ! is_array($revision->ast_content)) {
-            abort(404, 'No published revision content available.');
+            abort(404, 'No revision content available.');
         }
 
         $ast = $revision->ast_content;
@@ -117,6 +120,7 @@ class PublicLandingPageController extends Controller
             'metaSeo' => $metaSeo,
             'trackingHead' => $trackingHead,
             'trackingBody' => $trackingBody,
+            'isPreview' => $isPreview,
         ]);
     }
 }

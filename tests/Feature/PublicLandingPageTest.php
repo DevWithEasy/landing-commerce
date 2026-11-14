@@ -355,3 +355,48 @@ test('unapproved or malicious blocks in AST are ignored safely without executing
     $response->assertSee('Authentic Watch Deal');
     $response->assertDontSee('<script>window.location="https://malicious.test"</script>', false);
 });
+
+test('draft landing page returns 404 for public visitor even with preview query parameter', function () {
+    $draftPage = LandingPage::create([
+        'product_id' => $this->product->id,
+        'title' => 'Draft Winter Jacket Promo',
+        'slug' => 'draft-winter-jacket',
+        'status' => 'draft',
+    ]);
+
+    LandingPageRevision::create([
+        'landing_page_id' => $draftPage->id,
+        'revision_number' => 1,
+        'ast_content' => $this->sampleAst,
+        'created_by' => 'Staff',
+    ]);
+
+    $this->get('/p/draft-winter-jacket')->assertNotFound();
+    $this->get('/p/draft-winter-jacket?preview=1')->assertNotFound();
+});
+
+test('draft landing page returns 200 with preview banner and auto-sync script for authenticated admin', function () {
+    $admin = \App\Models\User::factory()->create([
+        'role' => 'super_admin',
+    ]);
+
+    $draftPage = LandingPage::create([
+        'product_id' => $this->product->id,
+        'title' => 'Draft Winter Jacket Promo',
+        'slug' => 'draft-winter-jacket',
+        'status' => 'draft',
+    ]);
+
+    LandingPageRevision::create([
+        'landing_page_id' => $draftPage->id,
+        'revision_number' => 1,
+        'ast_content' => $this->sampleAst,
+        'created_by' => 'Staff',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/p/draft-winter-jacket?preview=1');
+    $response->assertOk();
+    $response->assertSee('প্রিভিউ মোড (Preview Mode)');
+    $response->assertSee('var pageId = ' . $draftPage->id, false);
+    $response->assertSee('RELOAD_PREVIEW');
+});

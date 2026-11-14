@@ -71,18 +71,16 @@ export function TopBar({
                     </div>
                     <div className="flex items-center space-x-2 text-[11px] text-gray-400 -mt-0.5">
                         <span>Slug: /p/{landingPage.slug}</span>
-                        {landingPage.status === 'published' && (
-                            <a
-                                href={`/p/${landingPage.slug}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center text-primary-600 hover:text-primary-700 hover:underline font-medium"
-                                title="View live page"
-                            >
-                                <ExternalLink className="w-3 h-3 mr-0.5" />
-                                <span>Preview</span>
-                            </a>
-                        )}
+                        <a
+                            href={`/p/${landingPage.slug}?preview=1`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center text-primary-600 hover:text-primary-700 hover:underline font-medium ml-1"
+                            title="Open preview in new tab"
+                        >
+                            <ExternalLink className="w-3 h-3 mr-0.5" />
+                            <span>Preview</span>
+                        </a>
                     </div>
                 </div>
             </div>

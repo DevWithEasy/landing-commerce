@@ -87,6 +87,13 @@
     {{-- Marketing Pixels & Analytics (Body Noscript) --}}
     {!! $trackingBody ?? '' !!}
 
+    @if(!empty($isPreview))
+        <div class="bg-amber-500 text-slate-950 text-xs font-bold py-1.5 px-4 text-center sticky top-0 z-50 flex items-center justify-center gap-2 shadow-sm select-none">
+            <span class="inline-block w-2 h-2 rounded-full bg-slate-900 animate-ping"></span>
+            <span>প্রিভিউ মোড (Preview Mode) — বিল্ডার থেকে "Save Revision" করলে এই পেজটি স্বয়ংক্রিয়ভাবে রিলোড হবে।</span>
+        </div>
+    @endif
+
     <div class="min-h-screen flex flex-col justify-between">
         <main>
             {!! $renderedBlocksHtml !!}
@@ -137,6 +144,28 @@
                 }, 1000);
             });
         });
+    </script>
+    {{-- Cross-tab auto-reload listener for live builder preview --}}
+    <script>
+        (function () {
+            var pageId = {{ $landingPage->id }};
+            try {
+                if (window.BroadcastChannel) {
+                    var ch = new BroadcastChannel('lc_preview_' + pageId);
+                    ch.onmessage = function (ev) {
+                        if (ev && ev.data && ev.data.type === 'RELOAD_PREVIEW') {
+                            window.location.reload();
+                        }
+                    };
+                }
+            } catch (e) {}
+
+            window.addEventListener('storage', function (e) {
+                if (e.key === 'lc_preview_reload_' + pageId) {
+                    window.location.reload();
+                }
+            });
+        })();
     </script>
 </body>
 </html>
