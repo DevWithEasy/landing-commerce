@@ -28,7 +28,12 @@ export function ProductCard({ product }: ProductCardProps) {
         return 0;
     }, [regular, sale]);
 
-    const imageUrl = product.primaryImage?.url || product.primary_image?.url || product.images?.[0]?.url || '/placeholder.png';
+    const imageUrl =
+        product.primaryImage?.url ||
+        product.primary_image?.url ||
+        product.images?.[0]?.url ||
+        product.combo_colors?.find((c) => c?.image_url)?.image_url ||
+        '/placeholder.png';
 
     // Calculate in-stock status
     const isInStock = useMemo(() => {
@@ -83,9 +88,9 @@ export function ProductCard({ product }: ProductCardProps) {
     };
 
     return (
-        <div className="group relative bg-white rounded-xl overflow-hidden border border-stone-200/80 hover:border-stone-300 transition-colors duration-200 flex flex-col justify-between">
+        <div className="group relative bg-surface rounded-xl overflow-hidden border border-line/80 hover:border-stone-300 transition-colors duration-200 flex flex-col justify-between">
             {/* Flush 4:5 Portrait Image & Badges */}
-            <div className="relative aspect-[4/5] bg-[#F3EDE4] overflow-hidden">
+            <div className="relative aspect-[4/5] bg-soft overflow-hidden">
                 <Link href={`/product/${product.slug}`} className="block w-full h-full">
                     <SafeImage
                         src={imageUrl}
@@ -99,7 +104,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
                 {/* Discount Badge */}
                 {discountPercent > 0 && (
-                    <div className="absolute top-2.5 left-2.5 bg-[#F96D16] text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                    <div className="absolute top-2.5 left-2.5 bg-sale text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
                         -{discountPercent}%
                     </div>
                 )}
@@ -109,7 +114,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     href="/customer/wishlist"
                     title="Add to Wishlist"
                     aria-label="Add to Wishlist"
-                    className="absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/85 backdrop-blur-2xs text-stone-700 hover:text-[#F96D16] hover:bg-white flex items-center justify-center transition"
+                    className="absolute top-2.5 right-2.5 w-9 h-9 rounded-full bg-white/85 backdrop-blur-2xs text-stone-700 hover:text-highlight hover:bg-surface flex items-center justify-center transition"
                 >
                     <Heart className="w-4 h-4 stroke-[1.8]" />
                 </Link>
@@ -123,10 +128,10 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
 
             {/* Content Area */}
-            <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between bg-white">
+            <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between bg-surface">
                 <Link
                     href={`/product/${product.slug}`}
-                    className="block font-medium text-stone-900 text-xs sm:text-sm hover:text-[#0B3B2E] transition line-clamp-1 mb-2"
+                    className="block font-medium text-ink text-xs sm:text-sm hover:text-heading transition line-clamp-1 mb-2"
                     title={product.title}
                 >
                     {product.title}
@@ -135,7 +140,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {/* Price + Add-to-Cart Button Row */}
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-baseline gap-1.5 min-w-0">
-                        <span className="text-sm sm:text-base font-bold text-[#EA580C] truncate">
+                        <span className="text-sm sm:text-base font-bold text-price truncate">
                             {formatBdt(currentPrice)}
                         </span>
                         {sale !== null && sale < regular && (
@@ -151,7 +156,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         disabled={!isInStock || isAdding}
                         className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition ${
                             isInStock
-                                ? 'bg-[#F96D16] hover:bg-[#EA580C] text-white cursor-pointer'
+                                ? 'bg-cta hover:bg-cta-hover text-cta-text cursor-pointer'
                                 : 'bg-stone-100 text-stone-400 cursor-not-allowed'
                         }`}
                         title="Add to Cart"

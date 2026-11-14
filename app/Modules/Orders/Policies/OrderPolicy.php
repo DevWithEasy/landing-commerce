@@ -40,4 +40,20 @@ class OrderPolicy
     {
         return $user->canManageOrders();
     }
+
+    /**
+     * Determine whether the user can delete an order.
+     */
+    public function delete(User $user, Order $order): bool
+    {
+        return $user->canManageOrders();
+    }
+
+    /**
+     * Determine whether the user can bulk delete orders.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->canManageOrders();
+    }
 }

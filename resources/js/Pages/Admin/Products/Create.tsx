@@ -5,10 +5,12 @@ import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Card } from '@/Shared/Card';
+import { ComboOptionsEditor, type ComboColorRow } from '@/Shared/ComboOptionsEditor';
 import { ImageUploader } from '@/Shared/ImageUploader';
 import { RichTextEditor } from '@/Shared/RichTextEditor';
 import type { VariantRowItem } from '@/Shared/VariantGenerator';
 import { VariantGenerator } from '@/Shared/VariantGenerator';
+import type { MediaLibraryItem } from '@/types';
 
 interface CreateProductFormData {
     title: string;
@@ -17,12 +19,19 @@ interface CreateProductFormData {
     regular_price: string;
     sale_price: string;
     has_variants: boolean;
+    combo_pack_size: number;
+    combo_colors: ComboColorRow[];
+    combo_color_images?: Record<number, File>;
+    combo_sizes: string[];
     status: 'draft' | 'active' | 'archived';
     stock_quantity: number;
     manage_stock: boolean;
     category_ids: number[];
     variants: VariantRowItem[];
+    featured_image?: File | null;
+    featured_library_path?: string | null;
     images: File[];
+    gallery_library_paths?: string[];
     variant_images?: Record<number, File>;
 }
 
@@ -31,6 +40,10 @@ export default function Create({
 }: {
     categories?: Array<{ id: number; name: string; parent_id: number | null }>;
 }) {
+    const [featuredFile, setFeaturedFile] = useState<File | null>(null);
+    const [featuredLibraryItem, setFeaturedLibraryItem] = useState<MediaLibraryItem | null>(null);
+    const [galleryLibraryItems, setGalleryLibraryItems] = useState<MediaLibraryItem[]>([]);
+
     const { data, setData, post, processing, errors, transform } = useForm<CreateProductFormData>({
         title: '',
         slug: '',
@@ -38,12 +51,22 @@ export default function Create({
         regular_price: '',
         sale_price: '',
         has_variants: false,
+        combo_pack_size: 1,
+        combo_colors: [
+            { name: '', image_url: null, image_file: null },
+            { name: '', image_url: null, image_file: null },
+        ],
+        combo_color_images: {},
+        combo_sizes: ['M', 'L', 'XL', 'XXL'],
         status: 'active',
         stock_quantity: 10,
         manage_stock: true,
         category_ids: [],
         variants: [],
+        featured_image: null,
+        featured_library_path: null,
         images: [],
+        gallery_library_paths: [],
         variant_images: {},
     });
 
@@ -83,8 +106,25 @@ export default function Create({
             }
         });
 
+        const comboColorImagesMap: Record<number, File> = {};
+        const cleanComboColors = data.combo_colors.map((c, idx) => {
+            if (c.image_file) {
+                comboColorImagesMap[idx] = c.image_file;
+            }
+            return {
+                name: c.name,
+                image_url: c.image_file ? null : c.image_url,
+            };
+        });
+
         transform((currentData) => ({
             ...currentData,
+            has_variants: currentData.combo_pack_size > 1 ? false : currentData.has_variants,
+            combo_colors: cleanComboColors,
+            combo_color_images: comboColorImagesMap,
+            featured_image: featuredFile || null,
+            featured_library_path: !featuredFile && featuredLibraryItem ? featuredLibraryItem.file_path : null,
+            gallery_library_paths: galleryLibraryItems.map((item) => item.file_path),
             variant_images: variantImagesMap,
         }));
 
@@ -352,35 +392,94 @@ export default function Create({
 
                 {/* Variants & Stock Matrix */}
                 <Card padding="md" className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
                         <div className="flex items-center space-x-2">
                             <Layers className="w-5 h-5 text-primary-600" />
                             <div>
                                 <h3 className="text-base font-bold text-gray-900">
-                                    Product Variants & Inventory
+                                    Product Variants, Combo Pack & Inventory
                                 </h3>
                                 <p className="text-xs text-gray-500">
-                                    Choose whether this item is single stock or comes in multiple
-                                    options.
+                                    Choose single piece or multi-piece combo pack (+ slot boxes) and configure Color & Size variants.
                                 </p>
                             </div>
                         </div>
 
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={data.has_variants}
-                                onChange={(e) => setData('has_variants', e.target.checked)}
-                                className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                            <span className="ml-2 text-xs font-semibold text-gray-700">
-                                Has Multiple Variants
-                            </span>
-                        </label>
+                        {data.combo_pack_size <= 1 && (
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={data.has_variants}
+                                    onChange={(e) => setData('has_variants', e.target.checked)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                                <span className="ml-2 text-xs font-semibold text-gray-700">
+                                    Has Multiple Variants
+                                </span>
+                            </label>
+                        )}
                     </div>
 
-                    {!data.has_variants ? (
+                    {/* Combo Pack Selector */}
+                    <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-4 space-y-2.5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider">
+                                    Combo Pack Mode (কত পিসের কম্বো প্যাক?)
+                                </label>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                    ২ বা তার বেশি পিস সিলেক্ট করলে ভেরিয়েন্ট জেনারেট করতে হবে না—শুধু কালারগুলোর নাম ও ছবি এবং সাইজ দিলেই কাস্টমার <span className="font-bold text-amber-800">[ + ]</span> বক্সে ক্লিক করে মডাল থেকে সিলেক্ট করতে পারবে।
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1">
+                            {[
+                                { size: 1, label: '1 Piece (Single)' },
+                                { size: 2, label: '2 Pcs Combo' },
+                                { size: 3, label: '3 Pcs Combo' },
+                                { size: 4, label: '4 Pcs Combo' },
+                                { size: 5, label: '5 Pcs Combo' },
+                                { size: 6, label: '6 Pcs Combo' },
+                            ].map((opt) => {
+                                const isActive = (data.combo_pack_size || 1) === opt.size;
+                                return (
+                                    <button
+                                        key={opt.size}
+                                        type="button"
+                                        onClick={() => {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                combo_pack_size: opt.size,
+                                                has_variants: opt.size > 1 ? false : prev.has_variants,
+                                            }));
+                                        }}
+                                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-center ${
+                                            isActive
+                                                ? 'bg-primary-600 text-white border-primary-600 shadow-xs'
+                                                : 'bg-white text-gray-700 border-gray-200 hover:border-primary-400'
+                                        }`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {data.combo_pack_size > 1 ? (
+                        <ComboOptionsEditor
+                            comboPackSize={data.combo_pack_size}
+                            colors={data.combo_colors}
+                            onChangeColors={(colors) => setData('combo_colors', colors)}
+                            sizes={data.combo_sizes}
+                            onChangeSizes={(sizes) => setData('combo_sizes', sizes)}
+                            stockQuantity={data.stock_quantity}
+                            onChangeStockQuantity={(qty) => setData('stock_quantity', qty)}
+                            manageStock={data.manage_stock}
+                            onChangeManageStock={(manage) => setData('manage_stock', manage)}
+                        />
+                    ) : !data.has_variants ? (
                         /* Standalone Inventory Settings */
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                             <div>
@@ -456,6 +555,17 @@ export default function Create({
                         newFiles={data.images}
                         onFilesSelected={handleFilesSelected}
                         onRemoveNewFile={handleRemoveFile}
+                        featuredFile={featuredFile}
+                        featuredLibraryItem={featuredLibraryItem}
+                        onFeaturedFileChange={setFeaturedFile}
+                        onFeaturedLibrarySelect={setFeaturedLibraryItem}
+                        galleryLibraryItems={galleryLibraryItems}
+                        onGalleryLibraryAdd={(items) =>
+                            setGalleryLibraryItems((prev) => [...prev, ...items])
+                        }
+                        onRemoveGalleryLibraryItem={(idx) =>
+                            setGalleryLibraryItems((prev) => prev.filter((_, i) => i !== idx))
+                        }
                         error={errors.images}
                     />
                 </Card>

@@ -42,8 +42,19 @@ class LandingPageBuilderController extends Controller
         $initialAst = $latestRevision?->ast_content ?? BlockRegistry::generateDefaultAst($landingPage->product_id);
 
         $products = Product::where('status', 'active')
-            ->select(['id', 'title', 'slug', 'regular_price', 'sale_price'])
-            ->with(['variants:id,product_id,name,sku,regular_price,sale_price,stock_quantity', 'images'])
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'description',
+                'regular_price',
+                'sale_price',
+                'has_variants',
+                'combo_pack_size',
+                'combo_colors',
+                'combo_sizes',
+            ])
+            ->with(['variants:id,product_id,name,sku,regular_price,sale_price,stock_quantity', 'variants.images', 'primaryImage', 'images'])
             ->get();
 
         $aiModels = (array) config('ai.gemini.models', []);

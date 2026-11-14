@@ -178,7 +178,7 @@ const SECTIONS: CheckoutSection[] = [
                 min: 240,
                 max: 1600,
                 step: 8,
-                placeholder: '1080',
+                placeholder: '1280',
                 width: 'half',
             },
             {

@@ -25,6 +25,21 @@
         @if($isPublicRoute && $globalTracking)
             {!! $trackingService->renderHeadScripts($globalTracking) !!}
         @endif
+
+        {{-- Admin-customized storefront colors (allowlisted keys, strict #RRGGBB values only) --}}
+        @php
+            $storefrontColorCss = '';
+            if ($isPublicRoute) {
+                try {
+                    $storefrontColorCss = app(\App\Modules\Settings\Services\SettingsService::class)->renderStorefrontColorCss();
+                } catch (\Throwable) {
+                    $storefrontColorCss = '';
+                }
+            }
+        @endphp
+        @if($storefrontColorCss !== '')
+            <style id="storefront-colors">{!! $storefrontColorCss !!}</style>
+        @endif
     </head>
     <body class="font-sans antialiased">
         @if($isPublicRoute && $globalTracking)

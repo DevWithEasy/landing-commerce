@@ -12,7 +12,7 @@
 @endphp
 
 <section {!! $styleAttribute !!} class="lc-block-root w-full bg-white py-12">
-    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+    <div class="w-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
         @if(!empty($props['title']))
             <h2 data-lc-el="title" class="mb-8 text-center text-2xl font-extrabold leading-snug tracking-tight text-slate-900 sm:text-3xl">
                 {{ $props['title'] }}

@@ -63,7 +63,41 @@ class CreateProductAction
             $baseSlug = ! empty($data['slug']) ? Str::slug($data['slug']) : Str::slug($data['title']);
             $slug = $this->generateUniqueSlug($baseSlug);
 
-            $hasVariants = (bool) ($data['has_variants'] ?? false);
+            $comboPackSize = isset($data['combo_pack_size'])
+                ? max(1, min(12, (int) $data['combo_pack_size']))
+                : 1;
+            $hasVariants = $comboPackSize > 1 ? false : (bool) ($data['has_variants'] ?? false);
+
+            $comboColors = null;
+            if ($comboPackSize > 1 && ! empty($data['combo_colors']) && is_array($data['combo_colors'])) {
+                $normalizedColors = [];
+                foreach (array_values($data['combo_colors']) as $idx => $item) {
+                    if (! is_array($item)) {
+                        continue;
+                    }
+
+                    $name = trim((string) ($item['name'] ?? ''));
+                    $imageUrl = trim((string) ($item['image_url'] ?? ''));
+
+                    if ($name === '' && $imageUrl === '') {
+                        continue;
+                    }
+
+                    $normalizedColors[] = [
+                        'name' => $name !== '' ? $name : 'Color '.($idx + 1),
+                        'image_url' => $imageUrl !== '' ? $imageUrl : null,
+                    ];
+                }
+                $comboColors = $normalizedColors;
+            }
+
+            $comboSizes = null;
+            if ($comboPackSize > 1 && ! empty($data['combo_sizes']) && is_array($data['combo_sizes'])) {
+                $comboSizes = array_values(array_filter(array_map(
+                    fn ($s) => trim((string) $s),
+                    $data['combo_sizes']
+                )));
+            }
 
             $product = Product::create([
                 'title' => trim($data['title']),
@@ -72,6 +106,9 @@ class CreateProductAction
                 'regular_price' => $regularPrice,
                 'sale_price' => $salePrice,
                 'has_variants' => $hasVariants,
+                'combo_pack_size' => $comboPackSize,
+                'combo_colors' => $comboColors,
+                'combo_sizes' => $comboSizes,
                 'status' => $data['status'] ?? 'draft',
             ]);
 

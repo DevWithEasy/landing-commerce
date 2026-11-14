@@ -28,7 +28,7 @@ class StorefrontProductController extends Controller
             ->where('slug', $slug)
             ->where('status', 'active')
             ->with([
-                'images' => fn ($q) => $q->orderBy('sort_order'),
+                'images' => fn ($q) => $q->orderByDesc('is_primary')->orderBy('sort_order'),
                 'primaryImage',
                 'variants' => fn ($q) => $q->orderBy('id')->with(['images' => fn ($img) => $img->orderBy('sort_order')]),
                 'categories' => fn ($q) => $q->select('categories.id', 'categories.name', 'categories.slug'),

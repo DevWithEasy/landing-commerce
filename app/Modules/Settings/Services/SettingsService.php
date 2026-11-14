@@ -13,6 +13,36 @@ class SettingsService
     public const SECRET_MASK = '••••••••';
 
     /**
+     * Customer-facing storefront color tokens and their Velure defaults.
+     * Keys must stay in sync with the `--color-*` tokens in resources/css/app.css.
+     *
+     * @var array<string, string>
+     */
+    public const STOREFRONT_COLOR_DEFAULTS = [
+        'page' => '#faf7f2',
+        'surface' => '#ffffff',
+        'soft' => '#f3ede4',
+        'line' => '#e7e5e4',
+        'brand' => '#0b3b2e',
+        'brand-hover' => '#082b21',
+        'heading' => '#0b3b2e',
+        'ink' => '#1c1917',
+        'body' => '#57534e',
+        'muted' => '#78716c',
+        'cta' => '#f96d16',
+        'cta-hover' => '#ea580c',
+        'cta-text' => '#ffffff',
+        'highlight' => '#f96d16',
+        'price' => '#ea580c',
+        'sale' => '#f96d16',
+        'header' => '#ffffff',
+        'footer' => '#0b3b2e',
+        'footer-text' => '#d1fae5',
+    ];
+
+    protected const HEX_COLOR_PATTERN = '/^#[0-9a-fA-F]{6}$/';
+
+    /**
      * Known sensitive keys that must always be encrypted in the database
      * and masked in UI / API representations.
      *
@@ -339,6 +369,83 @@ class SettingsService
             'font_family' => (string) $this->get('theme.font_family', 'Hind Siliguri, Inter, sans-serif'),
             'custom_css' => (string) $this->get('theme.custom_css', ''),
         ];
+    }
+
+    /**
+     * Resolve storefront color tokens: defaults merged with valid saved overrides.
+     *
+     * @return array<string, string>
+     */
+    public function getStorefrontColors(): array
+    {
+        $colors = self::STOREFRONT_COLOR_DEFAULTS;
+        $raw = $this->get('storefront.colors');
+
+        if (! is_string($raw) || $raw === '') {
+            return $colors;
+        }
+
+        $saved = json_decode($raw, true);
+        if (! is_array($saved)) {
+            return $colors;
+        }
+
+        foreach ($saved as $key => $value) {
+            if (is_string($key) && isset($colors[$key]) && is_string($value) && preg_match(self::HEX_COLOR_PATTERN, $value) === 1) {
+                $colors[$key] = strtolower($value);
+            }
+        }
+
+        return $colors;
+    }
+
+    /**
+     * Persist storefront color overrides. Only allowlisted keys with strict
+     * #RRGGBB values are stored; values equal to the default are dropped.
+     *
+     * @param  array<array-key, mixed>  $input
+     */
+    public function saveStorefrontColors(array $input): void
+    {
+        $overrides = [];
+
+        foreach (self::STOREFRONT_COLOR_DEFAULTS as $key => $default) {
+            $value = $input[$key] ?? null;
+            if (! is_string($value) || preg_match(self::HEX_COLOR_PATTERN, $value) !== 1) {
+                continue;
+            }
+            $value = strtolower($value);
+            if ($value !== $default) {
+                $overrides[$key] = $value;
+            }
+        }
+
+        $this->set(
+            'storefront.colors',
+            $overrides === [] ? null : (string) json_encode($overrides),
+            'theme'
+        );
+    }
+
+    /**
+     * Render a safe `:root { --color-*: #hex }` CSS block containing only the
+     * customized storefront tokens. Returns an empty string when nothing is customized.
+     */
+    public function renderStorefrontColorCss(): string
+    {
+        $declarations = [];
+
+        foreach ($this->getStorefrontColors() as $key => $value) {
+            if ($value === self::STOREFRONT_COLOR_DEFAULTS[$key]) {
+                continue;
+            }
+            // Re-validate at render time: key is from the allowlist, value is strict hex.
+            if (preg_match(self::HEX_COLOR_PATTERN, $value) === 1) {
+                $declarations[] = "--color-{$key}:{$value}";
+            }
+        }
+
+        return $declarations === [] ? '' : ':root{'.implode(';', $declarations).'}';
     }
 
     /**

@@ -100,7 +100,13 @@ class CartManagerService
     /**
      * Add a product and variant to the cart. Server-authoritatively validates existence, variant ownership, and stock.
      */
-    public function addItem(Cart $cart, int $productId, ?int $variantId = null, int $quantity = 1): CartItem
+    public function addItem(
+        Cart $cart,
+        int $productId,
+        ?int $variantId = null,
+        int $quantity = 1,
+        ?string $comboSummary = null
+    ): CartItem
     {
         if ($quantity < 1) {
             throw new InvalidArgumentException('Quantity must be at least 1.');
@@ -123,7 +129,7 @@ class CartManagerService
             $variant = ProductVariant::where('product_id', $product->id)->findOrFail($variantId);
         }
 
-        return DB::transaction(function () use ($cart, $product, $variant, $quantity): CartItem {
+        return DB::transaction(function () use ($cart, $product, $variant, $quantity, $comboSummary): CartItem {
             /** @var CartItem|null $existing */
             $existing = CartItem::where('cart_id', $cart->id)
                 ->where('variant_id', $variant->id)
@@ -146,7 +152,11 @@ class CartManagerService
             }
 
             if ($existing) {
-                $existing->update(['quantity' => $targetQuantity]);
+                $updateData = ['quantity' => $targetQuantity];
+                if ($comboSummary !== null && $comboSummary !== '') {
+                    $updateData['combo_summary'] = $comboSummary;
+                }
+                $existing->update($updateData);
 
                 return $existing->fresh(['product', 'variant']);
             }
@@ -155,6 +165,7 @@ class CartManagerService
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
                 'variant_id' => $variant->id,
+                'combo_summary' => $comboSummary,
                 'quantity' => $quantity,
             ])->load(['product', 'variant']);
         });

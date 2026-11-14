@@ -74,3 +74,37 @@ test('validates storefront mode and hex color format', function () {
 
     $response->assertSessionHasErrors(['storefront_mode', 'primary_color']);
 });
+
+test('can save and render customized storefront color tokens and reset defaults', function () {
+    $admin = makeThemeTestUser('super_admin');
+    $settingsService = app(SettingsService::class);
+
+    // By default, no custom CSS override is rendered
+    expect($settingsService->renderStorefrontColorCss())->toBe('');
+
+    $response = $this->actingAs($admin)->post('/admin/appearance/theme', [
+        'storefront_mode' => 'full_storefront',
+        'store_name' => 'Velure Store',
+        'storefront_colors' => [
+            'page' => '#f8f5f0',
+            'cta' => '#111827',
+            'price' => '#dc2626',
+            'surface' => '#ffffff', // matches default, should not be stored as override
+        ],
+    ]);
+
+    $response->assertRedirect('/admin/appearance/theme');
+
+    $colors = $settingsService->getStorefrontColors();
+    expect($colors['page'])->toBe('#f8f5f0');
+    expect($colors['cta'])->toBe('#111827');
+    expect($colors['price'])->toBe('#dc2626');
+    expect($colors['surface'])->toBe('#ffffff');
+
+    $css = $settingsService->renderStorefrontColorCss();
+    expect($css)->toContain('--color-page:#f8f5f0');
+    expect($css)->toContain('--color-cta:#111827');
+    expect($css)->toContain('--color-price:#dc2626');
+    expect($css)->not->toContain('--color-surface');
+});
+

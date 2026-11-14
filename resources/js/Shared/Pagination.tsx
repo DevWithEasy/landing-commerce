@@ -65,8 +65,8 @@ export function Pagination({ links, from, to, total }: PaginationProps) {
                             preserveState
                             className={`inline-flex items-center justify-center min-w-[34px] h-[34px] px-2.5 text-xs font-semibold rounded-lg border transition-colors ${
                                 link.active
-                                    ? 'bg-[#F96D16] border-[#F96D16] text-white shadow-xs'
-                                    : 'bg-white border-stone-200 text-gray-700 hover:bg-[#FAF7F2] hover:border-stone-300'
+                                    ? 'bg-cta border-highlight text-cta-text shadow-xs'
+                                    : 'bg-white border-stone-200 text-gray-700 hover:bg-page hover:border-stone-300'
                             }`}
                         >
                             {content}

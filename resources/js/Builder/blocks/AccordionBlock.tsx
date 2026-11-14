@@ -41,7 +41,7 @@ export function AccordionBlock({ props, styles = {} }: AccordionBlockComponentPr
 
     return (
         <section style={inlineStyles} className="w-full bg-white py-12">
-            <div className="mx-auto max-w-3xl px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
+            <div className="w-full mx-auto max-w-7xl px-4 @min-[640px]:px-6 @min-[1024px]:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
                 {props.title && (
                     <h2
                         data-lc-el="title"

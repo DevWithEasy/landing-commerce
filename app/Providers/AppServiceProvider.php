@@ -55,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-payment-methods', fn (User $user) => $user->canManageShippingAndPayments());
 
         $this->ensureViteHotFileIsValid();
+        $this->ensureComboPackColumnsExist();
 
         // Apply decrypted database settings to runtime configuration
         $this->app->make(SettingsService::class)->applyRuntimeOverrides();
@@ -87,6 +88,59 @@ class AppServiceProvider extends ServiceProvider
             } else {
                 @unlink($hotFile);
             }
+        }
+    }
+
+    /**
+     * Automatically ensure combo_pack_size, combo_colors, combo_sizes and combo_summary columns exist on existing databases.
+     */
+    protected function ensureComboPackColumnsExist(): void
+    {
+        $flagFile = storage_path('framework/cache/combo_pack_schema_v2.flag');
+        if (! $this->app->runningUnitTests() && is_file($flagFile)) {
+            return;
+        }
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('products')) {
+                if (! \Illuminate\Support\Facades\Schema::hasColumn('products', 'combo_pack_size')) {
+                    \Illuminate\Support\Facades\Schema::table('products', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->unsignedTinyInteger('combo_pack_size')->default(1)->after('has_variants');
+                    });
+                }
+
+                if (! \Illuminate\Support\Facades\Schema::hasColumn('products', 'combo_colors')) {
+                    \Illuminate\Support\Facades\Schema::table('products', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->json('combo_colors')->nullable()->after('combo_pack_size');
+                    });
+                }
+
+                if (! \Illuminate\Support\Facades\Schema::hasColumn('products', 'combo_sizes')) {
+                    \Illuminate\Support\Facades\Schema::table('products', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->json('combo_sizes')->nullable()->after('combo_colors');
+                    });
+                }
+            }
+
+            if (
+                \Illuminate\Support\Facades\Schema::hasTable('cart_items') &&
+                ! \Illuminate\Support\Facades\Schema::hasColumn('cart_items', 'combo_summary')
+            ) {
+                \Illuminate\Support\Facades\Schema::table('cart_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('combo_summary', 500)->nullable()->after('variant_id');
+                });
+            }
+
+            if (
+                ! $this->app->runningUnitTests() &&
+                \Illuminate\Support\Facades\Schema::hasTable('products') &&
+                \Illuminate\Support\Facades\Schema::hasColumn('products', 'combo_colors') &&
+                \Illuminate\Support\Facades\Schema::hasColumn('products', 'combo_sizes')
+            ) {
+                @file_put_contents($flagFile, '1');
+            }
+        } catch (\Throwable) {
+            // Ignore when DB is not ready or during CLI preflight
         }
     }
 }

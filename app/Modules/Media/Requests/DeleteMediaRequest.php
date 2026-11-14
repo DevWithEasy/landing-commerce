@@ -25,7 +25,7 @@ class DeleteMediaRequest extends FormRequest
     {
         return [
             'items' => ['required', 'array', 'min:1', 'max:100'],
-            'items.*' => ['required', 'string', 'regex:/^(product|library):\d+$/'],
+            'items.*' => ['required', 'string', 'regex:/^((product|library):\d+|combo:\d+:\d+)$/'],
         ];
     }
 

@@ -207,10 +207,34 @@ export function Inspector({
     };
 
     const handleStyleChange = (key: keyof BlockStyles, value: BlockStyles[keyof BlockStyles]) => {
+        if (selectedBlock.type === 'CodCheckoutBlock' && viewport === 'desktop') {
+            if (key === 'borderColor') {
+                updateBlockProps(selectedBlock.id, { cardBorderColor: value });
+            } else if (key === 'borderWidth') {
+                updateBlockProps(selectedBlock.id, { cardBorderWidth: value });
+            } else if (key === 'borderStyle') {
+                updateBlockProps(selectedBlock.id, { cardBorderStyle: value });
+            } else if (key === 'borderRadius') {
+                updateBlockProps(selectedBlock.id, { cardBorderRadius: value });
+            } else if (key === 'boxShadow') {
+                updateBlockProps(selectedBlock.id, { cardShadow: value });
+            }
+        }
         writeStylePatch({ [key]: value } as Partial<BlockStyles>);
     };
 
     const handleBatchStyleChange = (updates: Partial<BlockStyles>) => {
+        if (selectedBlock.type === 'CodCheckoutBlock' && viewport === 'desktop') {
+            const propSync: Record<string, unknown> = {};
+            if ('borderColor' in updates) propSync.cardBorderColor = updates.borderColor;
+            if ('borderWidth' in updates) propSync.cardBorderWidth = updates.borderWidth;
+            if ('borderStyle' in updates) propSync.cardBorderStyle = updates.borderStyle;
+            if ('borderRadius' in updates) propSync.cardBorderRadius = updates.borderRadius;
+            if ('boxShadow' in updates) propSync.cardShadow = updates.boxShadow;
+            if (Object.keys(propSync).length > 0) {
+                updateBlockProps(selectedBlock.id, propSync);
+            }
+        }
         writeStylePatch(updates);
     };
 

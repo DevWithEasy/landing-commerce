@@ -36,6 +36,8 @@
     $finalStyleAttribute = $mergedStyle !== '' ? 'style="'.$mergedStyle.'"' : '';
 @endphp
 
-<{{ $tag }} id="{{ $id }}" {!! $finalStyleAttribute !!} data-lc-el="title" class="lc-block-root lc-heading font-bold tracking-tight {{ $alignClasses }} break-words">
-    {{ $text }}
-</{{ $tag }}>
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
+    <{{ $tag }} id="{{ $id }}" {!! $finalStyleAttribute !!} data-lc-el="title" class="lc-block-root lc-heading font-bold tracking-tight {{ $alignClasses }} break-words w-full">
+        {{ $text }}
+    </{{ $tag }}>
+</div>

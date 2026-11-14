@@ -36,12 +36,14 @@ export function HeadingBlock({ props, styles = {} }: HeadingBlockComponentProps)
     }[props.align || 'left'] || 'text-left';
 
     return (
-        <Tag
-            style={inlineStyles}
-            data-lc-el="title"
-            className={`lc-heading font-bold tracking-tight ${alignClass} break-words w-full`}
-        >
-            {props.text || 'Heading Title'}
-        </Tag>
+        <div className="w-full max-w-7xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
+            <Tag
+                style={inlineStyles}
+                data-lc-el="title"
+                className={`lc-heading font-bold tracking-tight ${alignClass} break-words w-full`}
+            >
+                {props.text || 'Heading Title'}
+            </Tag>
+        </div>
     );
 }

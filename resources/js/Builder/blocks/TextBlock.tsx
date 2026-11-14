@@ -32,12 +32,14 @@ export function TextBlock({ props, styles = {} }: TextBlockComponentProps) {
     }[props.align || 'left'] || 'text-left';
 
     return (
-        <div
-            style={inlineStyles}
-            data-lc-el="text"
-            className={`lc-text text-base ${alignClass} whitespace-pre-line break-words w-full`}
-        >
-            {props.content || 'Write your paragraph or product description here.'}
+        <div className="w-full max-w-7xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
+            <div
+                style={inlineStyles}
+                data-lc-el="text"
+                className={`lc-text text-base ${alignClass} whitespace-pre-line break-words w-full`}
+            >
+                {props.content || 'Write your paragraph or product description here.'}
+            </div>
         </div>
     );
 }

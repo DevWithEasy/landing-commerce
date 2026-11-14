@@ -163,7 +163,7 @@ export function StorefrontLayout({
 
     return (
         <div
-            className="min-h-screen flex flex-col bg-[#FAF7F2] text-gray-900"
+            className="min-h-screen flex flex-col bg-page text-gray-900"
             style={
                 {
                     '--primary-color': theme.primary_color || '#0B3B2E',
@@ -176,7 +176,7 @@ export function StorefrontLayout({
             )}
 
             {/* Top Announcement Bar (#0B3B2E Deep Forest Green) */}
-            <div className="bg-[#0B3B2E] text-white/90 text-[11px] sm:text-xs py-2 px-4">
+            <div className="bg-brand text-white/90 text-[11px] sm:text-xs py-2 px-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4 sm:gap-6">
                         <span className="flex items-center gap-1.5 font-medium">
@@ -220,14 +220,14 @@ export function StorefrontLayout({
             </div>
 
             {/* Main Header (Single Clean Row matching mockup) */}
-            <header className="bg-white border-b border-stone-200/80 sticky top-0 z-40">
+            <header className="bg-header border-b border-line/80 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-4">
                     {/* Mobile Menu Button & Brand */}
                     <div className="flex items-center gap-3 shrink-0">
                         <button
                             type="button"
                             onClick={() => setIsMobileMenuOpen(true)}
-                            className="lg:hidden p-2 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]"
+                            className="lg:hidden p-2 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-brand"
                             aria-label="Open navigation menu"
                         >
                             <Menu className="w-6 h-6" />
@@ -240,7 +240,7 @@ export function StorefrontLayout({
                                 className="h-9 sm:h-10 w-auto object-contain max-w-[160px]"
                                 fallbackText=""
                                 fallbackIcon={
-                                    <span className="text-2xl font-serif font-bold tracking-tight text-[#0B3B2E]">
+                                    <span className="text-2xl font-serif font-bold tracking-tight text-heading">
                                         {theme.store_name}
                                     </span>
                                 }
@@ -254,8 +254,8 @@ export function StorefrontLayout({
                             href="/"
                             className={`py-2 transition whitespace-nowrap ${
                                 page.url === '/'
-                                    ? 'text-gray-900 font-semibold border-b-2 border-[#F96D16]'
-                                    : 'hover:text-[#0B3B2E]'
+                                    ? 'text-gray-900 font-semibold border-b-2 border-highlight'
+                                    : 'hover:text-heading'
                             }`}
                         >
                             Home
@@ -268,24 +268,24 @@ export function StorefrontLayout({
                                         href={`/category/${cat.slug}`}
                                         className={`inline-flex items-center gap-1 py-2 transition whitespace-nowrap ${
                                             page.url.startsWith(`/category/${cat.slug}`)
-                                                ? 'text-gray-900 font-semibold border-b-2 border-[#F96D16]'
-                                                : 'hover:text-[#0B3B2E]'
+                                                ? 'text-gray-900 font-semibold border-b-2 border-highlight'
+                                                : 'hover:text-heading'
                                         }`}
                                     >
                                         <span>{cat.name}</span>
                                         {hasChildren && (
-                                            <ChevronDown className="w-3.5 h-3.5 text-gray-500 group-hover:text-[#0B3B2E] transition-transform duration-200 group-hover:rotate-180" />
+                                            <ChevronDown className="w-3.5 h-3.5 text-gray-500 group-hover:text-heading transition-transform duration-200 group-hover:rotate-180" />
                                         )}
                                     </Link>
 
                                     {hasChildren && (
                                         <div className="absolute left-0 top-full pt-1.5 w-52 opacity-0 invisible translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 transition-all duration-150 z-50">
-                                            <div className="bg-white rounded-xl shadow-xl border border-stone-200/90 py-1.5 overflow-hidden">
+                                            <div className="bg-surface rounded-xl shadow-xl border border-line/90 py-1.5 overflow-hidden">
                                                 {cat.children!.map((sub) => (
                                                     <Link
                                                         key={sub.id}
                                                         href={`/category/${sub.slug}`}
-                                                        className="flex items-center justify-between px-4 py-2 text-[13px] text-gray-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] font-medium transition"
+                                                        className="flex items-center justify-between px-4 py-2 text-[13px] text-gray-700 hover:bg-page hover:text-heading font-medium transition"
                                                     >
                                                         <span>{sub.name}</span>
                                                     </Link>
@@ -293,7 +293,7 @@ export function StorefrontLayout({
                                                 <div className="border-t border-stone-100 mt-1 pt-1">
                                                     <Link
                                                         href={`/category/${cat.slug}`}
-                                                        className="block px-4 py-1.5 text-xs font-semibold text-[#F96D16] hover:bg-[#FAF7F2] transition"
+                                                        className="block px-4 py-1.5 text-xs font-semibold text-highlight hover:bg-page transition"
                                                     >
                                                         View All {cat.name} →
                                                     </Link>
@@ -308,15 +308,15 @@ export function StorefrontLayout({
                             href="/shop?sort=latest"
                             className={`py-2 transition whitespace-nowrap ${
                                 page.url.includes('sort=latest')
-                                    ? 'text-gray-900 font-semibold border-b-2 border-[#F96D16]'
-                                    : 'hover:text-[#0B3B2E]'
+                                    ? 'text-gray-900 font-semibold border-b-2 border-highlight'
+                                    : 'hover:text-heading'
                             }`}
                         >
                             New Arrivals
                         </Link>
                         <Link
                             href="/shop"
-                            className="px-3.5 py-1.5 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-bold transition shadow-xs"
+                            className="px-3.5 py-1.5 rounded-lg bg-cta hover:bg-cta-hover text-cta-text text-xs font-bold transition shadow-xs"
                         >
                             Sale
                         </Link>
@@ -331,7 +331,7 @@ export function StorefrontLayout({
                                 placeholder="Search for products..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-1.5 bg-[#FAF7F2] border border-stone-200 rounded-full text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E] focus:bg-white transition"
+                                className="w-full pl-9 pr-4 py-1.5 bg-page border border-line rounded-full text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand focus:bg-surface transition"
                             />
                             <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         </form>
@@ -377,13 +377,13 @@ export function StorefrontLayout({
                                     </button>
                                 </div>
                             ) : customer ? (
-                                <div className="flex items-center bg-[#FAF7F2] hover:bg-stone-100 border border-stone-200 rounded-full pl-1.5 pr-1.5 py-1 transition">
+                                <div className="flex items-center bg-page hover:bg-stone-100 border border-line rounded-full pl-1.5 pr-1.5 py-1 transition">
                                     <Link
                                         href="/customer/dashboard"
-                                        className="flex items-center gap-1.5 text-xs font-semibold text-[#0B3B2E]"
+                                        className="flex items-center gap-1.5 text-xs font-semibold text-heading"
                                         title={`আমার প্রোফাইল (${customer.name})`}
                                     >
-                                        <div className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white flex items-center justify-center font-bold text-[11px]">
+                                        <div className="w-6 h-6 rounded-full bg-brand text-white flex items-center justify-center font-bold text-[11px]">
                                             {customer.name ? customer.name.charAt(0).toUpperCase() : <UserIcon className="w-3.5 h-3.5" />}
                                         </div>
                                         <span className="hidden sm:inline-block max-w-[90px] truncate">{customer.name.split(' ')[0]}</span>
@@ -391,7 +391,7 @@ export function StorefrontLayout({
                                     <button
                                         type="button"
                                         onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
-                                        className="p-1 ml-0.5 text-stone-600 hover:text-[#0B3B2E] rounded-full hover:bg-stone-200/60 transition"
+                                        className="p-1 ml-0.5 text-body hover:text-heading rounded-full hover:bg-stone-200/60 transition"
                                         aria-label="কাস্টমার মেনু খুলুন"
                                         title="একাউন্ট মেনু"
                                     >
@@ -405,18 +405,18 @@ export function StorefrontLayout({
                             ) : (
                                 <Link
                                     href="/customer/login"
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-stone-700 hover:text-[#0B3B2E] hover:bg-[#FAF7F2] border border-transparent hover:border-stone-200 rounded-full text-xs font-semibold transition"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-stone-700 hover:text-heading hover:bg-page border border-transparent hover:border-line rounded-full text-xs font-semibold transition"
                                     title="লগইন / রেজিস্টার"
                                     aria-label="লগইন / রেজিস্টার"
                                 >
-                                    <UserIcon className="w-4 h-4 text-stone-600" />
+                                    <UserIcon className="w-4 h-4 text-body" />
                                     <span className="hidden sm:inline font-medium">লগইন</span>
                                 </Link>
                             )}
 
                             {/* Dropdown Menu */}
                             {isAccountDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-stone-200/80 py-2.5 z-50">
+                                <div className="absolute right-0 mt-2 w-64 bg-surface rounded-xl shadow-lg border border-line/80 py-2.5 z-50">
                                     {adminUser && (
                                         <>
                                             <div className="px-4 py-2 border-b border-stone-100">
@@ -425,8 +425,8 @@ export function StorefrontLayout({
                                                         {adminRoleLabel}
                                                     </span>
                                                 </div>
-                                                <p className="font-bold text-stone-900 text-sm mt-1 truncate">{adminUser.name}</p>
-                                                <p className="text-xs text-stone-500 truncate">{adminUser.email}</p>
+                                                <p className="font-bold text-ink text-sm mt-1 truncate">{adminUser.name}</p>
+                                                <p className="text-xs text-muted truncate">{adminUser.email}</p>
                                             </div>
 
                                             <div className="py-1">
@@ -441,34 +441,34 @@ export function StorefrontLayout({
                                                 <Link
                                                     href="/admin/products"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
-                                                    <Package className="w-4 h-4 text-stone-500" />
+                                                    <Package className="w-4 h-4 text-muted" />
                                                     <span>পণ্য তালিকা ও স্টক</span>
                                                 </Link>
                                                 <Link
                                                     href="/admin/orders"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
-                                                    <Truck className="w-4 h-4 text-stone-500" />
+                                                    <Truck className="w-4 h-4 text-muted" />
                                                     <span>অর্ডার ব্যবস্থাপনা</span>
                                                 </Link>
                                                 <Link
                                                     href="/admin/appearance"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
-                                                    <Settings className="w-4 h-4 text-stone-500" />
+                                                    <Settings className="w-4 h-4 text-muted" />
                                                     <span>স্টোর ও থিম সেটিংস</span>
                                                 </Link>
                                                 {customer && (
                                                     <Link
                                                         href="/customer/dashboard"
                                                         onClick={() => setIsAccountDropdownOpen(false)}
-                                                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#0B3B2E] hover:bg-emerald-50/70 transition border-t border-stone-100"
+                                                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-heading hover:bg-emerald-50/70 transition border-t border-stone-100"
                                                     >
-                                                        <UserIcon className="w-4 h-4 text-[#0B3B2E]" />
+                                                        <UserIcon className="w-4 h-4 text-heading" />
                                                         <span>কাস্টমার একাউন্ট</span>
                                                     </Link>
                                                 )}
@@ -493,34 +493,34 @@ export function StorefrontLayout({
                                     {!adminUser && customer && (
                                         <>
                                             <div className="px-4 py-2 border-b border-stone-100">
-                                                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-emerald-50 text-[#0B3B2E] rounded-full">
+                                                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-emerald-50 text-heading rounded-full">
                                                     কাস্টমার একাউন্ট
                                                 </span>
-                                                <p className="font-bold text-stone-900 text-sm mt-1 truncate">{customer.name}</p>
-                                                <p className="text-xs text-stone-500 truncate">{customer.phone || customer.email}</p>
+                                                <p className="font-bold text-ink text-sm mt-1 truncate">{customer.name}</p>
+                                                <p className="text-xs text-muted truncate">{customer.phone || customer.email}</p>
                                             </div>
 
                                             <div className="py-1">
                                                 <Link
                                                     href="/customer/dashboard"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
-                                                    <LayoutDashboard className="w-4 h-4 text-[#0B3B2E]" />
+                                                    <LayoutDashboard className="w-4 h-4 text-heading" />
                                                     <span>আমার ড্যাশবোর্ড</span>
                                                 </Link>
                                                 <Link
                                                     href="/customer/orders"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
-                                                    <Truck className="w-4 h-4 text-stone-500" />
+                                                    <Truck className="w-4 h-4 text-muted" />
                                                     <span>আমার অর্ডারসমূহ</span>
                                                 </Link>
                                                 <Link
                                                     href="/customer/wishlist"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
                                                     <Heart className="w-4 h-4 text-rose-500" />
                                                     <span>আমার উইশলিস্ট</span>
@@ -528,9 +528,9 @@ export function StorefrontLayout({
                                                 <Link
                                                     href="/track-order"
                                                     onClick={() => setIsAccountDropdownOpen(false)}
-                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-[#FAF7F2] hover:text-[#0B3B2E] transition"
+                                                    className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-page hover:text-heading transition"
                                                 >
-                                                    <Search className="w-4 h-4 text-stone-500" />
+                                                    <Search className="w-4 h-4 text-muted" />
                                                     <span>অর্ডার ট্র্যাক করুন</span>
                                                 </Link>
                                             </div>
@@ -568,13 +568,13 @@ export function StorefrontLayout({
                         <button
                             type="button"
                             onClick={() => setIsMiniCartOpen(true)}
-                            className="p-2 text-gray-700 hover:text-[#0B3B2E] rounded-full hover:bg-stone-100 transition relative"
+                            className="p-2 text-gray-700 hover:text-heading rounded-full hover:bg-stone-100 transition relative"
                             title="Shopping Cart"
                             aria-label="Open Shopping Cart"
                         >
                             <ShoppingBag className="w-5 h-5" />
                             {activeCart.total_items > 0 && (
-                                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#F96D16] text-white rounded-full text-[10px] font-bold flex items-center justify-center">
+                                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-cta text-cta-text rounded-full text-[10px] font-bold flex items-center justify-center">
                                     {activeCart.total_items > 99 ? '99+' : activeCart.total_items}
                                 </span>
                             )}
@@ -584,7 +584,7 @@ export function StorefrontLayout({
 
                 {/* Mobile Search Bar Dropdown */}
                 {isMobileSearchOpen && (
-                    <div className="md:hidden border-t border-stone-200 p-3 bg-[#FAF7F2]">
+                    <div className="md:hidden border-t border-line p-3 bg-page">
                         <form onSubmit={handleSearchSubmit} className="relative w-full">
                             <input
                                 type="text"
@@ -592,12 +592,12 @@ export function StorefrontLayout({
                                 autoFocus
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-20 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E]"
+                                className="w-full pl-10 pr-20 py-2 border border-line rounded-lg text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                             />
                             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                             <button
                                 type="submit"
-                                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-md text-xs font-semibold transition"
+                                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1 bg-cta hover:bg-cta-hover text-cta-text rounded-md text-xs font-semibold transition"
                             >
                                 Search
                             </button>
@@ -621,13 +621,13 @@ export function StorefrontLayout({
                     />
 
                     {/* Drawer Content */}
-                    <div className="relative w-4/5 max-w-sm bg-white h-full shadow-xl flex flex-col z-10 overflow-y-auto">
-                        <div className="p-4 border-b border-stone-200 flex items-center justify-between bg-[#FAF7F2]">
-                            <span className="font-serif font-bold text-[#0B3B2E] text-base">মেনু ও ক্যাটাগরি</span>
+                    <div className="relative w-4/5 max-w-sm bg-surface h-full shadow-xl flex flex-col z-10 overflow-y-auto">
+                        <div className="p-4 border-b border-line flex items-center justify-between bg-page">
+                            <span className="font-serif font-bold text-heading text-base">মেনু ও ক্যাটাগরি</span>
                             <button
                                 type="button"
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="p-2 text-stone-500 hover:text-stone-800 rounded-lg"
+                                className="p-2 text-muted hover:text-stone-800 rounded-lg"
                                 aria-label="Close menu"
                             >
                                 <X className="w-5 h-5" />
@@ -635,7 +635,7 @@ export function StorefrontLayout({
                         </div>
 
                         {/* Mobile Account Status Card */}
-                        <div className="p-3 border-b border-stone-100 bg-[#FAF7F2]/50">
+                        <div className="p-3 border-b border-stone-100 bg-page/50">
                             {adminUser ? (
                                 <div className="p-3 bg-amber-50/90 border border-amber-200 rounded-xl">
                                     <div className="flex items-center gap-2.5 mb-2.5">
@@ -666,7 +666,7 @@ export function StorefrontLayout({
                                                 setIsMobileMenuOpen(false);
                                                 router.post('/admin/logout');
                                             }}
-                                            className="px-2.5 py-2 bg-white text-rose-600 hover:bg-rose-50 border border-amber-200 rounded-lg text-xs font-semibold text-center transition"
+                                            className="px-2.5 py-2 bg-surface text-rose-600 hover:bg-rose-50 border border-amber-200 rounded-lg text-xs font-semibold text-center transition"
                                         >
                                             লগআউট
                                         </button>
@@ -675,11 +675,11 @@ export function StorefrontLayout({
                             ) : customer ? (
                                 <div className="p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl">
                                     <div className="flex items-center gap-2.5 mb-2.5">
-                                        <div className="w-9 h-9 rounded-full bg-[#0B3B2E] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                        <div className="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                                             {customer.name ? customer.name.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-xs font-bold text-[#0B3B2E] truncate">{customer.name}</p>
+                                            <p className="text-xs font-bold text-heading truncate">{customer.name}</p>
                                             <p className="text-[11px] text-emerald-800 truncate">{customer.phone || customer.email}</p>
                                         </div>
                                     </div>
@@ -687,7 +687,7 @@ export function StorefrontLayout({
                                         <Link
                                             href="/customer/dashboard"
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="px-2.5 py-2 bg-[#0B3B2E] hover:bg-[#082B21] text-white rounded-lg text-xs font-semibold text-center transition"
+                                            className="px-2.5 py-2 bg-brand hover:bg-brand-hover text-white rounded-lg text-xs font-semibold text-center transition"
                                         >
                                             ড্যাশবোর্ড
                                         </Link>
@@ -697,7 +697,7 @@ export function StorefrontLayout({
                                                 setIsMobileMenuOpen(false);
                                                 router.post('/customer/logout');
                                             }}
-                                            className="px-2.5 py-2 bg-white text-rose-600 hover:bg-rose-50 border border-emerald-200 rounded-lg text-xs font-semibold text-center transition"
+                                            className="px-2.5 py-2 bg-surface text-rose-600 hover:bg-rose-50 border border-emerald-200 rounded-lg text-xs font-semibold text-center transition"
                                         >
                                             লগআউট
                                         </button>
@@ -707,7 +707,7 @@ export function StorefrontLayout({
                                 <Link
                                     href="/customer/login"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-[#0B3B2E] hover:bg-[#082B21] text-white font-semibold rounded-lg text-xs transition"
+                                    className="flex items-center justify-center gap-2 w-full py-2.5 px-3 bg-brand hover:bg-brand-hover text-white font-semibold rounded-lg text-xs transition"
                                 >
                                     <UserIcon className="w-4 h-4" />
                                     <span>লগইন / একাউন্ট তৈরি করুন</span>
@@ -724,7 +724,7 @@ export function StorefrontLayout({
                                     placeholder="পণ্য খুঁজুন..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 pr-4 py-2 border border-stone-200 bg-[#FAF7F2] rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E]"
+                                    className="w-full pl-9 pr-4 py-2 border border-line bg-page rounded-lg text-sm focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                                 />
                                 <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                             </form>
@@ -743,7 +743,7 @@ export function StorefrontLayout({
                                             <Link
                                                 href={`/category/${cat.slug}`}
                                                 onClick={() => setIsMobileMenuOpen(false)}
-                                                className="text-sm font-medium text-stone-800 hover:text-[#0B3B2E] transition"
+                                                className="text-sm font-medium text-stone-800 hover:text-heading transition"
                                             >
                                                 {cat.name}
                                             </Link>
@@ -751,7 +751,7 @@ export function StorefrontLayout({
                                                 <button
                                                     type="button"
                                                     onClick={() => toggleMobileCategory(cat.id)}
-                                                    className="p-1.5 text-stone-400 hover:text-[#0B3B2E]"
+                                                    className="p-1.5 text-stone-400 hover:text-heading"
                                                     aria-label={`${cat.name} সাব-ক্যাটাগরি টগল করুন`}
                                                 >
                                                     <ChevronDown
@@ -770,7 +770,7 @@ export function StorefrontLayout({
                                                         key={sub.id}
                                                         href={`/category/${sub.slug}`}
                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                        className="block text-xs text-stone-600 hover:text-[#0B3B2E] py-1"
+                                                        className="block text-xs text-body hover:text-heading py-1"
                                                     >
                                                         {sub.name}
                                                     </Link>
@@ -786,21 +786,21 @@ export function StorefrontLayout({
                                 <Link
                                     href="/"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm font-semibold text-stone-700 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm font-semibold text-stone-700 hover:text-heading py-1.5"
                                 >
                                     হোম পেইজ
                                 </Link>
                                 <Link
                                     href="/shop"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm font-semibold text-stone-700 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm font-semibold text-stone-700 hover:text-heading py-1.5"
                                 >
                                     শপ / সব পণ্য
                                 </Link>
                                 <Link
                                     href="/track-order"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm font-semibold text-[#0B3B2E] hover:text-[#EA580C] py-1.5"
+                                    className="block text-sm font-semibold text-heading hover:text-price py-1.5"
                                 >
                                     অর্ডার ট্র্যাকিং
                                 </Link>
@@ -814,42 +814,42 @@ export function StorefrontLayout({
                                 <Link
                                     href={accountUrl}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm font-semibold text-stone-700 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm font-semibold text-stone-700 hover:text-heading py-1.5"
                                 >
                                     {adminUser ? 'অ্যাডমিন প্যানেল' : customer ? 'আমার একাউন্ট' : 'লগইন / রেজিস্টার'}
                                 </Link>
                                 <Link
                                     href="/pages/about"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm text-stone-600 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm text-body hover:text-heading py-1.5"
                                 >
                                     আমাদের সম্পর্কে
                                 </Link>
                                 <Link
                                     href="/pages/contact"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm text-stone-600 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm text-body hover:text-heading py-1.5"
                                 >
                                     যোগাযোগ
                                 </Link>
                                 <Link
                                     href="/pages/privacy-policy"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm text-stone-600 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm text-body hover:text-heading py-1.5"
                                 >
                                     গোপনীয়তা নীতি
                                 </Link>
                                 <Link
                                     href="/pages/terms"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm text-stone-600 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm text-body hover:text-heading py-1.5"
                                 >
                                     ব্যবহারের শর্তাবলী
                                 </Link>
                                 <Link
                                     href="/pages/refund-policy"
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-sm text-stone-600 hover:text-[#0B3B2E] py-1.5"
+                                    className="block text-sm text-body hover:text-heading py-1.5"
                                 >
                                     রিটার্ন ও রিফান্ড নীতি
                                 </Link>
@@ -857,13 +857,13 @@ export function StorefrontLayout({
                         </div>
 
                         {/* Customer support in mobile drawer */}
-                        <div className="p-4 border-t border-stone-200 bg-[#FAF7F2] space-y-2.5">
+                        <div className="p-4 border-t border-line bg-page space-y-2.5">
                             {theme.store_phone && (
                                 <a
                                     href={`tel:${theme.store_phone}`}
                                     className="flex items-center gap-2 text-sm font-semibold text-stone-800"
                                 >
-                                    <Phone className="w-4 h-4 text-[#0B3B2E]" />
+                                    <Phone className="w-4 h-4 text-heading" />
                                     <span>হটলাইন: {theme.store_phone}</span>
                                 </a>
                             )}
@@ -872,7 +872,7 @@ export function StorefrontLayout({
                                     href={`https://wa.me/${cleanWhatsapp}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 bg-[#0B3B2E] hover:bg-[#082B21] text-white rounded-lg text-sm font-semibold transition"
+                                    className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand-hover text-white rounded-lg text-sm font-semibold transition"
                                 >
                                     <span>WhatsApp অর্ডার</span>
                                 </a>
@@ -886,11 +886,11 @@ export function StorefrontLayout({
             <main className="flex-1 pb-16 md:pb-0">{children}</main>
 
             {/* Sticky Mobile Bottom Navigation Bar */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-stone-200 py-2 px-3 shadow-xs">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface border-t border-line py-2 px-3 shadow-xs">
                 <div className="flex items-center justify-around text-center">
                     <Link
                         href="/"
-                        className="flex flex-col items-center text-stone-600 hover:text-[#0B3B2E] py-1 text-xs"
+                        className="flex flex-col items-center text-body hover:text-heading py-1 text-xs"
                     >
                         <Home className="w-5 h-5 mb-0.5" />
                         <span>হোম</span>
@@ -899,7 +899,7 @@ export function StorefrontLayout({
                     <button
                         type="button"
                         onClick={() => setIsMobileMenuOpen(true)}
-                        className="flex flex-col items-center text-stone-600 hover:text-[#0B3B2E] py-1 text-xs"
+                        className="flex flex-col items-center text-body hover:text-heading py-1 text-xs"
                     >
                         <Layers className="w-5 h-5 mb-0.5" />
                         <span>ক্যাটাগরি</span>
@@ -907,7 +907,7 @@ export function StorefrontLayout({
 
                     <Link
                         href="/shop"
-                        className="flex flex-col items-center text-stone-600 hover:text-[#0B3B2E] py-1 text-xs"
+                        className="flex flex-col items-center text-body hover:text-heading py-1 text-xs"
                     >
                         <Store className="w-5 h-5 mb-0.5" />
                         <span>শপ</span>
@@ -916,13 +916,13 @@ export function StorefrontLayout({
                     <button
                         type="button"
                         onClick={() => setIsMiniCartOpen(true)}
-                        className="flex flex-col items-center text-stone-600 hover:text-[#0B3B2E] py-1 text-xs relative"
+                        className="flex flex-col items-center text-body hover:text-heading py-1 text-xs relative"
                         aria-label="Open Shopping Cart"
                     >
                         <ShoppingBag className="w-5 h-5 mb-0.5" />
                         <span>কার্ট</span>
                         {activeCart.total_items > 0 && (
-                            <span className="absolute top-0 right-3 w-3.5 h-3.5 bg-[#F96D16] text-white rounded-full text-[9px] font-bold flex items-center justify-center">
+                            <span className="absolute top-0 right-3 w-3.5 h-3.5 bg-cta text-cta-text rounded-full text-[9px] font-bold flex items-center justify-center">
                                 {activeCart.total_items > 99 ? '99+' : activeCart.total_items}
                             </span>
                         )}
@@ -930,7 +930,7 @@ export function StorefrontLayout({
 
                     <Link
                         href={accountUrl}
-                        className="flex flex-col items-center text-stone-600 hover:text-[#0B3B2E] py-1 text-xs"
+                        className="flex flex-col items-center text-body hover:text-heading py-1 text-xs"
                     >
                         <UserIcon className="w-5 h-5 mb-0.5" />
                         <span>{customer ? 'একাউন্ট' : 'লগইন'}</span>
@@ -939,7 +939,7 @@ export function StorefrontLayout({
             </div>
 
             {/* Storefront Footer (#0B3B2E Deep Forest Green matching mockup) */}
-            <footer className="bg-[#0B3B2E] text-emerald-100/80 pt-14 pb-8">
+            <footer className="bg-footer text-footer-text/80 pt-14 pb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-10 border-b border-white/10">
                         {/* Column 1: Store info */}
@@ -951,18 +951,18 @@ export function StorefrontLayout({
                                     className="h-9 w-auto brightness-200"
                                     fallbackText=""
                                     fallbackIcon={
-                                        <span className="text-2xl font-serif font-bold text-white">
+                                        <span className="text-2xl font-serif font-bold text-footer-text">
                                             {theme.store_name}
                                         </span>
                                     }
                                 />
                             </div>
-                            <p className="text-xs sm:text-sm text-emerald-100/75 leading-relaxed mb-4">
+                            <p className="text-xs sm:text-sm text-footer-text/75 leading-relaxed mb-4">
                                 Your trusted destination for modern fashion, footwear, and lifestyle
                                 accessories with fast Cash on Delivery across Bangladesh.
                             </p>
                             {theme.store_phone && (
-                                <p className="text-xs text-emerald-100/90 font-semibold">
+                                <p className="text-xs text-footer-text/90 font-semibold">
                                     Hotline: {theme.store_phone}
                                 </p>
                             )}
@@ -970,33 +970,33 @@ export function StorefrontLayout({
 
                         {/* Column 2: Quick Links */}
                         <div className="lg:col-span-2">
-                            <h4 className="text-white font-semibold text-sm mb-3">Quick Links</h4>
-                            <ul className="space-y-2 text-xs text-emerald-100/75">
+                            <h4 className="text-footer-text font-semibold text-sm mb-3">Quick Links</h4>
+                            <ul className="space-y-2 text-xs text-footer-text/75">
                                 <li>
-                                    <Link href="/pages/about" className="hover:text-white transition">About Us</Link>
+                                    <Link href="/pages/about" className="hover:text-footer-text transition">About Us</Link>
                                 </li>
                                 <li>
-                                    <Link href="/pages/contact" className="hover:text-white transition">Contact Us</Link>
+                                    <Link href="/pages/contact" className="hover:text-footer-text transition">Contact Us</Link>
                                 </li>
                                 <li>
-                                    <Link href="/shop" className="hover:text-white transition">All Products</Link>
+                                    <Link href="/shop" className="hover:text-footer-text transition">All Products</Link>
                                 </li>
                                 <li>
-                                    <Link href="/track-order" className="hover:text-white transition">Track Order</Link>
+                                    <Link href="/track-order" className="hover:text-footer-text transition">Track Order</Link>
                                 </li>
                                 <li>
-                                    <Link href={accountUrl} className="hover:text-white transition">{customer ? 'My Account' : 'Login / Register'}</Link>
+                                    <Link href={accountUrl} className="hover:text-footer-text transition">{customer ? 'My Account' : 'Login / Register'}</Link>
                                 </li>
                             </ul>
                         </div>
 
                         {/* Column 3: Shop */}
                         <div className="lg:col-span-2">
-                            <h4 className="text-white font-semibold text-sm mb-3">Shop</h4>
-                            <ul className="space-y-2 text-xs text-emerald-100/75">
+                            <h4 className="text-footer-text font-semibold text-sm mb-3">Shop</h4>
+                            <ul className="space-y-2 text-xs text-footer-text/75">
                                 {resolvedCategories.slice(0, 5).map((cat) => (
                                     <li key={cat.id}>
-                                        <Link href={`/category/${cat.slug}`} className="hover:text-white transition">
+                                        <Link href={`/category/${cat.slug}`} className="hover:text-footer-text transition">
                                             {cat.name}
                                         </Link>
                                     </li>
@@ -1006,29 +1006,29 @@ export function StorefrontLayout({
 
                         {/* Column 4: Customer Care */}
                         <div className="lg:col-span-2">
-                            <h4 className="text-white font-semibold text-sm mb-3">Customer Care</h4>
-                            <ul className="space-y-2 text-xs text-emerald-100/75">
+                            <h4 className="text-footer-text font-semibold text-sm mb-3">Customer Care</h4>
+                            <ul className="space-y-2 text-xs text-footer-text/75">
                                 <li>
-                                    <Link href="/pages/refund-policy" className="hover:text-white transition">Return &amp; Refund</Link>
+                                    <Link href="/pages/refund-policy" className="hover:text-footer-text transition">Return &amp; Refund</Link>
                                 </li>
                                 <li>
-                                    <Link href="/customer/wishlist" className="hover:text-white transition">My Wishlist</Link>
+                                    <Link href="/customer/wishlist" className="hover:text-footer-text transition">My Wishlist</Link>
                                 </li>
                                 <li>
-                                    <Link href="/pages/terms" className="hover:text-white transition">Terms &amp; Conditions</Link>
+                                    <Link href="/pages/terms" className="hover:text-footer-text transition">Terms &amp; Conditions</Link>
                                 </li>
                                 <li>
-                                    <Link href="/pages/privacy-policy" className="hover:text-white transition">Privacy Policy</Link>
+                                    <Link href="/pages/privacy-policy" className="hover:text-footer-text transition">Privacy Policy</Link>
                                 </li>
                             </ul>
                         </div>
 
                         {/* Column 5: Subscribe & Get Offers */}
                         <div className="lg:col-span-3">
-                            <h4 className="text-white font-semibold text-sm mb-3">
+                            <h4 className="text-footer-text font-semibold text-sm mb-3">
                                 Subscribe &amp; Get Offers
                             </h4>
-                            <p className="text-xs text-emerald-100/75 leading-relaxed mb-3">
+                            <p className="text-xs text-footer-text/75 leading-relaxed mb-3">
                                 Get the latest updates, new arrivals, and exclusive offers straight
                                 to your inbox.
                             </p>
@@ -1037,7 +1037,7 @@ export function StorefrontLayout({
                                     e.preventDefault();
                                     router.visit('/shop');
                                 }}
-                                className="flex items-stretch overflow-hidden rounded-full bg-white p-1"
+                                className="flex items-stretch overflow-hidden rounded-full bg-surface p-1"
                             >
                                 <input
                                     type="email"
@@ -1046,7 +1046,7 @@ export function StorefrontLayout({
                                 />
                                 <button
                                     type="submit"
-                                    className="px-4 py-1.5 rounded-full bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-bold transition shrink-0"
+                                    className="px-4 py-1.5 rounded-full bg-cta hover:bg-cta-hover text-cta-text text-xs font-bold transition shrink-0"
                                     aria-label="Subscribe"
                                 >
                                     &rarr;
@@ -1056,11 +1056,11 @@ export function StorefrontLayout({
                     </div>
 
                     {/* Bottom Copyright & Payment Badges */}
-                    <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-emerald-100/70">
+                    <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-footer-text/70">
                         <p>&copy; {new Date().getFullYear()} {theme.store_name}. All Rights Reserved.</p>
                         <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
-                            <span className="px-2.5 py-1 rounded bg-white text-[#1A1F71]">VISA</span>
-                            <span className="px-2.5 py-1 rounded bg-white text-[#EB001B]">Mastercard</span>
+                            <span className="px-2.5 py-1 rounded bg-surface text-[#1A1F71]">VISA</span>
+                            <span className="px-2.5 py-1 rounded bg-surface text-[#EB001B]">Mastercard</span>
                             <span className="px-2.5 py-1 rounded bg-[#E2136E] text-white">bKash</span>
                             <span className="px-2.5 py-1 rounded bg-[#F7941D] text-white">Nagad</span>
                             <span className="px-2.5 py-1 rounded bg-[#8C3494] text-white">Rocket</span>

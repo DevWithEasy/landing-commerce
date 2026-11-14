@@ -18,14 +18,14 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
             case 'pending':
                 return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">অপেক্ষারত (Pending)</span>;
             case 'confirmed':
-                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#0B3B2E] border border-emerald-200">নিশ্চিত (Confirmed)</span>;
+                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-heading border border-emerald-200">নিশ্চিত (Confirmed)</span>;
             case 'processing':
-                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-stone-100 text-stone-800 border border-stone-200">প্রস্তুত হচ্ছে (Processing)</span>;
+                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-stone-100 text-stone-800 border border-line">প্রস্তুত হচ্ছে (Processing)</span>;
             case 'handed_to_courier':
             case 'in_transit':
-                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-[#EA580C] border border-orange-200">ডেলিভারির পথে (In Transit)</span>;
+                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-orange-50 text-price border border-orange-200">ডেলিভারির পথে (In Transit)</span>;
             case 'delivered':
-                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#0B3B2E] border border-emerald-200">ডেলিভারি সম্পন্ন (Delivered)</span>;
+                return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-heading border border-emerald-200">ডেলিভারি সম্পন্ন (Delivered)</span>;
             case 'cancelled':
                 return <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">বাতিল (Cancelled)</span>;
             default:
@@ -42,22 +42,22 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
 
             <div className="space-y-6">
                 {/* Header Card */}
-                <div className="bg-white rounded-xl border border-stone-200/80 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-surface rounded-xl border border-line/80 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
                             <Link
                                 href="/customer/orders"
-                                className="p-1.5 rounded-lg border border-stone-200 text-stone-500 hover:text-[#0B3B2E] hover:bg-[#FAF7F2] transition"
+                                className="p-1.5 rounded-lg border border-line text-muted hover:text-heading hover:bg-page transition"
                                 title="অর্ডার তালিকায় ফিরে যান"
                             >
                                 <ArrowLeft className="w-4 h-4" />
                             </Link>
-                            <h2 className="text-xl font-serif font-bold text-[#0B3B2E] tracking-tight">
+                            <h2 className="text-xl font-serif font-bold text-heading tracking-tight">
                                 অর্ডার #{order.order_number}
                             </h2>
                             {getStatusBadge(order.status)}
                         </div>
-                        <p className="text-xs text-stone-500 flex items-center gap-1.5 pl-9">
+                        <p className="text-xs text-muted flex items-center gap-1.5 pl-9">
                             <Calendar className="w-3.5 h-3.5 text-stone-400" />
                             <span>
                                 অর্ডার সম্পন্ন হয়েছে: {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} at {new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
@@ -68,7 +68,7 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                     <div className="flex items-center gap-3 pl-9 sm:pl-0">
                         <Link
                             href={`/track-order?order_number=${order.order_number}`}
-                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0B3B2E] hover:bg-[#082B21] text-white rounded-lg text-xs font-semibold transition"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand-hover text-white rounded-lg text-xs font-semibold transition"
                         >
                             <Search className="w-3.5 h-3.5" />
                             <span>লাইভ ট্র্যাকিং</span>
@@ -80,10 +80,10 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left 2 Cols: Order Items */}
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl border border-stone-200/80 overflow-hidden">
+                        <div className="bg-surface rounded-xl border border-line/80 overflow-hidden">
                             <div className="p-5 border-b border-stone-100 flex items-center justify-between">
-                                <h3 className="font-serif font-bold text-[#0B3B2E] text-sm flex items-center gap-2">
-                                    <Package className="w-4 h-4 text-[#0B3B2E]" />
+                                <h3 className="font-serif font-bold text-heading text-sm flex items-center gap-2">
+                                    <Package className="w-4 h-4 text-heading" />
                                     <span>অর্ডারকৃত পণ্যসমূহ ({order.items.length})</span>
                                 </h3>
                             </div>
@@ -96,7 +96,7 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                                     return (
                                         <div key={item.id} className="p-5 flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-4 min-w-0">
-                                                <div className="w-16 h-20 rounded-lg border border-stone-200 bg-[#F3EDE4] flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                                <div className="w-16 h-20 rounded-lg border border-line bg-soft flex-shrink-0 overflow-hidden flex items-center justify-center">
                                                     <SafeImage
                                                         src={imgUrl}
                                                         alt={item.product_title}
@@ -107,22 +107,22 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                                                 </div>
 
                                                 <div className="min-w-0">
-                                                    <h4 className="font-semibold text-stone-900 text-sm truncate">
+                                                    <h4 className="font-semibold text-ink text-sm truncate">
                                                         {item.product_title}
                                                     </h4>
                                                     {item.variant_name && (
-                                                        <p className="text-xs text-[#0B3B2E] font-medium mt-0.5">
+                                                        <p className="text-xs text-heading font-medium mt-0.5">
                                                             ভেরিয়েন্ট: {item.variant_name}
                                                         </p>
                                                     )}
-                                                    <p className="text-xs text-stone-500 mt-1">
+                                                    <p className="text-xs text-muted mt-1">
                                                         {formatBdt(item.unit_price)} × {item.quantity} টি
                                                     </p>
                                                 </div>
                                             </div>
 
                                             <div className="text-right flex-shrink-0">
-                                                <div className="font-bold text-stone-900 text-sm">
+                                                <div className="font-bold text-ink text-sm">
                                                     {formatBdt(item.total_price)}
                                                 </div>
                                             </div>
@@ -132,35 +132,35 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                             </div>
 
                             {/* Summary Calculation */}
-                            <div className="p-5 bg-[#FAF7F2]/80 border-t border-stone-200/70 space-y-2.5">
-                                <div className="flex justify-between text-xs text-stone-600">
+                            <div className="p-5 bg-page/80 border-t border-line/70 space-y-2.5">
+                                <div className="flex justify-between text-xs text-body">
                                     <span>সাবটোটাল (Subtotal):</span>
-                                    <span className="font-semibold text-stone-900">{formatBdt(order.subtotal)}</span>
+                                    <span className="font-semibold text-ink">{formatBdt(order.subtotal)}</span>
                                 </div>
-                                <div className="flex justify-between text-xs text-stone-600">
+                                <div className="flex justify-between text-xs text-body">
                                     <span>ডেলিভারি চার্জ (Delivery Fee):</span>
-                                    <span className="font-semibold text-stone-900">+{formatBdt(order.shipping_fee)}</span>
+                                    <span className="font-semibold text-ink">+{formatBdt(order.shipping_fee)}</span>
                                 </div>
                                 {Number(order.discount) > 0 && (
-                                    <div className="flex justify-between text-xs text-[#0B3B2E]">
+                                    <div className="flex justify-between text-xs text-heading">
                                         <span>ছাড় (Discount):</span>
                                         <span className="font-semibold">-{formatBdt(order.discount)}</span>
                                     </div>
                                 )}
-                                <div className="pt-2.5 border-t border-stone-200 flex justify-between text-sm font-bold text-stone-900">
+                                <div className="pt-2.5 border-t border-line flex justify-between text-sm font-bold text-ink">
                                     <span>সর্বমোট প্রদেয় (Grand Total):</span>
-                                    <span className="text-[#EA580C] text-base">{formatBdt(order.total)}</span>
+                                    <span className="text-price text-base">{formatBdt(order.total)}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Customer Notes if present */}
                         {order.notes && (
-                            <div className="bg-white rounded-xl border border-stone-200/80 p-5 space-y-2">
-                                <h4 className="font-bold text-stone-500 text-xs uppercase tracking-wider">
+                            <div className="bg-surface rounded-xl border border-line/80 p-5 space-y-2">
+                                <h4 className="font-bold text-muted text-xs uppercase tracking-wider">
                                     অর্ডারের বিশেষ নির্দেশনা (Customer Note)
                                 </h4>
-                                <p className="text-xs text-stone-700 bg-[#FAF7F2] p-3 rounded-lg border border-stone-200/70">
+                                <p className="text-xs text-stone-700 bg-page p-3 rounded-lg border border-line/70">
                                     {order.notes}
                                 </p>
                             </div>
@@ -170,16 +170,16 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                     {/* Right 1 Col: Delivery, Payment & Courier Info */}
                     <div className="space-y-6">
                         {/* Delivery Info */}
-                        <div className="bg-white rounded-xl border border-stone-200/80 p-5 space-y-4">
-                            <h3 className="font-serif font-bold text-[#0B3B2E] text-sm flex items-center gap-2 border-b border-stone-100 pb-3">
-                                <MapPin className="w-4 h-4 text-[#0B3B2E]" />
+                        <div className="bg-surface rounded-xl border border-line/80 p-5 space-y-4">
+                            <h3 className="font-serif font-bold text-heading text-sm flex items-center gap-2 border-b border-stone-100 pb-3">
+                                <MapPin className="w-4 h-4 text-heading" />
                                 <span>ডেলিভারি ঠিকানা</span>
                             </h3>
 
                             <div className="space-y-2.5 text-xs">
                                 <div className="flex items-center gap-2 text-stone-700">
                                     <User className="w-3.5 h-3.5 text-stone-400 flex-shrink-0" />
-                                    <span className="font-bold text-stone-900">{order.customer_name}</span>
+                                    <span className="font-bold text-ink">{order.customer_name}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-stone-700">
                                     <Phone className="w-3.5 h-3.5 text-stone-400 flex-shrink-0" />
@@ -189,7 +189,7 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                                     <MapPin className="w-3.5 h-3.5 text-stone-400 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <p>{order.delivery_address}</p>
-                                        <p className="text-stone-500 font-medium mt-0.5">
+                                        <p className="text-muted font-medium mt-0.5">
                                             {[order.upazila, order.district].filter(Boolean).join(', ')}
                                         </p>
                                     </div>
@@ -198,22 +198,22 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                         </div>
 
                         {/* Payment Info */}
-                        <div className="bg-white rounded-xl border border-stone-200/80 p-5 space-y-4">
-                            <h3 className="font-serif font-bold text-[#0B3B2E] text-sm flex items-center gap-2 border-b border-stone-100 pb-3">
-                                <CreditCard className="w-4 h-4 text-[#0B3B2E]" />
+                        <div className="bg-surface rounded-xl border border-line/80 p-5 space-y-4">
+                            <h3 className="font-serif font-bold text-heading text-sm flex items-center gap-2 border-b border-stone-100 pb-3">
+                                <CreditCard className="w-4 h-4 text-heading" />
                                 <span>পেমেন্ট তথ্য</span>
                             </h3>
 
                             <div className="space-y-2 text-xs">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-stone-500">পদ্ধতি (Method):</span>
+                                    <span className="text-muted">পদ্ধতি (Method):</span>
                                     <span className="font-bold uppercase text-stone-800">{order.payment_method}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-stone-500">স্ট্যাটাস (Status):</span>
+                                    <span className="text-muted">স্ট্যাটাস (Status):</span>
                                     <span className={`font-semibold px-2.5 py-0.5 rounded-full text-[11px] ${
                                         order.payment_status === 'paid'
-                                            ? 'bg-emerald-50 text-[#0B3B2E] border border-emerald-200'
+                                            ? 'bg-emerald-50 text-heading border border-emerald-200'
                                             : 'bg-amber-50 text-amber-800 border border-amber-200'
                                     }`}>
                                         {order.payment_status === 'paid' ? 'পরিশোধিত (Paid)' : 'ক্যাশ অন ডেলিভারি (Unpaid)'}
@@ -225,8 +225,8 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                         {/* Courier Consignment info if assigned */}
                         {(order.courier_name || order.courier_tracking_id) && (
                             <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-5 space-y-3">
-                                <h3 className="font-serif font-bold text-[#0B3B2E] text-sm flex items-center gap-2 border-b border-emerald-200/70 pb-2">
-                                    <Truck className="w-4 h-4 text-[#0B3B2E]" />
+                                <h3 className="font-serif font-bold text-heading text-sm flex items-center gap-2 border-b border-emerald-200/70 pb-2">
+                                    <Truck className="w-4 h-4 text-heading" />
                                     <span>কুরিয়ার শিপমেন্ট তথ্য</span>
                                 </h3>
 
@@ -234,13 +234,13 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                                     {order.courier_name && (
                                         <div className="flex justify-between">
                                             <span className="text-emerald-800">কুরিয়ার:</span>
-                                            <span className="font-bold text-[#0B3B2E] uppercase">{order.courier_name}</span>
+                                            <span className="font-bold text-heading uppercase">{order.courier_name}</span>
                                         </div>
                                     )}
                                     {order.courier_tracking_id && (
                                         <div className="flex justify-between">
                                             <span className="text-emerald-800">ট্র্যাকিং কোড:</span>
-                                            <span className="font-mono font-bold text-[#0B3B2E]">{order.courier_tracking_id}</span>
+                                            <span className="font-mono font-bold text-heading">{order.courier_tracking_id}</span>
                                         </div>
                                     )}
 
@@ -250,7 +250,7 @@ export default function CustomerOrderDetail({ theme, categories, order }: OrderD
                                                 href={order.courier_tracking_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 text-xs text-[#0B3B2E] hover:text-[#EA580C] font-bold underline"
+                                                className="inline-flex items-center gap-1.5 text-xs text-heading hover:text-price font-bold underline"
                                             >
                                                 <span>কুরিয়ার ওয়েবসাইটে সরাসরি ট্র্যাক করুন</span>
                                                 <ExternalLink className="w-3 h-3" />

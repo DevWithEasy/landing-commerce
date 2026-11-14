@@ -110,7 +110,8 @@ export interface ProductImage {
 
 export interface MediaLibraryItem {
     key: string;
-    source: 'product' | 'library';
+    source: 'product' | 'combo' | 'library';
+    media_type?: 'product' | 'gallery' | 'combo' | 'library';
     record_id: number;
     file_path: string;
     url: string;
@@ -127,8 +128,16 @@ export interface MediaIndexProps extends SharedProps {
     stats: {
         total: number;
         product: number;
+        product_primary?: number;
+        gallery?: number;
+        combo?: number;
         library: number;
     };
+}
+
+export interface ComboColorConfig {
+    name: string;
+    image_url: string | null;
 }
 
 export interface Product {
@@ -139,6 +148,9 @@ export interface Product {
     regular_price: string | number;
     sale_price: string | number | null;
     has_variants: boolean;
+    combo_pack_size?: number;
+    combo_colors?: ComboColorConfig[] | null;
+    combo_sizes?: string[] | null;
     status: 'draft' | 'active' | 'archived';
     created_at: string;
     updated_at: string;
@@ -425,9 +437,34 @@ export interface ThemeSettings {
     custom_css: string;
 }
 
+export type StorefrontColorKey =
+    | 'page'
+    | 'surface'
+    | 'soft'
+    | 'line'
+    | 'brand'
+    | 'brand-hover'
+    | 'heading'
+    | 'ink'
+    | 'body'
+    | 'muted'
+    | 'cta'
+    | 'cta-hover'
+    | 'cta-text'
+    | 'highlight'
+    | 'price'
+    | 'sale'
+    | 'header'
+    | 'footer'
+    | 'footer-text';
+
+export type StorefrontColors = Record<StorefrontColorKey, string>;
+
 export interface ThemeSettingsProps extends SharedProps {
     settings: ThemeSettings;
     landingPages: Array<{ id: number; title: string; slug: string }>;
+    storefrontColors: StorefrontColors;
+    storefrontColorDefaults: StorefrontColors;
 }
 
 export interface Slider {

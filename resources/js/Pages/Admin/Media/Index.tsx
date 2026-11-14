@@ -4,6 +4,7 @@ import {
     Copy,
     ImagePlus,
     Images,
+    Layers,
     Loader2,
     Package,
     Trash2,
@@ -191,7 +192,7 @@ export default function MediaIndex({ media, stats }: MediaIndexProps) {
                 subtitle="Upload, reuse, and manage images for products, landing pages, and campaigns."
             >
                 <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
@@ -215,7 +216,37 @@ export default function MediaIndex({ media, stats }: MediaIndexProps) {
                                         Product Images
                                     </p>
                                     <p className="text-2xl font-semibold text-gray-900">
-                                        {stats.product}
+                                        {stats.product_primary ?? stats.product}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                                    <Images className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                                        Gallery Images
+                                    </p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {stats.gallery ?? 0}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                                    <Layers className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                                        Combo Images
+                                    </p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {stats.combo ?? 0}
                                     </p>
                                 </div>
                             </div>
@@ -390,13 +421,21 @@ export default function MediaIndex({ media, stats }: MediaIndexProps) {
                                             <div className="flex items-center gap-1.5">
                                                 <span
                                                     className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                                                        item.source === 'product'
+                                                        item.source === 'combo' || item.media_type === 'combo'
+                                                            ? 'bg-amber-50 text-amber-700'
+                                                            : item.media_type === 'gallery'
+                                                            ? 'bg-indigo-50 text-indigo-700'
+                                                            : item.source === 'product' || item.media_type === 'product'
                                                             ? 'bg-blue-50 text-blue-700'
                                                             : 'bg-emerald-50 text-emerald-700'
                                                     }`}
                                                 >
-                                                    {item.source === 'product'
-                                                        ? 'Product'
+                                                    {item.source === 'combo' || item.media_type === 'combo'
+                                                        ? 'Combo Image'
+                                                        : item.media_type === 'gallery'
+                                                        ? 'Gallery Image'
+                                                        : item.source === 'product' || item.media_type === 'product'
+                                                        ? 'Product Image'
                                                         : 'Library'}
                                                 </span>
                                                 {item.created_at && (

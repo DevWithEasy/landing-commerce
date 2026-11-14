@@ -110,7 +110,10 @@ class Cart extends Model
                 'product_title' => $product->title,
                 'product_slug' => $product->slug,
                 'variant_id' => $variant->id,
-                'variant_name' => $variant->name === 'Default' ? '' : $variant->name,
+                'combo_summary' => $item->combo_summary,
+                'variant_name' => ! empty($item->combo_summary)
+                    ? $item->combo_summary
+                    : ($variant->name === 'Default' ? '' : $variant->name),
                 'image_url' => $primaryImg,
                 'unit_price' => $unitPrice,
                 'formatted_unit_price' => self::formatBdt($unitPrice),

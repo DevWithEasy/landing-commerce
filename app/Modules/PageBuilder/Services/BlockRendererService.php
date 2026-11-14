@@ -126,13 +126,13 @@ class BlockRendererService
             $styles = array_merge($layoutStyles, $styles);
         }
 
-        $styleAttribute = $this->convertStylesToCssAttribute($this->withoutRootOnlyStyles($styles));
+        $styleAttribute = $this->convertStylesToCssAttribute($this->withoutRootOnlyStyles($styles, $type));
         $blockId = (string) ($block['id'] ?? Str::uuid()->toString());
         $scopeClass = $this->buildBlockScopeClass($blockId);
         $wrapperStyleAttribute = $this->convertStylesToCssAttribute(
             $this->buildWrapperStyles($styles)
         );
-        $scopedCss = $this->buildScopedCss($scopeClass, $styles);
+        $scopedCss = $this->buildScopedCss($scopeClass, $styles, $type);
 
         // Recursively render child blocks if present
         $childrenHtml = '';
@@ -164,6 +164,9 @@ class BlockRendererService
                     ->values();
 
                 $product = $products->first();
+            } elseif (! empty($context['product']) && $context['product'] instanceof Product) {
+                $product = $context['product']->loadMissing(['variants.images', 'images', 'primaryImage']);
+                $products = collect([$product]);
             }
         }
 
@@ -225,14 +228,40 @@ class BlockRendererService
 
     /**
      * Root width belongs to the alignment wrapper, not to the block root.
+     * For CodCheckoutBlock, padding and border/shadow tokens are delegated to
+     * its inner container/card elements so they do not duplicate on <section>.
      *
      * @param  array<string, mixed>  $styles
      * @return array<string, mixed>
      */
-    private function withoutRootOnlyStyles(array $styles): array
+    private function withoutRootOnlyStyles(array $styles, string $type = ''): array
     {
         $styles = $this->withoutStructuralStyles($styles);
         unset($styles['width']);
+
+        if ($type === 'CodCheckoutBlock') {
+            unset(
+                $styles['padding'],
+                $styles['paddingTop'],
+                $styles['paddingRight'],
+                $styles['paddingBottom'],
+                $styles['paddingLeft'],
+                $styles['padding-top'],
+                $styles['padding-right'],
+                $styles['padding-bottom'],
+                $styles['padding-left'],
+                $styles['borderColor'],
+                $styles['borderWidth'],
+                $styles['borderStyle'],
+                $styles['borderRadius'],
+                $styles['boxShadow'],
+                $styles['border-color'],
+                $styles['border-width'],
+                $styles['border-style'],
+                $styles['border-radius'],
+                $styles['box-shadow']
+            );
+        }
 
         return $styles;
     }
@@ -280,7 +309,7 @@ class BlockRendererService
      *
      * @param  array<string, mixed>  $styles
      */
-    private function buildScopedCss(string $scopeClass, array $styles): string
+    private function buildScopedCss(string $scopeClass, array $styles, string $type = ''): string
     {
         $scopeSelector = '[data-lc-block-scope="'.e($scopeClass).'"]';
         $rootSelector = $scopeSelector.' > .lc-block-root';
@@ -347,7 +376,7 @@ class BlockRendererService
                 }
 
                 $rootDeclarations = $this->convertStylesToCssDeclarations(
-                    $this->withoutRootOnlyStyles($deviceStyles)
+                    $this->withoutRootOnlyStyles($deviceStyles, $type)
                 );
                 $wrapperDeclarations = $this->convertStylesToCssDeclarations(
                     $this->buildWrapperStyles($deviceStyles)
@@ -365,6 +394,49 @@ class BlockRendererService
                         .$scopeSelector.' { '
                         .implode(' ', $this->importantDeclarations($wrapperDeclarations))
                         .' } }';
+                }
+
+                if ($type === 'CodCheckoutBlock') {
+                    $containerStyles = array_intersect_key($deviceStyles, array_flip([
+                        'padding',
+                        'paddingTop',
+                        'paddingRight',
+                        'paddingBottom',
+                        'paddingLeft',
+                        'padding-top',
+                        'padding-right',
+                        'padding-bottom',
+                        'padding-left',
+                    ]));
+                    $containerDeclarations = $this->convertStylesToCssDeclarations($containerStyles);
+
+                    if ($containerDeclarations !== []) {
+                        $rules[] = '@media (max-width: '.$maxWidth.'px) { '
+                            .$scopeSelector.' [data-lc-el="container"] { '
+                            .implode(' ', $this->importantDeclarations($containerDeclarations))
+                            .' } }';
+                    }
+
+                    $cardStyles = array_intersect_key($deviceStyles, array_flip([
+                        'borderColor',
+                        'borderWidth',
+                        'borderStyle',
+                        'borderRadius',
+                        'boxShadow',
+                        'border-color',
+                        'border-width',
+                        'border-style',
+                        'border-radius',
+                        'box-shadow',
+                    ]));
+                    $cardDeclarations = $this->convertStylesToCssDeclarations($cardStyles);
+
+                    if ($cardDeclarations !== []) {
+                        $rules[] = '@media (max-width: '.$maxWidth.'px) { '
+                            .$scopeSelector.' [data-lc-el="card"] { '
+                            .implode(' ', $this->importantDeclarations($cardDeclarations))
+                            .' } }';
+                    }
                 }
             }
         }

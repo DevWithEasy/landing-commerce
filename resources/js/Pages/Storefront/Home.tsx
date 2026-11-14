@@ -84,7 +84,7 @@ export default function Home({
                             <Link
                                 key={cat.id}
                                 href={`/category/${cat.slug}`}
-                                className="group bg-[#F3EDE4] hover:bg-[#EAE1D3] border border-stone-200/60 rounded-xl p-2.5 transition-all text-center flex flex-col items-center justify-between"
+                                className="group bg-soft hover:brightness-95 border border-line/60 rounded-xl p-2.5 transition-all text-center flex flex-col items-center justify-between"
                             >
                                 <div className="w-full aspect-square mb-1.5 flex items-center justify-center overflow-hidden">
                                     <SafeImage
@@ -93,13 +93,13 @@ export default function Home({
                                         className="w-full h-full object-contain group-hover:scale-105 transition duration-300"
                                         fallbackText=""
                                         fallbackIcon={
-                                            <span className="text-[#0B3B2E] font-serif font-bold text-xl">
+                                            <span className="text-heading font-serif font-bold text-xl">
                                                 {cat.name.charAt(0)}
                                             </span>
                                         }
                                     />
                                 </div>
-                                <span className="text-xs font-semibold text-stone-900 group-hover:text-[#0B3B2E] transition line-clamp-1">
+                                <span className="text-xs font-semibold text-ink group-hover:text-heading transition line-clamp-1">
                                     {cat.name}
                                 </span>
                             </Link>
@@ -112,12 +112,12 @@ export default function Home({
             {sectionsConfig.new_arrivals_enabled && newArrivals.length > 0 && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-stone-900 tracking-tight">
+                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
                             New Arrivals
                         </h2>
                         <Link
                             href="/shop?sort=latest"
-                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#EA580C] transition"
+                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-price transition"
                         >
                             <span>View All</span>
                             <ArrowRight className="w-4 h-4" />
@@ -141,35 +141,35 @@ export default function Home({
                         return (
                             <div
                                 key={catSection.id}
-                                className="bg-white rounded-xl border border-stone-200/80 p-4 sm:p-6"
+                                className="bg-surface rounded-xl border border-line/80 p-4 sm:p-6"
                             >
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
                                     {/* Left Category Feature Card */}
                                     <div className="lg:col-span-4 flex items-center gap-4">
-                                        <div className="w-24 h-30 sm:w-28 sm:h-34 shrink-0 rounded-lg overflow-hidden bg-[#F3EDE4] border border-stone-200/60">
+                                        <div className="w-24 h-30 sm:w-28 sm:h-34 shrink-0 rounded-lg overflow-hidden bg-soft border border-line/60">
                                             <SafeImage
                                                 src={catSection.image_url || catSection.products[0]?.primary_image?.url}
                                                 alt={catSection.name}
                                                 className="w-full h-full object-cover"
                                                 fallbackText=""
                                                 fallbackIcon={
-                                                    <span className="text-[#0B3B2E] font-serif font-bold text-2xl">
+                                                    <span className="text-heading font-serif font-bold text-2xl">
                                                         {catSection.name.charAt(0)}
                                                     </span>
                                                 }
                                             />
                                         </div>
                                         <div className="min-w-0">
-                                            <h3 className="text-lg sm:text-xl font-serif font-bold text-stone-900 leading-snug">
+                                            <h3 className="text-lg sm:text-xl font-serif font-bold text-ink leading-snug">
                                                 {catSection.name}
                                             </h3>
-                                            <p className="text-xs text-stone-500 mt-1 line-clamp-2 leading-relaxed">
+                                            <p className="text-xs text-muted mt-1 line-clamp-2 leading-relaxed">
                                                 {catSection.description ||
                                                     `Explore our curated ${catSection.name.toLowerCase()} collection for everyday style.`}
                                             </p>
                                             <Link
                                                 href={`/category/${catSection.slug}`}
-                                                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold text-stone-800 hover:bg-[#0B3B2E] hover:text-white hover:border-[#0B3B2E] transition"
+                                                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold text-stone-800 hover:bg-brand hover:text-white hover:border-brand transition"
                                             >
                                                 <span>View All</span>
                                                 <ArrowRight className="w-3.5 h-3.5" />
@@ -203,17 +203,17 @@ export default function Home({
                                                     href={`/product/${product.slug}`}
                                                     className="group text-center flex flex-col items-center"
                                                 >
-                                                    <div className="w-full aspect-[4/5] rounded-lg bg-[#F3EDE4] overflow-hidden mb-2">
+                                                    <div className="w-full aspect-[4/5] rounded-lg bg-soft overflow-hidden mb-2">
                                                         <SafeImage
                                                             src={imgUrl}
                                                             alt={product.title}
                                                             className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
                                                         />
                                                     </div>
-                                                    <span className="text-[11px] font-medium text-stone-800 group-hover:text-[#0B3B2E] line-clamp-1">
+                                                    <span className="text-[11px] font-medium text-stone-800 group-hover:text-heading line-clamp-1">
                                                         {product.title}
                                                     </span>
-                                                    <span className="text-xs font-bold text-[#EA580C] mt-0.5">
+                                                    <span className="text-xs font-bold text-price mt-0.5">
                                                         {formatBdt(currentPrice)}
                                                     </span>
                                                 </Link>
@@ -231,12 +231,12 @@ export default function Home({
             {sectionsConfig.featured_enabled && featuredProducts.length > 0 && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-stone-900 tracking-tight">
+                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
                             Featured Collection
                         </h2>
                         <Link
                             href="/shop"
-                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#EA580C] transition"
+                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-price transition"
                         >
                             <span>View All</span>
                             <ArrowRight className="w-4 h-4" />
@@ -255,12 +255,12 @@ export default function Home({
             {sectionsConfig.best_sellers_enabled && bestSellers.length > 0 && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-stone-900 tracking-tight">
+                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
                             Best Sellers
                         </h2>
                         <Link
                             href="/shop?sort=popular"
-                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-[#EA580C] transition"
+                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-price transition"
                         >
                             <span>View All</span>
                             <ArrowRight className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function Home({
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {/* Left: Deep Forest Green Seasonal Sale (no gradient) */}
-                        <div className="rounded-xl bg-[#0B3B2E] text-white p-7 sm:p-9 flex items-center justify-between gap-4 min-h-[190px] relative overflow-hidden">
+                        <div className="rounded-xl bg-brand text-white p-7 sm:p-9 flex items-center justify-between gap-4 min-h-[190px] relative overflow-hidden">
                             <div className="relative z-10 max-w-xs">
                                 {(promoBanners?.seasonal.badge ?? 'SEASONAL SALE') && (
                                     <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200/85">
@@ -298,7 +298,7 @@ export default function Home({
                                 {(promoBanners?.seasonal.button_text ?? 'Shop the Sale') && (
                                     <Link
                                         href={promoBanners?.seasonal.button_url || '/shop'}
-                                        className="mt-5 inline-flex items-center gap-1.5 h-10 px-5 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-semibold transition"
+                                        className="mt-5 inline-flex items-center gap-1.5 h-10 px-5 rounded-lg bg-cta hover:bg-cta-hover text-cta-text text-xs font-semibold transition"
                                     >
                                         <span>{promoBanners?.seasonal.button_text ?? 'Shop the Sale'}</span>
                                         <ArrowRight className="w-3.5 h-3.5" />
@@ -318,20 +318,20 @@ export default function Home({
                         </div>
 
                         {/* Right: Warm Sand Combo Deals */}
-                        <div className="rounded-xl bg-[#F3EDE4] border border-stone-200/80 p-7 sm:p-9 flex items-center justify-between gap-4 min-h-[190px] relative overflow-hidden">
+                        <div className="rounded-xl bg-soft border border-line/80 p-7 sm:p-9 flex items-center justify-between gap-4 min-h-[190px] relative overflow-hidden">
                             <div className="relative z-10 max-w-xs">
-                                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 leading-tight">
+                                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-ink leading-tight">
                                     {promoBanners?.combo.title || 'Combo Deals'}
                                 </h3>
                                 {(promoBanners?.combo.subtitle ?? 'Buy More, Save More') && (
-                                    <p className="text-xs text-stone-600 mt-1">
+                                    <p className="text-xs text-body mt-1">
                                         {promoBanners?.combo.subtitle ?? 'Buy More, Save More'}
                                     </p>
                                 )}
                                 {(promoBanners?.combo.button_text ?? 'Shop Combo') && (
                                     <Link
                                         href={promoBanners?.combo.button_url || '/shop'}
-                                        className="mt-5 inline-flex items-center gap-1.5 h-10 px-5 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-semibold transition"
+                                        className="mt-5 inline-flex items-center gap-1.5 h-10 px-5 rounded-lg bg-cta hover:bg-cta-hover text-cta-text text-xs font-semibold transition"
                                     >
                                         <span>{promoBanners?.combo.button_text ?? 'Shop Combo'}</span>
                                         <ArrowRight className="w-3.5 h-3.5" />
@@ -350,7 +350,7 @@ export default function Home({
                                     </div>
                                 )}
                                 {(promoBanners?.combo.badge_label || promoBanners?.combo.badge_value || !promoBanners) && (
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#F96D16] text-white flex flex-col items-center justify-center shrink-0">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-sale text-white flex flex-col items-center justify-center shrink-0">
                                         <span className="text-[10px] font-semibold uppercase tracking-wider leading-none">
                                             {promoBanners?.combo.badge_label ?? 'SAVE'}
                                         </span>
@@ -367,44 +367,44 @@ export default function Home({
 
             {/* 8. 4-Column Trust & Value Proposition Badges */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-2">
-                <div className="bg-white rounded-xl border border-stone-200/80 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="bg-surface rounded-xl border border-line/80 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-5">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FFF3EB] flex items-center justify-center shrink-0 text-[#EA580C]">
+                        <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center shrink-0 text-price">
                             <Truck className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="text-xs sm:text-sm font-serif font-bold text-stone-900">Fast Delivery</h4>
-                            <p className="text-[11px] text-stone-500">All over Bangladesh</p>
+                            <h4 className="text-xs sm:text-sm font-serif font-bold text-ink">Fast Delivery</h4>
+                            <p className="text-[11px] text-muted">All over Bangladesh</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FFF3EB] flex items-center justify-center shrink-0 text-[#EA580C]">
+                        <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center shrink-0 text-price">
                             <RefreshCw className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="text-xs sm:text-sm font-serif font-bold text-stone-900">Easy Return</h4>
-                            <p className="text-[11px] text-stone-500">7 days hassle-free return</p>
+                            <h4 className="text-xs sm:text-sm font-serif font-bold text-ink">Easy Return</h4>
+                            <p className="text-[11px] text-muted">7 days hassle-free return</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FFF3EB] flex items-center justify-center shrink-0 text-[#EA580C]">
+                        <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center shrink-0 text-price">
                             <ShieldCheck className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="text-xs sm:text-sm font-serif font-bold text-stone-900">Secure Payment</h4>
-                            <p className="text-[11px] text-stone-500">100% secure &amp; COD options</p>
+                            <h4 className="text-xs sm:text-sm font-serif font-bold text-ink">Secure Payment</h4>
+                            <p className="text-[11px] text-muted">100% secure &amp; COD options</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#FFF3EB] flex items-center justify-center shrink-0 text-[#EA580C]">
+                        <div className="w-10 h-10 rounded-full bg-cta/10 flex items-center justify-center shrink-0 text-price">
                             <Headphones className="w-5 h-5" />
                         </div>
                         <div>
-                            <h4 className="text-xs sm:text-sm font-serif font-bold text-stone-900">Customer Support</h4>
-                            <p className="text-[11px] text-stone-500">Dedicated support anytime</p>
+                            <h4 className="text-xs sm:text-sm font-serif font-bold text-ink">Customer Support</h4>
+                            <p className="text-[11px] text-muted">Dedicated support anytime</p>
                         </div>
                     </div>
                 </div>

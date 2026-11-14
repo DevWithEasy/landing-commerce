@@ -1,14 +1,15 @@
 ﻿import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ArrowLeft, Check, FolderTree, Package, Tag, Trash2, UploadCloud } from 'lucide-react';
+import { ArrowLeft, Check, Copy, FolderTree, Package, Tag, Trash2, UploadCloud } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Card } from '@/Shared/Card';
+import { ComboOptionsEditor, type ComboColorRow } from '@/Shared/ComboOptionsEditor';
 import { ImageUploader } from '@/Shared/ImageUploader';
 import { RichTextEditor } from '@/Shared/RichTextEditor';
 import { VariantGenerator, type VariantRowItem } from '@/Shared/VariantGenerator';
-import type { ProductEditProps, ProductImage } from '@/types';
+import type { MediaLibraryItem, ProductEditProps, ProductImage } from '@/types';
 
 interface EditProductFormData {
     _method: string;
@@ -18,10 +19,19 @@ interface EditProductFormData {
     regular_price: string;
     sale_price: string;
     has_variants: boolean;
+    combo_pack_size: number;
+    combo_colors: ComboColorRow[];
+    combo_color_images?: Record<number, File>;
+    combo_sizes: string[];
+    stock_quantity: number;
+    manage_stock: boolean;
     status: 'draft' | 'active' | 'archived';
     category_ids: number[];
     variants: VariantRowItem[];
+    featured_image?: File | null;
+    featured_library_path?: string | null;
     images: File[];
+    gallery_library_paths?: string[];
     variant_images?: Record<number, File>;
     remove_variant_images?: number[];
 }
@@ -45,6 +55,30 @@ export default function Edit({
         image_file: null,
     }));
 
+    const initialComboColors: ComboColorRow[] =
+        Array.isArray(product.combo_colors) && product.combo_colors.length > 0
+            ? product.combo_colors.map((c) => ({
+                  name: c.name || '',
+                  image_url: c.image_url || null,
+                  image_file: null,
+              }))
+            : [
+                  { name: '', image_url: null, image_file: null },
+                  { name: '', image_url: null, image_file: null },
+              ];
+
+    const initialComboSizes: string[] =
+        Array.isArray(product.combo_sizes) && product.combo_sizes.length > 0
+            ? product.combo_sizes
+            : ['M', 'L', 'XL', 'XXL'];
+
+    const defaultVariant = product.variants?.[0];
+
+    const [featuredFile, setFeaturedFile] = useState<File | null>(null);
+    const [featuredLibraryItem, setFeaturedLibraryItem] = useState<MediaLibraryItem | null>(null);
+    const [galleryLibraryItems, setGalleryLibraryItems] = useState<MediaLibraryItem[]>([]);
+    const [isDuplicating, setIsDuplicating] = useState(false);
+
     const { data, setData, post, processing, errors, transform } = useForm<EditProductFormData>({
         _method: 'put',
         title: product.title || '',
@@ -53,10 +87,19 @@ export default function Edit({
         regular_price: product.regular_price !== null ? String(product.regular_price) : '',
         sale_price: product.sale_price !== null ? String(product.sale_price) : '',
         has_variants: Boolean(product.has_variants),
+        combo_pack_size: product.combo_pack_size && product.combo_pack_size > 0 ? Number(product.combo_pack_size) : 1,
+        combo_colors: initialComboColors,
+        combo_color_images: {},
+        combo_sizes: initialComboSizes,
+        stock_quantity: defaultVariant ? Number(defaultVariant.stock_quantity) : 10,
+        manage_stock: defaultVariant ? Boolean(defaultVariant.manage_stock) : true,
         status: product.status || 'draft',
         category_ids: (product.categories || []).map((c) => c.id),
         variants: initialVariants,
+        featured_image: null,
+        featured_library_path: null,
         images: [],
+        gallery_library_paths: [],
         variant_images: {},
         remove_variant_images: [],
     });
@@ -107,8 +150,25 @@ export default function Edit({
             }
         });
 
+        const comboColorImagesMap: Record<number, File> = {};
+        const cleanComboColors = data.combo_colors.map((c, idx) => {
+            if (c.image_file) {
+                comboColorImagesMap[idx] = c.image_file;
+            }
+            return {
+                name: c.name,
+                image_url: c.image_file ? null : c.image_url,
+            };
+        });
+
         transform((currentData) => ({
             ...currentData,
+            has_variants: currentData.combo_pack_size > 1 ? false : currentData.has_variants,
+            combo_colors: cleanComboColors,
+            combo_color_images: comboColorImagesMap,
+            featured_image: featuredFile || null,
+            featured_library_path: !featuredFile && featuredLibraryItem ? featuredLibraryItem.file_path : null,
+            gallery_library_paths: galleryLibraryItems.map((item) => item.file_path),
             variant_images: variantImagesMap,
             remove_variant_images: removeVariantIds,
         }));
@@ -116,6 +176,12 @@ export default function Edit({
         post(`/admin/products/${product.id}`, {
             forceFormData: true,
             preserveScroll: true,
+            onSuccess: () => {
+                setFeaturedFile(null);
+                setFeaturedLibraryItem(null);
+                setGalleryLibraryItems([]);
+                setData('images', []);
+            },
         });
     };
 
@@ -127,6 +193,17 @@ export default function Edit({
                 setShowDeleteModal(false);
             },
         });
+    };
+
+    const handleDuplicateProduct = () => {
+        setIsDuplicating(true);
+        router.post(
+            `/admin/products/${product.id}/duplicate`,
+            {},
+            {
+                onFinish: () => setIsDuplicating(false),
+            }
+        );
     };
 
     const calculateDiscountPercent = (): number | null => {
@@ -152,6 +229,16 @@ export default function Edit({
                             Back to Products
                         </Button>
                     </Link>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        isLoading={isDuplicating}
+                        onClick={handleDuplicateProduct}
+                    >
+                        <Copy className="w-4 h-4 mr-1.5" />
+                        Duplicate
+                    </Button>
                     <Button
                         type="button"
                         variant="primary"
@@ -373,17 +460,85 @@ export default function Edit({
 
                 {/* Variants & Inventory */}
                 <Card padding="md" className="space-y-4">
-                    <VariantGenerator
-                        variants={data.variants}
-                        onChangeVariants={(newVariants) => setData('variants', newVariants)}
-                        basePrice={data.regular_price}
-                        baseSalePrice={data.sale_price}
-                        productSlug={data.slug}
-                    />
-                    {errors.variants && (
-                        <p className="text-xs text-rose-600 mt-2 font-medium">
-                            {errors.variants}
-                        </p>
+                    {/* Combo Pack Selector */}
+                    <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-4 space-y-2.5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider">
+                                    Combo Pack Mode (কত পিসের কম্বো প্যাক?)
+                                </label>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                    ২ বা তার বেশি পিস সিলেক্ট করলে প্রোডাক্ট ডিটেইলস পেজে ততগুলো <span className="font-bold text-amber-800">[ + ]</span> বক্স দেখাবে (ছবি দেখে কালার ও নিচে কমন সাইজ সিলেক্ট করার জন্য)।
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1">
+                            {[
+                                { size: 1, label: '1 Piece (Single)' },
+                                { size: 2, label: '2 Pcs Combo' },
+                                { size: 3, label: '3 Pcs Combo' },
+                                { size: 4, label: '4 Pcs Combo' },
+                                { size: 5, label: '5 Pcs Combo' },
+                                { size: 6, label: '6 Pcs Combo' },
+                            ].map((opt) => {
+                                const isActive = (data.combo_pack_size || 1) === opt.size;
+                                return (
+                                    <button
+                                        key={opt.size}
+                                        type="button"
+                                        onClick={() => {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                combo_pack_size: opt.size,
+                                                has_variants: opt.size > 1 ? false : prev.has_variants,
+                                            }));
+                                        }}
+                                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-center ${
+                                            isActive
+                                                ? 'bg-primary-600 text-white border-primary-600 shadow-xs'
+                                                : 'bg-white text-gray-700 border-gray-200 hover:border-primary-400'
+                                        }`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {data.combo_pack_size > 1 ? (
+                        <ComboOptionsEditor
+                            comboPackSize={data.combo_pack_size}
+                            colors={data.combo_colors}
+                            onChangeColors={(colors) => setData('combo_colors', colors)}
+                            sizes={data.combo_sizes}
+                            onChangeSizes={(sizes) => setData('combo_sizes', sizes)}
+                            stockQuantity={data.stock_quantity}
+                            onChangeStockQuantity={(qty) => setData('stock_quantity', qty)}
+                            manageStock={data.manage_stock}
+                            onChangeManageStock={(manage) => setData('manage_stock', manage)}
+                        />
+                    ) : (
+                        <>
+                            <VariantGenerator
+                                variants={data.variants}
+                                onChangeVariants={(newVariants) => {
+                                    setData((prev) => ({
+                                        ...prev,
+                                        variants: newVariants,
+                                        has_variants: newVariants.length > 1 ? true : prev.has_variants,
+                                    }));
+                                }}
+                                basePrice={data.regular_price}
+                                baseSalePrice={data.sale_price}
+                                productSlug={data.slug}
+                            />
+                            {errors.variants && (
+                                <p className="text-xs text-rose-600 mt-2 font-medium">
+                                    {errors.variants}
+                                </p>
+                            )}
+                        </>
                     )}
                 </Card>
 
@@ -409,6 +564,17 @@ export default function Edit({
                         onRemoveNewFile={handleRemoveNewFile}
                         onSetPrimaryExistingImage={handleSetPrimaryImage}
                         onDeleteExistingImage={handleDeleteExistingImage}
+                        featuredFile={featuredFile}
+                        featuredLibraryItem={featuredLibraryItem}
+                        onFeaturedFileChange={setFeaturedFile}
+                        onFeaturedLibrarySelect={setFeaturedLibraryItem}
+                        galleryLibraryItems={galleryLibraryItems}
+                        onGalleryLibraryAdd={(items) =>
+                            setGalleryLibraryItems((prev) => [...prev, ...items])
+                        }
+                        onRemoveGalleryLibraryItem={(idx) =>
+                            setGalleryLibraryItems((prev) => prev.filter((_, i) => i !== idx))
+                        }
                         error={errors.images}
                     />
                 </Card>

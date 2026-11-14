@@ -42,13 +42,13 @@ class CheckoutPageController extends Controller
             if (! $product || ! $product->exists) {
                 $product = Product::where('status', 'active')
                     ->with([
-                        'variants' => fn ($q) => $q->orderBy('id'),
+                        'variants' => fn ($q) => $q->orderBy('id')->with(['images' => fn ($img) => $img->orderBy('sort_order')]),
                         'images' => fn ($q) => $q->orderBy('sort_order'),
                     ])
                     ->firstOrFail();
             } else {
                 $product->load([
-                    'variants' => fn ($q) => $q->orderBy('id'),
+                    'variants' => fn ($q) => $q->orderBy('id')->with(['images' => fn ($img) => $img->orderBy('sort_order')]),
                     'images' => fn ($q) => $q->orderBy('sort_order'),
                 ]);
             }
@@ -57,7 +57,7 @@ class CheckoutPageController extends Controller
             // Also load first active product as a safe fallback reference if needed
             $product = Product::where('status', 'active')
                 ->with([
-                    'variants' => fn ($q) => $q->orderBy('id'),
+                    'variants' => fn ($q) => $q->orderBy('id')->with(['images' => fn ($img) => $img->orderBy('sort_order')]),
                     'images' => fn ($q) => $q->orderBy('sort_order'),
                 ])
                 ->first();

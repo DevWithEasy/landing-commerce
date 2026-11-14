@@ -218,11 +218,15 @@ class ProcessCodOrderAction
                     $totalItemPrice = $unitPrice * $quantity;
                     $subtotal += $totalItemPrice;
 
+                    $comboSummary = isset($item['combo_summary']) && trim((string) $item['combo_summary']) !== ''
+                        ? trim((string) $item['combo_summary'])
+                        : null;
+
                     $orderItemsData[] = [
                         'product_id' => $variant->product_id,
                         'variant_id' => $variant->id,
                         'product_title' => $variant->product ? $variant->product->title : 'Product',
-                        'variant_name' => $variant->name,
+                        'variant_name' => $comboSummary ?: $variant->name,
                         'unit_price' => $unitPrice,
                         'quantity' => $quantity,
                         'total_price' => $totalItemPrice,

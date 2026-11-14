@@ -20,6 +20,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -233,6 +234,93 @@ class OrderController extends Controller
         }
 
         return back()->withErrors(['status' => $msg]);
+    }
+
+    /**
+     * Delete a single order (restocking items for non-delivered orders when un-restocked).
+     */
+    public function destroy(Order $order, Request $request): RedirectResponse|JsonResponse
+    {
+        Gate::authorize('delete', $order);
+
+        $orderNumber = $order->order_number;
+
+        DB::connection($order->getConnectionName())->transaction(function () use ($order): void {
+            $lockedOrder = Order::on($order->getConnectionName())
+                ->where($order->getKeyName(), $order->getKey())
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedOrder) {
+                return;
+            }
+
+            if ($lockedOrder->status !== OrderStatus::DELIVERED) {
+                $this->stateMachine->restockOrderItems($lockedOrder);
+            }
+
+            $lockedOrder->items()->delete();
+            $lockedOrder->histories()->delete();
+            $lockedOrder->delete();
+        });
+
+        $message = "Order {$orderNumber} deleted successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
+     * Execute bulk deletion for selected orders with pessimistic locking and stock restoration.
+     */
+    public function bulkDestroy(Request $request): RedirectResponse|JsonResponse
+    {
+        Gate::authorize('deleteAny', Order::class);
+
+        $validated = $request->validate([
+            'order_ids' => ['required', 'array', 'min:1'],
+            'order_ids.*' => ['integer', 'exists:orders,id'],
+        ]);
+
+        /** @var list<int> $orderIds */
+        $orderIds = array_values(array_unique(array_map('intval', $validated['order_ids'])));
+        $deletedCount = 0;
+
+        DB::transaction(function () use ($orderIds, &$deletedCount): void {
+            $orders = Order::query()
+                ->whereIn('id', $orderIds)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($orders as $order) {
+                if ($order->status !== OrderStatus::DELIVERED) {
+                    $this->stateMachine->restockOrderItems($order);
+                }
+
+                $order->items()->delete();
+                $order->histories()->delete();
+                $order->delete();
+                $deletedCount++;
+            }
+        });
+
+        $message = "Successfully deleted {$deletedCount} order(s).";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'deleted_count' => $deletedCount,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     /**

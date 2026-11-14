@@ -57,7 +57,7 @@ class PublicLandingPageController extends Controller
         // 2. Query published landing page
         $landingPage = LandingPage::where('slug', $normalizedSlug)
             ->where('status', 'published')
-            ->with(['product.variants', 'product.images', 'publishedRevision'])
+            ->with(['product.variants.images', 'product.images', 'product.primaryImage', 'publishedRevision'])
             ->first();
 
         if (! $landingPage) {

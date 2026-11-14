@@ -157,7 +157,7 @@ class OrderStateMachine
     /**
      * Restore stock for all un-restocked items of an order using pessimistic locks.
      */
-    protected function restockOrderItems(Order $order): void
+    public function restockOrderItems(Order $order): void
     {
         // Re-query order items inside transaction with lock to ensure idempotent evaluation
         $items = $order->items()

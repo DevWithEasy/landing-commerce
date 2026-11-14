@@ -239,8 +239,23 @@ export function VariantGenerator({
 
     const handleVariantImageSelected = (index: number, file: File) => {
         const previewUrl = URL.createObjectURL(file);
+        const targetItem = variants[index];
+        const targetColor =
+            targetItem?.attributes?.Color ||
+            targetItem?.attributes?.color ||
+            targetItem?.attributes?.Colour ||
+            null;
+
         const updated = variants.map((item, i) => {
-            if (i === index) {
+            const itemColor =
+                item.attributes?.Color ||
+                item.attributes?.color ||
+                item.attributes?.Colour ||
+                null;
+            if (
+                i === index ||
+                (targetColor && itemColor === targetColor && !item.image_file && !item.image_url)
+            ) {
                 return {
                     ...item,
                     image_file: file,

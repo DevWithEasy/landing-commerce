@@ -43,6 +43,9 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
     Route::post('products/matrix-preview', [ProductController::class, 'previewMatrix'])
         ->name('products.matrix-preview');
 
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])
+        ->name('products.duplicate');
+
     Route::resource('products', ProductController::class);
 
     // Category Management
@@ -66,12 +69,13 @@ Route::middleware(['web', 'auth:web'])->prefix('admin')->name('admin.')->group(f
     // Orders & Fulfillment Pipeline
     Route::get('orders/export', [OrderController::class, 'export'])->name('orders.export');
     Route::post('orders/bulk-transition', [OrderController::class, 'bulkTransition'])->name('orders.bulk-transition');
+    Route::post('orders/bulk-delete', [OrderController::class, 'bulkDestroy'])->name('orders.bulk-destroy');
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::post('orders/{order}/transition', [OrderController::class, 'transition'])->name('orders.transition');
     Route::post('orders/{order}/courier/dispatch', [OrderCourierController::class, 'dispatchOrder'])->name('orders.courier.dispatch');
     Route::post('orders/{order}/courier/track', [OrderCourierController::class, 'trackOrder'])->name('orders.courier.track');
     Route::post('orders/{order}/sms/send', [OrderSmsController::class, 'sendOrderSms'])->name('orders.sms.send');
-    Route::resource('orders', OrderController::class)->only(['index', 'show']);
+    Route::resource('orders', OrderController::class)->only(['index', 'show', 'destroy']);
 
     // Page Builder & Landing Pages Management
     Route::post('landing-pages/{landing_page}/publish', [LandingPageController::class, 'publish'])

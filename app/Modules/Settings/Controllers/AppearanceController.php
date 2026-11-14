@@ -59,6 +59,8 @@ class AppearanceController extends Controller
         return Inertia::render('Admin/Appearance/Theme', [
             'settings' => $settings,
             'landingPages' => $landingPages,
+            'storefrontColors' => $this->settingsService->getStorefrontColors(),
+            'storefrontColorDefaults' => SettingsService::STOREFRONT_COLOR_DEFAULTS,
         ]);
     }
 
@@ -84,6 +86,9 @@ class AppearanceController extends Controller
             'text_color' => ['nullable', 'string', 'regex:/^#([a-f0-9]{3}){1,2}$/i'],
             'font_family' => ['nullable', 'string', 'max:255'],
             'custom_css' => ['nullable', 'string', 'max:10000'],
+
+            'storefront_colors' => ['nullable', 'array'],
+            'storefront_colors.*' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
 
             'logo' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:5120'],
             'favicon' => ['nullable', 'file', 'mimes:jpeg,png,webp', 'max:2048'],
@@ -124,6 +129,11 @@ class AppearanceController extends Controller
         $this->settingsService->set('theme.text_color', $validated['text_color'] ?? '#0f172a', 'theme');
         $this->settingsService->set('theme.font_family', $validated['font_family'] ?? 'Hind Siliguri, Inter, sans-serif', 'theme');
         $this->settingsService->set('theme.custom_css', $validated['custom_css'] ?? null, 'theme');
+
+        // Save customer-facing storefront color tokens (allowlisted keys only)
+        if (array_key_exists('storefront_colors', $validated)) {
+            $this->settingsService->saveStorefrontColors((array) ($validated['storefront_colors'] ?? []));
+        }
 
         return redirect()
             ->route('admin.appearance.theme')

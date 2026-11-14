@@ -111,8 +111,6 @@ export function GridBlock({
 }
 `;
 
-    const hasChildren = children && children.length > 0;
-
     return (
         <div
             style={containerStyle}
@@ -120,7 +118,7 @@ export function GridBlock({
         >
             <style>{responsiveCss}</style>
             <div ref={dropRef} data-lc-el="grid" style={gridStyle} className={`${scope} lc-grid`}>
-                {hasChildren && renderChildren ? (
+                {renderChildren ? (
                     renderChildren(children)
                 ) : isEditor ? (
                     <div

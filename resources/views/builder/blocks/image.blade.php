@@ -16,7 +16,7 @@
     };
 @endphp
 
-<figure id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root lc-image flex flex-col {{ $containerAlign }} my-2 w-full">
+<figure id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root lc-image flex flex-col {{ $containerAlign }} my-2 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
     @if(!empty($imageUrl))
         @if(!empty($linkUrl))
             <a href="{{ $linkUrl }}" class="inline-block transition-opacity hover:opacity-95" target="{{ str_starts_with($linkUrl, 'http') ? '_blank' : '_self' }}" rel="noopener noreferrer">

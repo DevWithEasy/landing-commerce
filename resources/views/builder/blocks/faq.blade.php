@@ -3,7 +3,7 @@
 @endphp
 
 <section {!! $styleAttribute !!} class="lc-block-root w-full py-16 bg-slate-50 border-t border-slate-200">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
         @if(!empty($props['title']))
             <div class="text-center mb-10">
                 <h2 data-lc-el="title" class="text-3xl font-extrabold text-slate-900 tracking-tight">

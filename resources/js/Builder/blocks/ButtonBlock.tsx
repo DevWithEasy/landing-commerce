@@ -35,7 +35,7 @@ export function ButtonBlock({ props, styles = {} }: ButtonBlockComponentProps) {
     };
 
     return (
-        <div className={`lc-button-wrapper flex ${containerAlign} my-2 w-full`}>
+        <div className={`lc-button-wrapper flex ${containerAlign} my-2 w-full max-w-7xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0`}>
             <span
                 style={btnStyle}
                 data-lc-el="button"

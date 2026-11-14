@@ -13,6 +13,7 @@ use App\Modules\Catalog\Models\ProductImage;
 use App\Modules\Catalog\Requests\StoreProductRequest;
 use App\Modules\Catalog\Requests\UpdateProductRequest;
 use App\Modules\Catalog\Services\VariantMatrixGenerator;
+use App\Modules\Media\Services\MediaLibraryService;
 use App\Modules\Media\Services\MediaUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -102,24 +103,83 @@ class ProductController extends Controller
         MediaUploadService $mediaUploadService
     ): RedirectResponse {
         $validated = $request->validated();
+
+        if ($request->hasFile('combo_color_images') && ! empty($validated['combo_colors']) && is_array($validated['combo_colors'])) {
+            $comboFiles = (array) $request->file('combo_color_images');
+            foreach ($comboFiles as $cIndex => $cFile) {
+                if ($cFile && isset($validated['combo_colors'][$cIndex])) {
+                    $uploadResult = $mediaUploadService->upload($cFile, 'products');
+                    $validated['combo_colors'][$cIndex]['image_url'] = \Illuminate\Support\Facades\Storage::disk('public')->url($uploadResult['file_path']);
+                }
+            }
+        }
+
         $product = $createProductAction->execute($validated);
 
-        // Process any uploaded gallery images
+        $hasPrimary = false;
+        $sortOrder = 0;
+
+        // 1. Process Single Featured Product Image (Upload or Library Pick)
+        if ($request->hasFile('featured_image')) {
+            $featuredFile = $request->file('featured_image');
+            if ($featuredFile) {
+                $uploadResult = $mediaUploadService->upload($featuredFile, 'products');
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'file_path' => $uploadResult['file_path'],
+                    'sort_order' => $sortOrder++,
+                    'is_primary' => true,
+                    'alt_text' => $product->title,
+                ]);
+                $hasPrimary = true;
+            }
+        } elseif ($request->filled('featured_library_path')) {
+            $libPath = trim((string) $request->input('featured_library_path'));
+            if ($libPath !== '') {
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'file_path' => $libPath,
+                    'sort_order' => $sortOrder++,
+                    'is_primary' => true,
+                    'alt_text' => $product->title,
+                ]);
+                $hasPrimary = true;
+            }
+        }
+
+        // 2. Process Gallery Images (Uploaded files)
         if ($request->hasFile('images')) {
             $uploadedFiles = (array) $request->file('images');
-            $isFirst = true;
 
-            foreach ($uploadedFiles as $index => $file) {
+            foreach ($uploadedFiles as $file) {
                 if ($file) {
                     $uploadResult = $mediaUploadService->upload($file, 'products');
                     ProductImage::create([
                         'product_id' => $product->id,
                         'file_path' => $uploadResult['file_path'],
-                        'sort_order' => $index,
-                        'is_primary' => $isFirst,
+                        'sort_order' => $sortOrder++,
+                        'is_primary' => ! $hasPrimary,
                         'alt_text' => $product->title,
                     ]);
-                    $isFirst = false;
+                    $hasPrimary = true;
+                }
+            }
+        }
+
+        // 3. Process Gallery Images (Media Library picked paths)
+        if ($request->filled('gallery_library_paths')) {
+            $galleryPaths = (array) $request->input('gallery_library_paths');
+            foreach ($galleryPaths as $gPath) {
+                $cleanPath = trim((string) $gPath);
+                if ($cleanPath !== '' && ! $product->images()->whereNull('variant_id')->where('file_path', $cleanPath)->exists()) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'file_path' => $cleanPath,
+                        'sort_order' => $sortOrder++,
+                        'is_primary' => ! $hasPrimary,
+                        'alt_text' => $product->title,
+                    ]);
+                    $hasPrimary = true;
                 }
             }
         }
@@ -176,15 +236,57 @@ class ProductController extends Controller
         UpdateProductRequest $request,
         Product $product,
         UpdateProductAction $updateProductAction,
-        MediaUploadService $mediaUploadService
+        MediaUploadService $mediaUploadService,
+        MediaLibraryService $mediaLibraryService
     ): RedirectResponse {
         $validated = $request->validated();
+
+        if ($request->hasFile('combo_color_images') && ! empty($validated['combo_colors']) && is_array($validated['combo_colors'])) {
+            $comboFiles = (array) $request->file('combo_color_images');
+            foreach ($comboFiles as $cIndex => $cFile) {
+                if ($cFile && isset($validated['combo_colors'][$cIndex])) {
+                    $uploadResult = $mediaUploadService->upload($cFile, 'products');
+                    $validated['combo_colors'][$cIndex]['image_url'] = \Illuminate\Support\Facades\Storage::disk('public')->url($uploadResult['file_path']);
+                }
+            }
+        }
+
         $product = $updateProductAction->execute($product, $validated);
 
-        // Process any newly attached images
+        // 1. Process Updated Single Featured Product Image (Upload or Library Pick)
+        if ($request->hasFile('featured_image') || $request->filled('featured_library_path')) {
+            $product->images()->where('is_primary', true)->update(['is_primary' => false]);
+
+            if ($request->hasFile('featured_image')) {
+                $featuredFile = $request->file('featured_image');
+                if ($featuredFile) {
+                    $uploadResult = $mediaUploadService->upload($featuredFile, 'products');
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'file_path' => $uploadResult['file_path'],
+                        'sort_order' => 0,
+                        'is_primary' => true,
+                        'alt_text' => $product->title,
+                    ]);
+                }
+            } elseif ($request->filled('featured_library_path')) {
+                $libPath = trim((string) $request->input('featured_library_path'));
+                if ($libPath !== '') {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'file_path' => $libPath,
+                        'sort_order' => 0,
+                        'is_primary' => true,
+                        'alt_text' => $product->title,
+                    ]);
+                }
+            }
+        }
+
+        // 2. Process any newly attached gallery files
         if ($request->hasFile('images')) {
             $uploadedFiles = (array) $request->file('images');
-            $hasExistingImages = $product->images()->count() > 0;
+            $hasExistingPrimary = $product->images()->where('is_primary', true)->exists();
             $currentCount = $product->images()->count();
 
             foreach ($uploadedFiles as $offset => $file) {
@@ -194,9 +296,31 @@ class ProductController extends Controller
                         'product_id' => $product->id,
                         'file_path' => $uploadResult['file_path'],
                         'sort_order' => $currentCount + $offset,
-                        'is_primary' => ! $hasExistingImages && $offset === 0,
+                        'is_primary' => ! $hasExistingPrimary,
                         'alt_text' => $product->title,
                     ]);
+                    $hasExistingPrimary = true;
+                }
+            }
+        }
+
+        // 3. Process any newly attached gallery images from Media Library
+        if ($request->filled('gallery_library_paths')) {
+            $galleryPaths = (array) $request->input('gallery_library_paths');
+            $hasExistingPrimary = $product->images()->where('is_primary', true)->exists();
+            $currentCount = $product->images()->count();
+
+            foreach ($galleryPaths as $offset => $gPath) {
+                $cleanPath = trim((string) $gPath);
+                if ($cleanPath !== '' && ! $product->images()->whereNull('variant_id')->where('file_path', $cleanPath)->exists()) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'file_path' => $cleanPath,
+                        'sort_order' => $currentCount + (int) $offset,
+                        'is_primary' => ! $hasExistingPrimary,
+                        'alt_text' => $product->title,
+                    ]);
+                    $hasExistingPrimary = true;
                 }
             }
         }
@@ -209,8 +333,11 @@ class ProductController extends Controller
                 ->get();
 
             foreach ($imagesToDelete as $oldImg) {
-                $mediaUploadService->delete($oldImg->file_path);
+                $oldPath = $oldImg->file_path;
                 $oldImg->delete();
+                if ($oldPath !== '' && ! $mediaLibraryService->isFilePathReferenced($oldPath)) {
+                    $mediaUploadService->delete($oldPath);
+                }
             }
         }
 
@@ -236,8 +363,11 @@ class ProductController extends Controller
                         ->where('variant_id', $targetVariant->id)
                         ->get();
                     foreach ($oldImages as $oldImg) {
-                        $mediaUploadService->delete($oldImg->file_path);
+                        $oldPath = $oldImg->file_path;
                         $oldImg->delete();
+                        if ($oldPath !== '' && ! $mediaLibraryService->isFilePathReferenced($oldPath)) {
+                            $mediaUploadService->delete($oldPath);
+                        }
                     }
 
                     $uploadResult = $mediaUploadService->upload($file, 'products');
@@ -259,22 +389,129 @@ class ProductController extends Controller
     }
 
     /**
+     * Duplicate an existing product along with its categories, variants, combo settings, and images.
+     */
+    public function duplicate(Product $product): RedirectResponse
+    {
+        Gate::authorize('create', Product::class);
+
+        $product->load(['categories', 'variants', 'images']);
+
+        $duplicated = \Illuminate\Support\Facades\DB::transaction(function () use ($product): Product {
+            $baseSlug = $product->slug.'-copy';
+            $newSlug = $baseSlug;
+            $counter = 1;
+            while (Product::where('slug', $newSlug)->exists()) {
+                $newSlug = "{$baseSlug}-{$counter}";
+                $counter++;
+            }
+
+            $newProduct = Product::create([
+                'title' => $product->title.' (Copy)',
+                'slug' => $newSlug,
+                'description' => $product->description,
+                'regular_price' => $product->regular_price,
+                'sale_price' => $product->sale_price,
+                'has_variants' => $product->has_variants,
+                'combo_pack_size' => $product->combo_pack_size ?? 1,
+                'combo_colors' => $product->combo_colors,
+                'combo_sizes' => $product->combo_sizes,
+                'status' => $product->status,
+            ]);
+
+            if ($product->categories->isNotEmpty()) {
+                $newProduct->categories()->sync($product->categories->pluck('id')->all());
+            }
+
+            $variantIdMap = [];
+            foreach ($product->variants as $oldVariant) {
+                $baseSku = strtoupper($oldVariant->sku.'-COPY');
+                $newSku = $baseSku;
+                $skuCounter = 1;
+                while (\App\Modules\Catalog\Models\ProductVariant::where('sku', $newSku)->exists()) {
+                    $newSku = "{$baseSku}-{$skuCounter}";
+                    $skuCounter++;
+                }
+
+                $createdVariant = \App\Modules\Catalog\Models\ProductVariant::create([
+                    'product_id' => $newProduct->id,
+                    'sku' => $newSku,
+                    'name' => $oldVariant->name,
+                    'attributes' => $oldVariant->attributes,
+                    'regular_price' => $oldVariant->regular_price,
+                    'sale_price' => $oldVariant->sale_price,
+                    'stock_quantity' => $oldVariant->stock_quantity,
+                    'manage_stock' => $oldVariant->manage_stock,
+                ]);
+
+                $variantIdMap[$oldVariant->id] = $createdVariant->id;
+            }
+
+            $seenImages = [];
+            foreach ($product->images as $oldImg) {
+                $dedupeKey = ($oldImg->variant_id ?? 0).':'.$oldImg->file_path;
+                if (isset($seenImages[$dedupeKey])) {
+                    continue;
+                }
+                $seenImages[$dedupeKey] = true;
+
+                ProductImage::create([
+                    'product_id' => $newProduct->id,
+                    'variant_id' => $oldImg->variant_id ? ($variantIdMap[$oldImg->variant_id] ?? null) : null,
+                    'file_path' => $oldImg->file_path,
+                    'sort_order' => $oldImg->sort_order,
+                    'is_primary' => $oldImg->is_primary,
+                    'alt_text' => $newProduct->title,
+                ]);
+            }
+
+            return $newProduct;
+        });
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', "Product '{$product->title}' duplicated as '{$duplicated->title}'.");
+    }
+
+    /**
      * Remove the specified product from storage.
      */
     public function destroy(
         Product $product,
-        MediaUploadService $mediaUploadService
+        MediaUploadService $mediaUploadService,
+        MediaLibraryService $mediaLibraryService
     ): RedirectResponse {
         Gate::authorize('delete', $product);
 
         $productTitle = $product->title;
+        $product->load('images');
 
-        // Delete physical files for product images
+        $candidatePaths = [];
         foreach ($product->images as $image) {
-            $mediaUploadService->delete($image->file_path);
+            $normalized = $mediaLibraryService->extractStorageFilePath((string) $image->file_path);
+            if ($normalized !== '') {
+                $candidatePaths[$normalized] = true;
+            }
+        }
+
+        if (is_array($product->combo_colors)) {
+            foreach ($product->combo_colors as $colorRow) {
+                if (is_array($colorRow) && ! empty($colorRow['image_url'])) {
+                    $normalized = $mediaLibraryService->extractStorageFilePath((string) $colorRow['image_url']);
+                    if ($normalized !== '') {
+                        $candidatePaths[$normalized] = true;
+                    }
+                }
+            }
         }
 
         $product->delete();
+
+        foreach (array_keys($candidatePaths) as $filePath) {
+            if (! $mediaLibraryService->isFilePathReferenced($filePath)) {
+                $mediaUploadService->delete($filePath);
+            }
+        }
 
         return redirect()
             ->route('admin.products.index')

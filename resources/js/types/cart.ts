@@ -5,6 +5,7 @@ export interface CartItemData {
     product_slug: string;
     variant_id: number;
     variant_name: string;
+    combo_summary?: string | null;
     image_url: string;
     unit_price: number;
     formatted_unit_price: string;

@@ -42,15 +42,13 @@ export function ContainerBlock({
         maxWidth: styles.maxWidth,
     };
 
-    const hasChildren = children && children.length > 0;
-
     return (
         <div
             style={inlineStyles}
             data-lc-el="container"
             className="lc-container w-full max-w-7xl mx-auto transition-all relative"
         >
-            {hasChildren && renderChildren ? (
+            {renderChildren ? (
                 renderChildren(children)
             ) : isEditor ? (
                 <div

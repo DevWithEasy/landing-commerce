@@ -87,8 +87,11 @@ class CartController extends Controller
             $productId = (int) $request->input('product_id');
             $variantId = $request->filled('variant_id') ? (int) $request->input('variant_id') : null;
             $quantity = (int) ($request->input('quantity') ?? 1);
+            $comboSummary = $request->filled('combo_summary')
+                ? trim((string) $request->input('combo_summary'))
+                : null;
 
-            $this->cartManager->addItem($cart, $productId, $variantId, $quantity);
+            $this->cartManager->addItem($cart, $productId, $variantId, $quantity, $comboSummary);
 
             return response()->json([
                 'message' => 'পণ্যটি কার্টে সফলভাবে যুক্ত করা হয়েছে।',

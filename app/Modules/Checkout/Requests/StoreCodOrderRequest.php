@@ -51,6 +51,7 @@ class StoreCodOrderRequest extends FormRequest
                     $cartItems = $cart->items()->get()->map(fn ($item) => [
                         'variant_id' => $item->variant_id,
                         'quantity' => $item->quantity,
+                        'combo_summary' => $item->combo_summary,
                     ])->values()->all();
 
                     $this->merge(['items' => $cartItems]);
@@ -96,6 +97,7 @@ class StoreCodOrderRequest extends FormRequest
             'items' => ['required', 'array', 'min:1'],
             'items.*.variant_id' => ['required', 'integer', 'exists:product_variants,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.combo_summary' => ['nullable', 'string', 'max:500'],
             'checkout_source' => ['nullable', 'string', 'in:cart,direct'],
             'shipping_method_id' => ['nullable', 'integer', 'exists:shipping_methods,id'],
             'payment_method' => ['nullable', 'string', 'max:50'],

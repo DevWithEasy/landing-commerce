@@ -351,3 +351,170 @@ test('media picker searches across product titles, alt text and original filenam
         ->assertJsonPath('total', 0)
         ->assertJsonCount(0, 'data');
 });
+
+test('duplicating a combo product does not duplicate its images in media gallery and new uploads still appear', function () {
+    $admin = makeMediaLibraryUser('super_admin');
+
+    Storage::disk('public')->put('products/combo-black.webp', 'black');
+    Storage::disk('public')->put('products/combo-navy.webp', 'navy');
+
+    $blackUrl = Storage::disk('public')->url('products/combo-black.webp');
+    $navyUrl = Storage::disk('public')->url('products/combo-navy.webp');
+
+    $comboProduct = Product::create([
+        'title' => 'T-Shirt Combo Pack',
+        'slug' => 't-shirt-combo-pack-'.uniqid(),
+        'regular_price' => 990.00,
+        'has_variants' => false,
+        'combo_pack_size' => 2,
+        'combo_colors' => [
+            ['name' => 'Black', 'image_url' => $blackUrl],
+            ['name' => 'Navy', 'image_url' => $navyUrl],
+        ],
+        'combo_sizes' => ['M', 'L', 'XL'],
+        'status' => 'active',
+    ]);
+
+    ProductImage::create([
+        'product_id' => $comboProduct->id,
+        'file_path' => 'products/combo-black.webp',
+        'sort_order' => 0,
+        'is_primary' => true,
+        'alt_text' => $comboProduct->title,
+    ]);
+
+    ProductImage::create([
+        'product_id' => $comboProduct->id,
+        'file_path' => 'products/combo-navy.webp',
+        'sort_order' => 1,
+        'is_primary' => false,
+        'alt_text' => $comboProduct->title,
+    ]);
+
+    // Duplicate twice (total 3 products referencing the same 2 image files across 12 slots)
+    $this->actingAs($admin)
+        ->post(route('admin.products.duplicate', $comboProduct))
+        ->assertRedirect();
+
+    $this->actingAs($admin)
+        ->post(route('admin.products.duplicate', $comboProduct))
+        ->assertRedirect();
+
+    expect(Product::count())->toBe(3)
+        ->and(ProductImage::count())->toBe(6);
+
+    $this->actingAs($admin)
+        ->get(route('admin.media.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Media/Index')
+            ->has('media.data', 2)
+            ->where('stats.total', 2)
+        );
+
+    $this->actingAs($admin)
+        ->getJson(route('admin.media.picker', ['per_page' => 60]))
+        ->assertOk()
+        ->assertJsonPath('total', 2)
+        ->assertJsonCount(2, 'data');
+
+    // Uploading a genuine new image on a duplicated product increases media count to 3
+    $duplicatedProduct = Product::query()->orderByDesc('id')->firstOrFail();
+
+    $this->actingAs($admin)
+        ->post(route('admin.products.images.store', $duplicatedProduct), [
+            'image' => UploadedFile::fake()->image('new-combo-angle.png', 800, 800),
+        ])
+        ->assertRedirect();
+
+    $this->actingAs($admin)
+        ->get(route('admin.media.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Media/Index')
+            ->has('media.data', 3)
+            ->where('stats.total', 3)
+        );
+});
+
+test('deleting a duplicated product preserves shared files and deleting from media library clears all references', function () {
+    $admin = makeMediaLibraryUser('super_admin');
+
+    Storage::disk('public')->put('products/shared-combo-1.webp', 'shared-1');
+    Storage::disk('public')->put('products/shared-combo-2.webp', 'shared-2');
+
+    $url1 = Storage::disk('public')->url('products/shared-combo-1.webp');
+    $url2 = Storage::disk('public')->url('products/shared-combo-2.webp');
+
+    $original = Product::create([
+        'title' => 'Original Combo Shirt',
+        'slug' => 'original-combo-shirt-'.uniqid(),
+        'regular_price' => 1150.00,
+        'has_variants' => false,
+        'combo_pack_size' => 2,
+        'combo_colors' => [
+            ['name' => 'Olive', 'image_url' => $url1],
+            ['name' => 'Maroon', 'image_url' => $url2],
+        ],
+        'combo_sizes' => ['L', 'XL'],
+        'status' => 'active',
+    ]);
+
+    ProductImage::create([
+        'product_id' => $original->id,
+        'file_path' => 'products/shared-combo-1.webp',
+        'sort_order' => 0,
+        'is_primary' => true,
+        'alt_text' => $original->title,
+    ]);
+
+    ProductImage::create([
+        'product_id' => $original->id,
+        'file_path' => 'products/shared-combo-2.webp',
+        'sort_order' => 1,
+        'is_primary' => false,
+        'alt_text' => $original->title,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.products.duplicate', $original))
+        ->assertRedirect();
+
+    $copy = Product::where('id', '!=', $original->id)->firstOrFail();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.products.destroy', $copy))
+        ->assertRedirect();
+
+    Storage::disk('public')->assertExists('products/shared-combo-1.webp');
+    Storage::disk('public')->assertExists('products/shared-combo-2.webp');
+
+    $pickerResponse = $this->actingAs($admin)
+        ->getJson(route('admin.media.picker', ['per_page' => 60]))
+        ->assertOk()
+        ->assertJsonPath('total', 2);
+
+    $firstKey = (string) collect($pickerResponse->json('data'))
+        ->firstWhere('file_path', 'products/shared-combo-2.webp')['key'];
+
+    $this->actingAs($admin)
+        ->delete(route('admin.media.destroy'), [
+            'items' => [$firstKey],
+        ])
+        ->assertRedirect();
+
+    Storage::disk('public')->assertMissing('products/shared-combo-2.webp');
+    Storage::disk('public')->assertExists('products/shared-combo-1.webp');
+
+    $original->refresh();
+    expect($original->combo_colors[1]['image_url'])->toBeNull()
+        ->and($original->combo_colors[0]['image_url'])->toBe($url1);
+
+    $this->actingAs($admin)
+        ->get(route('admin.media.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('stats.total', 1)
+            ->has('media.data', 1)
+        );
+});

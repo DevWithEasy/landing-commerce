@@ -494,14 +494,38 @@ function ContainerWrapper({
                 isEditor={true}
                 onAddChild={() => onAddBlockToContainer?.(block.id)}
                 dropRef={setDropRef}
-                renderChildren={() => (
-                    <SortableContext
-                        items={childrenBlocks.map((c) => c.id)}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        {childrenBlocks.map(renderChild)}
-                    </SortableContext>
-                )}
+                renderChildren={() =>
+                    hasChildren ? (
+                        <SortableContext
+                            items={childrenBlocks.map((c) => c.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {childrenBlocks.map(renderChild)}
+                        </SortableContext>
+                    ) : (
+                        <div
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAddBlockToContainer?.(block.id);
+                            }}
+                            style={{ gridColumn: '1 / -1' }}
+                            className={`flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+                                isOver
+                                    ? 'border-primary-500 bg-primary-100/60 text-primary-900'
+                                    : 'border-primary-300/80 bg-primary-50/40 text-primary-700 hover:bg-primary-50/70'
+                            }`}
+                        >
+                            <Box className="mb-1.5 h-5 w-5 opacity-70" />
+                            <span className="flex items-center gap-1 text-xs font-bold">
+                                <Plus className="h-3.5 w-3.5" />
+                                Grid is empty
+                            </span>
+                            <span className="mt-0.5 text-[11px] opacity-80">
+                                Drag widgets here or click to add a child block
+                            </span>
+                        </div>
+                    )
+                }
             />
         );
     }

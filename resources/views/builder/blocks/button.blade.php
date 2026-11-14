@@ -38,7 +38,7 @@
     }
 @endphp
 
-<div id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root lc-button-wrapper flex {{ $containerAlign }} my-2 w-full">
+<div id="{{ $id }}" {!! $styleAttribute !!} class="lc-block-root lc-button-wrapper flex {{ $containerAlign }} my-2 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0">
     <a href="{{ $target }}" data-lc-el="button" style="{{ $btnStyle }}" class="lc-button {{ $sizeClasses }} {{ $widthClass }} items-center justify-center font-bold shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-98 {{ $pulse ? 'animate-pulse' : '' }}">
         {{ $text }}
     </a>

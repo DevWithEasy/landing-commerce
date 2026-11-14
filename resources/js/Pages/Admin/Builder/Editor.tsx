@@ -4,8 +4,10 @@ import {
     KeyboardSensor,
     PointerSensor,
     closestCenter,
+    pointerWithin,
     useSensor,
     useSensors,
+    type CollisionDetection,
     type DragEndEvent,
     type DragStartEvent,
 } from '@dnd-kit/core';
@@ -330,6 +332,13 @@ export default function Editor({
                 return;
             }
 
+            const targetBlock = findBlockInTree(ast.blocks, overId);
+
+            if (targetBlock && (targetBlock.type === 'ContainerBlock' || targetBlock.type === 'GridBlock')) {
+                insertBlock(paletteType, targetBlock.id, targetBlock.children?.length ?? 0);
+                return;
+            }
+
             const targetInfo = findParentInTree(ast.blocks, overId);
 
             if (targetInfo) {
@@ -358,7 +367,19 @@ export default function Editor({
         // Case 2: Dropped onto a container drop target.
         if (overId.startsWith('container_drop_')) {
             const containerId = overId.replace('container_drop_', '');
-            moveBlock(activeId, containerId, 0);
+            const container = findBlockInTree(ast.blocks, containerId);
+            moveBlock(activeId, containerId, container?.children?.length ?? 0);
+            return;
+        }
+
+        // Case 2b: Dropped directly onto a container/grid block.
+        const targetBlock = findBlockInTree(ast.blocks, overId);
+        if (
+            targetBlock &&
+            (targetBlock.type === 'ContainerBlock' || targetBlock.type === 'GridBlock') &&
+            targetBlock.id !== activeId
+        ) {
+            moveBlock(activeId, targetBlock.id, targetBlock.children?.length ?? 0);
             return;
         }
 
@@ -380,14 +401,67 @@ export default function Editor({
         }
     };
 
+    // Clear targetContainerId automatically if the container block was removed
+    useEffect(() => {
+        if (targetContainerId && !findBlockInTree(ast.blocks, targetContainerId)) {
+            setTargetContainerId(null);
+        }
+    }, [ast.blocks, targetContainerId]);
+
+    // Collision detection that prioritizes container drop targets and nested children under the pointer
+    const customCollisionDetection: CollisionDetection = useCallback(
+        (args) => {
+            const pointerCollisions = pointerWithin(args);
+
+            if (pointerCollisions.length > 0) {
+                const containerDropCollision = pointerCollisions.find((c) =>
+                    String(c.id).startsWith('container_drop_')
+                );
+
+                if (containerDropCollision) {
+                    const containerId = String(containerDropCollision.id).replace(
+                        'container_drop_',
+                        ''
+                    );
+                    const containerBlock = findBlockInTree(ast.blocks, containerId);
+                    const childIds = new Set(
+                        (containerBlock?.children ?? []).map((child) => child.id)
+                    );
+                    const childCollision = pointerCollisions.find((c) =>
+                        childIds.has(String(c.id))
+                    );
+
+                    if (childCollision) {
+                        return [childCollision, containerDropCollision];
+                    }
+
+                    return [containerDropCollision];
+                }
+
+                return pointerCollisions;
+            }
+
+            return closestCenter(args);
+        },
+        [ast.blocks]
+    );
+
     // Add a block from the palette. Clicking inserts relative to the current
     // selection (or into the selected container) instead of always appending.
     const handleAddBlock = (blockType: BlockType, targetParentId?: string | null) => {
         const explicitTarget = targetParentId ?? targetContainerId;
 
         if (explicitTarget) {
-            insertBlock(blockType, explicitTarget, undefined);
-            return;
+            const existingContainer = findBlockInTree(ast.blocks, explicitTarget);
+            if (
+                existingContainer &&
+                (existingContainer.type === 'ContainerBlock' ||
+                    existingContainer.type === 'GridBlock')
+            ) {
+                insertBlock(blockType, explicitTarget, undefined);
+                return;
+            }
+            setTargetContainerId(null);
         }
 
         if (selectedBlockId) {
@@ -438,7 +512,7 @@ export default function Editor({
                 {/* Main 2-Column Elementor-Style Workspace (Unified Left Panel + Full-Width Canvas) */}
                 <DndContext
                     sensors={sensors}
-                    collisionDetection={closestCenter}
+                    collisionDetection={customCollisionDetection}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onDragCancel={handleDragCancel}

@@ -22,6 +22,7 @@ import {
     Search,
     Shield,
     ShoppingBag,
+    Trash2,
     Truck,
     User as UserIcon,
     X,
@@ -82,6 +83,11 @@ export default function Index({
     const [bulkTargetStatus, setBulkTargetStatus] = useState('confirmed');
     const [bulkComment, setBulkComment] = useState('');
     const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
+
+    // Order delete confirmation state
+    const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+    const [singleDeleteOrder, setSingleDeleteOrder] = useState<Order | null>(null);
+    const [isDeletingOrders, setIsDeletingOrders] = useState(false);
 
     // Order detail drawer state
     const [detailOrder, setDetailOrder] = useState<Order | null>(null);
@@ -407,6 +413,56 @@ export default function Index({
         );
     };
 
+    // Bulk delete selected orders execution
+    const executeBulkDelete = () => {
+        if (selectedIds.length === 0 || isDeletingOrders) return;
+
+        const deletingIds = [...selectedIds];
+        setIsDeletingOrders(true);
+        router.post(
+            '/admin/orders/bulk-delete',
+            {
+                order_ids: deletingIds,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDeletingOrders(false);
+                    setBulkDeleteModalOpen(false);
+                    setSelectedIds([]);
+                    if (detailOrder && deletingIds.includes(detailOrder.id)) {
+                        closeOrderDetail();
+                    }
+                },
+                onError: () => {
+                    setIsDeletingOrders(false);
+                },
+            }
+        );
+    };
+
+    // Single order delete execution
+    const executeSingleDelete = () => {
+        if (!singleDeleteOrder || isDeletingOrders) return;
+
+        const targetId = singleDeleteOrder.id;
+        setIsDeletingOrders(true);
+        router.delete(`/admin/orders/${targetId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsDeletingOrders(false);
+                setSingleDeleteOrder(null);
+                setSelectedIds((prev) => prev.filter((id) => id !== targetId));
+                if (detailOrder && detailOrder.id === targetId) {
+                    closeOrderDetail();
+                }
+            },
+            onError: () => {
+                setIsDeletingOrders(false);
+            },
+        });
+    };
+
     // Format currency to BDT
     const formatMoney = (amount: string | number | null | undefined): string => {
         if (amount === null || amount === undefined || amount === '') return '৳0.00';
@@ -597,6 +653,14 @@ export default function Index({
                     <div className="flex items-center space-x-2">
                         <Button variant="primary" size="sm" onClick={() => setBulkModalOpen(true)}>
                             Update Status...
+                        </Button>
+                        <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => setBulkDeleteModalOpen(true)}
+                        >
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                            Delete Selected
                         </Button>
                         <Button
                             variant="secondary"
@@ -846,6 +910,14 @@ export default function Index({
                                                     >
                                                         <FileText className="w-4 h-4" />
                                                     </a>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSingleDeleteOrder(order)}
+                                                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
+                                                        title="Delete Order"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -930,6 +1002,14 @@ export default function Index({
                                         title="Send Customer SMS Notification"
                                     >
                                         <MessageSquare className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSingleDeleteOrder(detailOrder)}
+                                        className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-950/60 rounded-lg transition-colors"
+                                        title="Delete Order"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                     <button
                                         type="button"
@@ -1975,6 +2055,74 @@ export default function Index({
                                     </Button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* BULK / SINGLE ORDER DELETE CONFIRMATION MODAL */}
+            {(bulkDeleteModalOpen || singleDeleteOrder) && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                        <div
+                            className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+                            onClick={() => {
+                                if (!isDeletingOrders) {
+                                    setBulkDeleteModalOpen(false);
+                                    setSingleDeleteOrder(null);
+                                }
+                            }}
+                        />
+
+                        <div className="relative inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6">
+                            <div className="flex items-start space-x-3.5">
+                                <div className="p-2.5 rounded-full bg-rose-50 text-rose-600 shrink-0">
+                                    <Trash2 className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-base font-bold text-gray-900">
+                                        {singleDeleteOrder
+                                            ? `Delete Order ${singleDeleteOrder.order_number}?`
+                                            : `Delete ${selectedIds.length} Selected Order(s)?`}
+                                    </h3>
+                                    <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                                        {singleDeleteOrder
+                                            ? `Are you sure you want to permanently delete order ${singleDeleteOrder.order_number} (${singleDeleteOrder.customer_name})? Un-restocked items for non-delivered orders will be restored to stock, and all order items & history logs will be removed.`
+                                            : `Are you sure you want to permanently delete ${selectedIds.length} selected order(s)? Un-restocked items for non-delivered orders will be restored to stock, and all order items & history logs will be removed.`}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 flex items-center justify-end space-x-2.5 pt-4 border-t border-gray-100">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    disabled={isDeletingOrders}
+                                    onClick={() => {
+                                        setBulkDeleteModalOpen(false);
+                                        setSingleDeleteOrder(null);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="danger"
+                                    size="sm"
+                                    isLoading={isDeletingOrders}
+                                    onClick={
+                                        singleDeleteOrder
+                                            ? executeSingleDelete
+                                            : executeBulkDelete
+                                    }
+                                >
+                                    <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                                    {singleDeleteOrder
+                                        ? 'Delete Order'
+                                        : `Delete ${selectedIds.length} Order(s)`}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

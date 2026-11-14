@@ -13,14 +13,40 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: 'Fraunces', 'Tiro Bangla', Georgia, Cambria, 'Times New Roman', Times, serif;
 
-    /* Semantic Velure Brand Tokens */
-    --color-cream: #faf7f2;
-    --color-sand: #f3ede4;
-    --color-forest: #0b3b2e;
-    --color-forest-700: #082b21;
-    --color-ember: #f96d16;
-    --color-ember-600: #ea580c;
+    /*
+     * Storefront Semantic Color Tokens (admin-customizable).
+     * Defaults reproduce the Velure look. At runtime, app.blade.php may print an
+     * unlayered `:root { --color-*: #hex }` block (from Admin → Appearance → Theme)
+     * that overrides these on public routes. Keep keys in sync with
+     * SettingsService::STOREFRONT_COLOR_DEFAULTS.
+     */
+    --color-page: #faf7f2;
+    --color-surface: #ffffff;
+    --color-soft: #f3ede4;
+    --color-line: #e7e5e4;
+    --color-brand: #0b3b2e;
+    --color-brand-hover: #082b21;
+    --color-heading: #0b3b2e;
     --color-ink: #1c1917;
+    --color-body: #57534e;
+    --color-muted: #78716c;
+    --color-cta: #f96d16;
+    --color-cta-hover: #ea580c;
+    --color-cta-text: #ffffff;
+    --color-highlight: #f96d16;
+    --color-price: #ea580c;
+    --color-sale: #f96d16;
+    --color-header: #ffffff;
+    --color-footer: #0b3b2e;
+    --color-footer-text: #d1fae5;
+
+    /* Legacy Velure aliases (resolve to the semantic tokens above) */
+    --color-cream: var(--color-page);
+    --color-sand: var(--color-soft);
+    --color-forest: var(--color-brand);
+    --color-forest-700: var(--color-brand-hover);
+    --color-ember: var(--color-cta);
+    --color-ember-600: var(--color-cta-hover);
 
     /* Brand / Primary Palette (Velure Warm Orange — 600 aligned to #F96D16 CTA) */
     --color-primary-50: #fff7ed;
@@ -53,34 +79,34 @@
 @layer base {
     body {
         font-family: var(--font-sans);
-        color: #1c1917;
-        background-color: #faf7f2;
+        color: var(--color-ink);
+        background-color: var(--color-page);
     }
 }
 
 @layer components {
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[#F96D16]/25 disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-cta hover:bg-cta-hover text-cta-text text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-cta/25 disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-[#0B3B2E] hover:bg-[#082B21] text-white text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/25 disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-brand hover:bg-brand-hover text-white text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-brand/25 disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .btn-outline {
-        @apply inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-white border border-stone-300 hover:border-[#0B3B2E] hover:bg-[#FAF7F2] text-[#0B3B2E] text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 disabled:opacity-50 disabled:cursor-not-allowed;
+        @apply inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg bg-surface border border-stone-300 hover:border-brand hover:bg-page text-heading text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:opacity-50 disabled:cursor-not-allowed;
     }
 
     .input {
-        @apply w-full h-11 px-3.5 rounded-lg border border-stone-200 bg-white text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-[#0B3B2E] focus:ring-2 focus:ring-[#0B3B2E]/15 transition-colors;
+        @apply w-full h-11 px-3.5 rounded-lg border border-line bg-surface text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors;
     }
 
     .card {
-        @apply bg-white rounded-xl border border-stone-200/80;
+        @apply bg-surface rounded-xl border border-line/80;
     }
 
     .badge-sale {
-        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F96D16] text-white;
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-sale text-white;
     }
 }
 

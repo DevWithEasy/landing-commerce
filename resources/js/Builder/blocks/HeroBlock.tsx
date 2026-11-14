@@ -74,7 +74,7 @@ export function HeroBlock({ props, styles = {}, isEditor = false }: HeroBlockCom
             style={inlineStyles}
             className="w-full relative overflow-hidden transition-all duration-150"
         >
-            <div className="max-w-6xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
+            <div className="max-w-7xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 <div
                     className={`flex flex-col ${
                         hasImage ? '@min-[800px]:flex-row items-center gap-8 @min-[1024px]:gap-12' : 'items-center text-center'

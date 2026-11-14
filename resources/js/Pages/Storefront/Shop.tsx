@@ -169,7 +169,7 @@ export default function Shop({
                     placeholder="Search products..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-[#FAF7F2] border border-stone-200 rounded-xl text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E]"
+                    className="w-full pl-9 pr-3 py-2 bg-page border border-line rounded-xl text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                 />
                 <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </form>
@@ -199,8 +199,8 @@ export default function Shop({
                             <span
                                 className={`w-4 h-4 rounded flex items-center justify-center border transition ${
                                     !filters.category
-                                        ? 'bg-[#F96D16] border-[#F96D16] text-white'
-                                        : 'border-stone-300 bg-white group-hover:border-[#F96D16]'
+                                        ? 'bg-cta border-highlight text-cta-text'
+                                        : 'border-stone-300 bg-surface group-hover:border-highlight'
                                 }`}
                             >
                                 {!filters.category && <Check className="w-3 h-3 stroke-[3]" />}
@@ -226,8 +226,8 @@ export default function Shop({
                                         <span
                                             className={`w-4 h-4 rounded flex items-center justify-center border transition ${
                                                 isSelected
-                                                    ? 'bg-[#F96D16] border-[#F96D16] text-white'
-                                                    : 'border-stone-300 bg-white group-hover:border-[#F96D16]'
+                                                    ? 'bg-cta border-highlight text-cta-text'
+                                                    : 'border-stone-300 bg-surface group-hover:border-highlight'
                                             }`}
                                         >
                                             {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -260,8 +260,8 @@ export default function Shop({
                                                         <span
                                                             className={`w-3.5 h-3.5 rounded flex items-center justify-center border transition ${
                                                                 isSubSelected
-                                                                    ? 'bg-[#F96D16] border-[#F96D16] text-white'
-                                                                    : 'border-stone-300 bg-white group-hover:border-[#F96D16]'
+                                                                    ? 'bg-cta border-highlight text-cta-text'
+                                                                    : 'border-stone-300 bg-surface group-hover:border-highlight'
                                                             }`}
                                                         >
                                                             {isSubSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
@@ -311,7 +311,7 @@ export default function Shop({
                             step={100}
                             value={Number(maxPrice) || 5000}
                             onChange={(e) => setMaxPrice(e.target.value)}
-                            className="w-full accent-[#F96D16] cursor-pointer h-1.5 bg-stone-200 rounded-lg"
+                            className="w-full accent-highlight cursor-pointer h-1.5 bg-stone-200 rounded-lg"
                         />
                         <div className="grid grid-cols-2 gap-2.5">
                             <div className="relative">
@@ -322,7 +322,7 @@ export default function Shop({
                                     placeholder="0"
                                     value={minPrice}
                                     onChange={(e) => setMinPrice(e.target.value)}
-                                    className="w-full pl-6 pr-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#F96D16]"
+                                    className="w-full pl-6 pr-2 py-1.5 bg-surface border border-line rounded-lg text-xs text-gray-800 focus:outline-none focus:border-highlight"
                                 />
                             </div>
                             <div className="relative">
@@ -333,14 +333,14 @@ export default function Shop({
                                     placeholder="5,000"
                                     value={maxPrice}
                                     onChange={(e) => setMaxPrice(e.target.value)}
-                                    className="w-full pl-6 pr-2 py-1.5 bg-white border border-stone-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#F96D16]"
+                                    className="w-full pl-6 pr-2 py-1.5 bg-surface border border-line rounded-lg text-xs text-gray-800 focus:outline-none focus:border-highlight"
                                 />
                             </div>
                         </div>
                         <button
                             type="submit"
                             onClick={closeDrawer}
-                            className="w-full py-1.5 bg-[#0B3B2E] hover:bg-[#092E24] text-white text-xs font-semibold rounded-lg transition"
+                            className="w-full py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-semibold rounded-lg transition"
                         >
                             Apply Price
                         </button>
@@ -372,7 +372,7 @@ export default function Shop({
                                 handleStockChange(e.target.checked);
                                 if (closeDrawer) closeDrawer();
                             }}
-                            className="h-4 w-4 rounded border-stone-300 text-[#F96D16] focus:ring-[#F96D16] accent-[#F96D16]"
+                            className="h-4 w-4 rounded border-stone-300 text-highlight focus:ring-highlight accent-highlight"
                         />
                         <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900">
                             In Stock Only
@@ -389,7 +389,7 @@ export default function Shop({
                             clearAllFilters();
                             if (closeDrawer) closeDrawer();
                         }}
-                        className="w-full py-2 px-3 bg-[#FAF7F2] hover:bg-stone-200/70 border border-stone-200 text-gray-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5"
+                        className="w-full py-2 px-3 bg-page hover:bg-stone-200/70 border border-line text-gray-700 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5"
                     >
                         <X className="w-3.5 h-3.5" />
                         <span>Reset All Filters</span>
@@ -421,10 +421,10 @@ export default function Shop({
 
             {/* Top Collection Banner matching Velure Shop & Category Reference */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-                <div className="relative rounded-2xl overflow-hidden bg-[#0B3B2E] min-h-[155px] sm:min-h-[185px] flex items-center">
+                <div className="relative rounded-2xl overflow-hidden bg-brand min-h-[155px] sm:min-h-[185px] flex items-center">
                     {/* Right warm cream decorative split */}
                     <div
-                        className="hidden md:block absolute right-0 top-0 bottom-0 w-[44%] bg-[#F5EFE6]"
+                        className="hidden md:block absolute right-0 top-0 bottom-0 w-[44%] bg-soft"
                         style={{ clipPath: 'ellipse(95% 120% at 95% 50%)' }}
                     />
                     <div className="relative z-10 w-full px-6 sm:px-10 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -472,7 +472,7 @@ export default function Shop({
                         </div>
 
                         {selectedCategory?.image_url && (
-                            <div className="hidden md:flex items-center justify-center w-36 h-28 rounded-xl overflow-hidden bg-white shadow-sm border border-stone-200/70 shrink-0 mr-4">
+                            <div className="hidden md:flex items-center justify-center w-36 h-28 rounded-xl overflow-hidden bg-surface shadow-sm border border-line/70 shrink-0 mr-4">
                                 <SafeImage
                                     src={selectedCategory.image_url}
                                     alt={selectedCategory.name}
@@ -494,8 +494,8 @@ export default function Shop({
                                 href={`/category/${activeParentCategory.slug}`}
                                 className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border ${
                                     selectedCategory?.id === activeParentCategory.id
-                                        ? 'bg-[#F96D16] text-white border-[#F96D16] shadow-xs'
-                                        : 'bg-white text-gray-700 border-stone-200 hover:border-[#F96D16]'
+                                        ? 'bg-cta text-cta-text border-highlight shadow-xs'
+                                        : 'bg-surface text-gray-700 border-line hover:border-highlight'
                                 }`}
                             >
                                 All {activeParentCategory.name}
@@ -506,8 +506,8 @@ export default function Shop({
                                     href={`/category/${sub.slug}`}
                                     className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border ${
                                         selectedCategory?.id === sub.id
-                                            ? 'bg-[#F96D16] text-white border-[#F96D16] shadow-xs'
-                                            : 'bg-white text-gray-700 border-stone-200 hover:border-[#F96D16]'
+                                            ? 'bg-cta text-cta-text border-highlight shadow-xs'
+                                            : 'bg-surface text-gray-700 border-line hover:border-highlight'
                                     }`}
                                 >
                                     {sub.name}
@@ -520,8 +520,8 @@ export default function Shop({
                                 href="/shop"
                                 className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border ${
                                     !selectedCategory
-                                        ? 'bg-[#F96D16] text-white border-[#F96D16] shadow-xs'
-                                        : 'bg-white text-gray-700 border-stone-200 hover:border-[#F96D16]'
+                                        ? 'bg-cta text-cta-text border-highlight shadow-xs'
+                                        : 'bg-surface text-gray-700 border-line hover:border-highlight'
                                 }`}
                             >
                                 All Products
@@ -532,8 +532,8 @@ export default function Shop({
                                     href={`/category/${cat.slug}`}
                                     className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border ${
                                         selectedCategory?.id === cat.id
-                                            ? 'bg-[#F96D16] text-white border-[#F96D16] shadow-xs'
-                                            : 'bg-white text-gray-700 border-stone-200 hover:border-[#F96D16]'
+                                            ? 'bg-cta text-cta-text border-highlight shadow-xs'
+                                            : 'bg-surface text-gray-700 border-line hover:border-highlight'
                                     }`}
                                 >
                                     {cat.name}
@@ -548,7 +548,7 @@ export default function Shop({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-14">
                 <div className="flex flex-col lg:flex-row gap-7 items-start">
                     {/* Left Filter Sidebar (Desktop) */}
-                    <aside className="hidden lg:block w-64 xl:w-68 shrink-0 bg-white rounded-2xl border border-stone-200/80 p-5 shadow-xs">
+                    <aside className="hidden lg:block w-64 xl:w-68 shrink-0 bg-surface rounded-2xl border border-line/80 p-5 shadow-xs">
                         {renderFilterContent()}
                     </aside>
 
@@ -569,21 +569,21 @@ export default function Shop({
                                 <button
                                     type="button"
                                     onClick={() => setIsMobileFilterOpen(true)}
-                                    className="lg:hidden inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-gray-800 rounded-xl text-xs font-semibold transition"
+                                    className="lg:hidden inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface border border-line hover:bg-stone-50 text-gray-800 rounded-xl text-xs font-semibold transition"
                                 >
                                     <Filter className="w-3.5 h-3.5 text-gray-600" />
                                     <span>Filters</span>
                                 </button>
 
                                 <div className="flex items-center gap-2">
-                                    <label htmlFor="shop-sort" className="text-xs text-stone-500 hidden sm:inline">
+                                    <label htmlFor="shop-sort" className="text-xs text-muted hidden sm:inline">
                                         Sort by:
                                     </label>
                                     <select
                                         id="shop-sort"
                                         value={sort}
                                         onChange={(e) => handleSortChange(e.target.value)}
-                                        className="px-3 py-2 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/20 focus:border-[#0B3B2E]"
+                                        className="px-3 py-2 bg-surface border border-line rounded-lg text-xs font-semibold text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                                     >
                                         <option value="popular">Popular</option>
                                         <option value="latest">Newest</option>
@@ -599,8 +599,8 @@ export default function Shop({
                                         aria-label="Grid view"
                                         className={`w-9 h-9 rounded-lg flex items-center justify-center transition ${
                                             viewMode === 'grid'
-                                                ? 'bg-[#0B3B2E] text-white'
-                                                : 'bg-white border border-stone-200 text-stone-600 hover:bg-[#FAF7F2]'
+                                                ? 'bg-brand text-white'
+                                                : 'bg-surface border border-line text-body hover:bg-page'
                                         }`}
                                     >
                                         <LayoutGrid className="w-4 h-4" />
@@ -611,8 +611,8 @@ export default function Shop({
                                         aria-label="List view"
                                         className={`w-9 h-9 rounded-lg flex items-center justify-center transition ${
                                             viewMode === 'list'
-                                                ? 'bg-[#0B3B2E] text-white'
-                                                : 'bg-white border border-stone-200 text-stone-600 hover:bg-[#FAF7F2]'
+                                                ? 'bg-brand text-white'
+                                                : 'bg-surface border border-line text-body hover:bg-page'
                                         }`}
                                     >
                                         <List className="w-4 h-4" />
@@ -623,17 +623,17 @@ export default function Shop({
 
                         {/* Product Results */}
                         {products.data.length === 0 ? (
-                            <div className="bg-white rounded-xl border border-stone-200/80 p-12 text-center">
+                            <div className="bg-surface rounded-xl border border-line/80 p-12 text-center">
                                 <FolderTree className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                                <h3 className="text-base font-serif font-bold text-[#0B3B2E]">No products found</h3>
-                                <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-sm mx-auto">
+                                <h3 className="text-base font-serif font-bold text-heading">No products found</h3>
+                                <p className="text-xs sm:text-sm text-muted mt-1 max-w-sm mx-auto">
                                     No products matched your selected filters. Try clearing filters or browsing another category.
                                 </p>
                                 <div className="mt-5">
                                     <button
                                         type="button"
                                         onClick={clearAllFilters}
-                                        className="px-5 py-2.5 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg text-xs font-semibold transition"
+                                        className="px-5 py-2.5 bg-cta hover:bg-cta-hover text-cta-text rounded-lg text-xs font-semibold transition"
                                     >
                                         View All Products
                                     </button>
@@ -658,11 +658,11 @@ export default function Shop({
                                             return (
                                                 <div
                                                     key={product.id}
-                                                    className="bg-white rounded-xl border border-stone-200/80 hover:border-stone-300 p-3.5 flex items-center gap-4 transition"
+                                                    className="bg-surface rounded-xl border border-line/80 hover:border-stone-300 p-3.5 flex items-center gap-4 transition"
                                                 >
                                                     <Link
                                                         href={`/product/${product.slug}`}
-                                                        className="w-22 h-28 sm:w-24 sm:h-30 rounded-lg bg-[#F3EDE4] overflow-hidden shrink-0"
+                                                        className="w-22 h-28 sm:w-24 sm:h-30 rounded-lg bg-soft overflow-hidden shrink-0"
                                                     >
                                                         <SafeImage
                                                             src={product.primaryImage?.url || product.primary_image?.url}
@@ -673,7 +673,7 @@ export default function Shop({
                                                     </Link>
                                                     <div className="flex-1 min-w-0">
                                                         <Link href={`/product/${product.slug}`}>
-                                                            <h3 className="text-sm sm:text-base font-semibold text-stone-900 hover:text-[#0B3B2E] truncate">
+                                                            <h3 className="text-sm sm:text-base font-semibold text-ink hover:text-heading truncate">
                                                                 {product.title}
                                                             </h3>
                                                         </Link>
@@ -683,7 +683,7 @@ export default function Shop({
                                                             </p>
                                                         )}
                                                         <div className="flex items-baseline gap-2 mt-2">
-                                                            <span className="text-base font-bold text-[#EA580C]">
+                                                            <span className="text-base font-bold text-price">
                                                                 {formatBdt(activePrice)}
                                                             </span>
                                                             {hasDiscount && (
@@ -695,7 +695,7 @@ export default function Shop({
                                                     </div>
                                                     <Link
                                                         href={`/product/${product.slug}`}
-                                                        className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-[#F96D16] hover:bg-[#EA580C] text-white text-xs font-semibold transition shrink-0"
+                                                        className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-cta hover:bg-cta-hover text-cta-text text-xs font-semibold transition shrink-0"
                                                     >
                                                         <ShoppingCart className="w-3.5 h-3.5" />
                                                         <span className="hidden sm:inline">View</span>
@@ -708,7 +708,7 @@ export default function Shop({
 
                                 {/* Bottom Pagination */}
                                 {products.links && products.links.length > 3 && (
-                                    <div className="mt-8 pt-4 border-t border-stone-200/80">
+                                    <div className="mt-8 pt-4 border-t border-line/80">
                                         <Pagination
                                             links={products.links}
                                             from={products.from}
@@ -730,9 +730,9 @@ export default function Shop({
                         className="fixed inset-0 bg-stone-900/50 backdrop-blur-xs"
                         onClick={() => setIsMobileFilterOpen(false)}
                     />
-                    <div className="relative ml-auto w-4/5 max-w-sm bg-white h-full shadow-xl p-6 z-10 overflow-y-auto">
+                    <div className="relative ml-auto w-4/5 max-w-sm bg-surface h-full shadow-xl p-6 z-10 overflow-y-auto">
                         <div className="flex items-center justify-between pb-4 mb-4 border-b border-stone-100">
-                            <span className="font-serif font-bold text-[#0B3B2E] text-base">Filters</span>
+                            <span className="font-serif font-bold text-heading text-base">Filters</span>
                             <button
                                 type="button"
                                 onClick={() => setIsMobileFilterOpen(false)}

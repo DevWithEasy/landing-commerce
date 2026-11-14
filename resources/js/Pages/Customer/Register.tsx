@@ -35,10 +35,10 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
 
             <div className="min-h-[calc(100vh-140px)] flex flex-col lg:flex-row">
                 {/* Left Brand Panel (Deep Forest Green) */}
-                <div className="lg:w-1/2 bg-[#0B3B2E] text-white relative overflow-hidden flex items-center py-12 px-6 sm:px-12 lg:px-16">
+                <div className="lg:w-1/2 bg-brand text-white relative overflow-hidden flex items-center py-12 px-6 sm:px-12 lg:px-16">
                     {/* Right warm cream curved arch accent */}
                     <div
-                        className="hidden lg:block absolute right-0 top-0 bottom-0 w-24 bg-[#FAF7F2]"
+                        className="hidden lg:block absolute right-0 top-0 bottom-0 w-24 bg-page"
                         style={{ clipPath: 'ellipse(100% 70% at 100% 50%)' }}
                     />
 
@@ -96,13 +96,13 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                 </div>
 
                 {/* Right Form Panel (Warm Cream + White Card) */}
-                <div className="lg:w-1/2 bg-[#FAF7F2] flex items-center justify-center py-12 px-4 sm:px-8">
-                    <div className="max-w-md w-full bg-white rounded-xl border border-stone-200/80 p-8 sm:p-10">
+                <div className="lg:w-1/2 bg-page flex items-center justify-center py-12 px-4 sm:px-8">
+                    <div className="max-w-md w-full bg-surface rounded-xl border border-line/80 p-8 sm:p-10">
                         <div className="text-center mb-6">
-                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#0B3B2E]">
+                            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-heading">
                                 Create Your Account
                             </h2>
-                            <p className="text-xs sm:text-sm text-stone-500 mt-1.5">
+                            <p className="text-xs sm:text-sm text-muted mt-1.5">
                                 Sign up to track orders and save your favorite items.
                             </p>
                         </div>
@@ -124,8 +124,8 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('name', e.target.value)}
                                         required
                                         placeholder="Full Name"
-                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
-                                            errors.name ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        className={`w-full h-11 pl-10 pr-4 bg-page/70 border rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand focus:bg-surface transition ${
+                                            errors.name ? 'border-rose-400 bg-rose-50/40' : 'border-line'
                                         }`}
                                     />
                                 </div>
@@ -150,8 +150,8 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('email', e.target.value)}
                                         required
                                         placeholder="Email address"
-                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
-                                            errors.email ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        className={`w-full h-11 pl-10 pr-4 bg-page/70 border rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand focus:bg-surface transition ${
+                                            errors.email ? 'border-rose-400 bg-rose-50/40' : 'border-line'
                                         }`}
                                     />
                                 </div>
@@ -174,8 +174,8 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         value={data.phone}
                                         onChange={(e) => setData('phone', e.target.value)}
                                         placeholder="Phone Number (Optional)"
-                                        className={`w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
-                                            errors.phone ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        className={`w-full h-11 pl-10 pr-4 bg-page/70 border rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand focus:bg-surface transition ${
+                                            errors.phone ? 'border-rose-400 bg-rose-50/40' : 'border-line'
                                         }`}
                                     />
                                 </div>
@@ -200,15 +200,15 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('password', e.target.value)}
                                         required
                                         placeholder="Password (min. 8 characters)"
-                                        className={`w-full h-11 pl-10 pr-10 bg-[#FAF7F2]/70 border rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition ${
-                                            errors.password ? 'border-rose-400 bg-rose-50/40' : 'border-stone-200'
+                                        className={`w-full h-11 pl-10 pr-10 bg-page/70 border rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand focus:bg-surface transition ${
+                                            errors.password ? 'border-rose-400 bg-rose-50/40' : 'border-line'
                                         }`}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword((prev) => !prev)}
                                         aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-body"
                                     >
                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
@@ -234,7 +234,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                         onChange={(e) => setData('password_confirmation', e.target.value)}
                                         required
                                         placeholder="Confirm Password"
-                                        className="w-full h-11 pl-10 pr-4 bg-[#FAF7F2]/70 border border-stone-200 rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#0B3B2E]/15 focus:border-[#0B3B2E] focus:bg-white transition"
+                                        className="w-full h-11 pl-10 pr-4 bg-page/70 border border-line rounded-lg text-sm text-ink placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand focus:bg-surface transition"
                                     />
                                 </div>
                             </div>
@@ -244,7 +244,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="w-full h-11 px-4 bg-[#F96D16] hover:bg-[#EA580C] text-white rounded-lg text-sm font-semibold transition disabled:opacity-50"
+                                    className="w-full h-11 px-4 bg-cta hover:bg-cta-hover text-cta-text rounded-lg text-sm font-semibold transition disabled:opacity-50"
                                 >
                                     {processing ? 'Creating account...' : 'Create Account'}
                                 </button>
@@ -256,7 +256,7 @@ export default function CustomerRegister({ theme, categories }: RegisterProps) {
                                     Already have an account?{' '}
                                     <Link
                                         href="/customer/login"
-                                        className="font-bold text-[#EA580C] hover:underline"
+                                        className="font-bold text-price hover:underline"
                                     >
                                         Login
                                     </Link>

@@ -28,7 +28,7 @@ export function ImageBlock({ props, styles = {} }: ImageBlockComponentProps) {
     }[props.align || 'center'] || 'justify-center text-center';
 
     return (
-        <figure className={`lc-image flex flex-col ${alignClass} my-2 w-full`}>
+        <figure className={`lc-image flex flex-col ${alignClass} my-2 w-full max-w-7xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8 [.lc-container_&]:max-w-none [.lc-container_&]:px-0 [.lc-grid_&]:max-w-none [.lc-grid_&]:px-0`}>
             {props.imageUrl ? (
                 <div className="inline-block max-w-full">
                     <img

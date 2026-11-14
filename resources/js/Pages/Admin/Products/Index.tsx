@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
     AlertTriangle,
     CheckCircle2,
+    Copy,
     Edit3,
     Filter,
     Package,
@@ -27,6 +28,19 @@ export default function Index({ products, filters, stats }: ProductIndexProps) {
     const [stockLevel, setStockLevel] = useState(filters.stock_level || '');
     const [deleteModalProduct, setDeleteModalProduct] = useState<Product | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [duplicatingProductId, setDuplicatingProductId] = useState<number | null>(null);
+
+    const handleDuplicate = (product: Product) => {
+        setDuplicatingProductId(product.id);
+        router.post(
+            `/admin/products/${product.id}/duplicate`,
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setDuplicatingProductId(null),
+            }
+        );
+    };
 
     const handleFilterSubmit = (e?: FormEvent) => {
         if (e) e.preventDefault();
@@ -267,6 +281,12 @@ export default function Index({ products, filters, stats }: ProductIndexProps) {
                                     const primaryImage =
                                         product.images?.find((img) => img.is_primary) ||
                                         product.images?.[0];
+                                    const comboFallbackUrl =
+                                        product.combo_colors?.find((c) => c?.image_url)?.image_url ??
+                                        null;
+                                    const thumbnailSrc = primaryImage
+                                        ? primaryImage.thumb_url || primaryImage.url
+                                        : comboFallbackUrl;
                                     const totalStock = calculateTotalStock(product);
 
                                     return (
@@ -279,7 +299,7 @@ export default function Index({ products, filters, stats }: ProductIndexProps) {
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-11 h-11 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
                                                         <SafeImage
-                                                            src={primaryImage ? (primaryImage.thumb_url || primaryImage.url) : null}
+                                                            src={thumbnailSrc}
                                                             alt={product.title}
                                                             className="w-full h-full object-cover"
                                                             fallbackIconSize="w-5 h-5"
@@ -319,7 +339,11 @@ export default function Index({ products, filters, stats }: ProductIndexProps) {
 
                                             {/* Variants */}
                                             <td className="py-3.5 px-4 whitespace-nowrap">
-                                                {product.has_variants ? (
+                                                {product.combo_pack_size && product.combo_pack_size > 1 ? (
+                                                    <Badge variant="warning">
+                                                        {product.combo_pack_size} Pcs Combo
+                                                    </Badge>
+                                                ) : product.has_variants ? (
                                                     <Badge variant="info">
                                                         {product.variants?.length || 0} Variants
                                                     </Badge>
@@ -374,6 +398,17 @@ export default function Index({ products, filters, stats }: ProductIndexProps) {
                                                             Edit
                                                         </Button>
                                                     </Link>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="px-2.5 py-1 text-xs"
+                                                        isLoading={duplicatingProductId === product.id}
+                                                        onClick={() => handleDuplicate(product)}
+                                                        title="Duplicate product"
+                                                    >
+                                                        <Copy className="w-3.5 h-3.5 mr-1" />
+                                                        Duplicate
+                                                    </Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"

@@ -83,8 +83,53 @@ class UpdateProductAction
                     : null;
             }
 
-            if (isset($data['has_variants'])) {
+            if (isset($data['combo_pack_size'])) {
+                $updatePayload['combo_pack_size'] = max(1, min(12, (int) $data['combo_pack_size']));
+            }
+
+            $effectiveComboPackSize = $updatePayload['combo_pack_size'] ?? (int) ($model->combo_pack_size ?: 1);
+
+            if ($effectiveComboPackSize > 1) {
+                $updatePayload['has_variants'] = false;
+            } elseif (isset($data['has_variants'])) {
                 $updatePayload['has_variants'] = (bool) $data['has_variants'];
+            }
+
+            if (array_key_exists('combo_colors', $data)) {
+                if ($effectiveComboPackSize > 1 && is_array($data['combo_colors'])) {
+                    $normalizedColors = [];
+                    foreach (array_values($data['combo_colors']) as $idx => $item) {
+                        if (! is_array($item)) {
+                            continue;
+                        }
+
+                        $name = trim((string) ($item['name'] ?? ''));
+                        $imageUrl = trim((string) ($item['image_url'] ?? ''));
+
+                        if ($name === '' && $imageUrl === '') {
+                            continue;
+                        }
+
+                        $normalizedColors[] = [
+                            'name' => $name !== '' ? $name : 'Color '.($idx + 1),
+                            'image_url' => $imageUrl !== '' ? $imageUrl : null,
+                        ];
+                    }
+                    $updatePayload['combo_colors'] = $normalizedColors;
+                } else {
+                    $updatePayload['combo_colors'] = null;
+                }
+            }
+
+            if (array_key_exists('combo_sizes', $data)) {
+                if ($effectiveComboPackSize > 1 && is_array($data['combo_sizes'])) {
+                    $updatePayload['combo_sizes'] = array_values(array_filter(array_map(
+                        fn ($s) => trim((string) $s),
+                        $data['combo_sizes']
+                    )));
+                } else {
+                    $updatePayload['combo_sizes'] = null;
+                }
             }
 
             if (isset($data['status'])) {
@@ -93,6 +138,23 @@ class UpdateProductAction
 
             if (! empty($updatePayload)) {
                 $model->update($updatePayload);
+            }
+
+            if ($effectiveComboPackSize > 1 || ! ($model->has_variants)) {
+                $defaultVariant = $model->variants()->orderBy('id')->first();
+                if ($defaultVariant) {
+                    $defaultVariantUpdate = [
+                        'regular_price' => (float) $model->regular_price,
+                        'sale_price' => $model->sale_price !== null ? (float) $model->sale_price : null,
+                    ];
+                    if (isset($data['stock_quantity'])) {
+                        $defaultVariantUpdate['stock_quantity'] = (int) $data['stock_quantity'];
+                    }
+                    if (isset($data['manage_stock'])) {
+                        $defaultVariantUpdate['manage_stock'] = (bool) $data['manage_stock'];
+                    }
+                    $defaultVariant->update($defaultVariantUpdate);
+                }
             }
 
             if (! empty($data['variants'])) {

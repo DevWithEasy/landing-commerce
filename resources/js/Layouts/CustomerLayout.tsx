@@ -79,16 +79,16 @@ export function CustomerLayout({
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     {/* Left Sidebar Navigation */}
-                    <div className="bg-white rounded-xl border border-stone-200/80 p-6">
+                    <div className="bg-surface rounded-xl border border-line/80 p-6">
                         <div className="flex items-center gap-3.5 pb-6 border-b border-stone-100">
-                            <div className="w-12 h-12 rounded-full bg-[#0B3B2E] text-white flex items-center justify-center font-serif font-bold text-lg shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-brand text-white flex items-center justify-center font-serif font-bold text-lg shrink-0">
                                 {customer?.name ? customer.name.charAt(0).toUpperCase() : <UserIcon className="w-6 h-6" />}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <h3 className="font-serif font-bold text-[#0B3B2E] truncate text-base">
+                                <h3 className="font-serif font-bold text-heading truncate text-base">
                                     {customer?.name || 'গ্রাহক একাউন্ট'}
                                 </h3>
-                                <p className="text-xs text-stone-500 truncate">
+                                <p className="text-xs text-muted truncate">
                                     {customer?.email || ''}
                                 </p>
                             </div>
@@ -103,11 +103,11 @@ export function CustomerLayout({
                                         href={item.href}
                                         className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition ${
                                             item.active
-                                                ? 'bg-[#FAF7F2] text-[#0B3B2E] font-semibold border border-stone-200/80'
-                                                : 'text-stone-600 hover:bg-[#FAF7F2]/60 hover:text-stone-900'
+                                                ? 'bg-page text-heading font-semibold border border-line/80'
+                                                : 'text-body hover:bg-page/60 hover:text-ink'
                                         }`}
                                     >
-                                        <Icon className={`w-4 h-4 ${item.active ? 'text-[#F96D16]' : 'text-stone-400'}`} />
+                                        <Icon className={`w-4 h-4 ${item.active ? 'text-highlight' : 'text-stone-400'}`} />
                                         <span>{item.name}</span>
                                     </Link>
                                 );

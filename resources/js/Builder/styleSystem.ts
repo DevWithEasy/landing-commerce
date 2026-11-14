@@ -267,6 +267,7 @@ export const BLOCK_ELEMENT_STYLE_OPTIONS: Record<BlockType, ElementStyleOption[]
     ],
     CodCheckoutBlock: [
         { key: 'section', label: 'Checkout section' },
+        { key: 'container', label: 'Outer container' },
         { key: 'header', label: 'Header' },
         { key: 'title', label: 'Header title' },
         { key: 'subtitle', label: 'Header subtitle' },

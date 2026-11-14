@@ -60,7 +60,7 @@ export function BenefitsGridBlock({ props, styles = {} }: BenefitsGridBlockCompo
 
     return (
         <section style={inlineStyles} className="w-full py-12">
-            <div className="max-w-6xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
+            <div className="max-w-7xl mx-auto px-4 @min-[640px]:px-6 @min-[1024px]:px-8">
                 {props.title && (
                     <div className="text-center mb-10">
                         <h2

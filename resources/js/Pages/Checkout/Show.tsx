@@ -84,6 +84,15 @@ export default function CheckoutShow({
         return 1;
     });
 
+    const [comboSummary] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const combo = params.get('combo');
+            if (combo && combo.trim()) return combo.trim();
+        }
+        return null;
+    });
+
     // 2. Client-side Idempotency Key (preserved across retries)
     const [idempotencyKey] = useState<string>(() => generateUuid());
 
@@ -207,11 +216,16 @@ export default function CheckoutShow({
             payment_transaction_id: transactionId || undefined,
             idempotency_key: idempotencyKey,
             items: isCartMode && cart
-                ? cart.items.map((i) => ({ variant_id: i.variant_id, quantity: i.quantity }))
+                ? cart.items.map((i) => ({
+                      variant_id: i.variant_id,
+                      quantity: i.quantity,
+                      ...(i.combo_summary ? { combo_summary: i.combo_summary } : {}),
+                  }))
                 : [
                     {
                         variant_id: selectedVariant!.id,
                         quantity,
+                        ...(comboSummary ? { combo_summary: comboSummary } : {}),
                     },
                 ],
             _hp_trap: honeypot || undefined,
@@ -285,7 +299,7 @@ export default function CheckoutShow({
                 <meta name="robots" content="noindex, nofollow" />
             </Head>
 
-            <div className="bg-[#FAF7F2] py-8 px-4 sm:px-6 lg:px-8">
+            <div className="bg-page py-8 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                 {/* Top Header & 3-Step Progress Stepper matching Velure Reference */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-7">
@@ -301,17 +315,17 @@ export default function CheckoutShow({
                     {/* 3-Step Progress Stepper */}
                     <div className="flex items-center gap-2 sm:gap-3">
                         <div className="flex flex-col items-center">
-                            <div className="w-8 h-8 rounded-full bg-[#0B3B2E] text-white flex items-center justify-center shadow-xs">
+                            <div className="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center shadow-xs">
                                 <ShoppingCart className="w-4 h-4" />
                             </div>
-                            <span className="text-[11px] font-semibold text-[#0B3B2E] mt-1">Cart</span>
+                            <span className="text-[11px] font-semibold text-heading mt-1">Cart</span>
                         </div>
-                        <div className="w-12 sm:w-20 h-0.5 bg-[#0B3B2E] -mt-4" />
+                        <div className="w-12 sm:w-20 h-0.5 bg-brand -mt-4" />
                         <div className="flex flex-col items-center">
-                            <div className="w-8 h-8 rounded-full bg-[#F96D16] text-white flex items-center justify-center shadow-xs ring-4 ring-[#F96D16]/20">
+                            <div className="w-8 h-8 rounded-full bg-cta text-cta-text flex items-center justify-center shadow-xs ring-4 ring-highlight/20">
                                 <MapPin className="w-4 h-4" />
                             </div>
-                            <span className="text-[11px] font-bold text-[#EA580C] mt-1">Checkout</span>
+                            <span className="text-[11px] font-bold text-price mt-1">Checkout</span>
                         </div>
                         <div className="w-12 sm:w-20 h-0.5 bg-stone-300 -mt-4" />
                         <div className="flex flex-col items-center">
@@ -351,7 +365,7 @@ export default function CheckoutShow({
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
                     {/* Left Column: Unified 4-Step Checkout Form Card */}
-                    <div className="lg:col-span-8 bg-white rounded-xl border border-stone-200/80 p-6 sm:p-8">
+                    <div className="lg:col-span-8 bg-surface rounded-xl border border-line/80 p-6 sm:p-8">
                         <form onSubmit={handleSubmit} className="space-y-7">
                             {/* Invisible Honeypot Field */}
                             <input
@@ -372,7 +386,7 @@ export default function CheckoutShow({
                             {/* Step 1: Contact Information */}
                             <div>
                                 <div className="flex items-center gap-2.5 mb-4">
-                                    <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                    <span className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0">
                                         1
                                     </span>
                                     <h2 className="font-serif text-lg font-bold text-gray-900">
@@ -383,7 +397,7 @@ export default function CheckoutShow({
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="checkout_customer_name" className="block text-xs font-semibold text-gray-700 mb-1.5">
-                                            Full Name <span className="text-[#F96D16]">*</span>
+                                            Full Name <span className="text-highlight">*</span>
                                         </label>
                                         <div className="relative">
                                             <User className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -396,11 +410,11 @@ export default function CheckoutShow({
                                                 value={customerName}
                                                 onChange={(e) => setCustomerName(e.target.value)}
                                                 placeholder="আপনার সম্পূর্ণ নাম লিখুন"
-                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-[#FAF7F2]/50 ${
+                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-page/50 ${
                                                     errors.customer_name || errors.name
                                                         ? 'border-rose-400 bg-rose-50/30'
-                                                        : 'border-stone-200'
-                                                } focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition`}
+                                                        : 'border-line'
+                                                } focus:ring-2 focus:ring-highlight/20 focus:border-highlight focus:bg-surface text-sm transition`}
                                             />
                                         </div>
                                         {(errors.customer_name || errors.name) && (
@@ -412,7 +426,7 @@ export default function CheckoutShow({
 
                                     <div>
                                         <label htmlFor="checkout_customer_phone" className="block text-xs font-semibold text-gray-700 mb-1.5">
-                                            Phone Number <span className="text-[#F96D16]">*</span>
+                                            Phone Number <span className="text-highlight">*</span>
                                         </label>
                                         <div className="relative">
                                             <Phone className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -425,11 +439,11 @@ export default function CheckoutShow({
                                                 value={customerPhone}
                                                 onChange={(e) => setCustomerPhone(e.target.value)}
                                                 placeholder="+880 17XXXXXXXX"
-                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-[#FAF7F2]/50 ${
+                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-page/50 ${
                                                     errors.customer_phone || errors.phone
                                                         ? 'border-rose-400 bg-rose-50/30'
-                                                        : 'border-stone-200'
-                                                } focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition`}
+                                                        : 'border-line'
+                                                } focus:ring-2 focus:ring-highlight/20 focus:border-highlight focus:bg-surface text-sm transition`}
                                             />
                                         </div>
                                         {(errors.customer_phone || errors.phone) && (
@@ -444,7 +458,7 @@ export default function CheckoutShow({
                             {/* Step 2: Delivery Address */}
                             <div className="pt-2 border-t border-stone-100">
                                 <div className="flex items-center gap-2.5 mb-4 pt-3">
-                                    <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                    <span className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0">
                                         2
                                     </span>
                                     <h2 className="font-serif text-lg font-bold text-gray-900">
@@ -455,7 +469,7 @@ export default function CheckoutShow({
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="checkout_delivery_address" className="block text-xs font-semibold text-gray-700 mb-1.5">
-                                            Address <span className="text-[#F96D16]">*</span>
+                                            Address <span className="text-highlight">*</span>
                                         </label>
                                         <div className="relative">
                                             <MapPin className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
@@ -468,11 +482,11 @@ export default function CheckoutShow({
                                                 value={deliveryAddress}
                                                 onChange={(e) => setDeliveryAddress(e.target.value)}
                                                 placeholder="বাসা নং, রোড নং, এলাকা/থানা, জেলা"
-                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-[#FAF7F2]/50 ${
+                                                className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border bg-page/50 ${
                                                     errors.delivery_address || errors.address
                                                         ? 'border-rose-400 bg-rose-50/30'
-                                                        : 'border-stone-200'
-                                                } focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition`}
+                                                        : 'border-line'
+                                                } focus:ring-2 focus:ring-highlight/20 focus:border-highlight focus:bg-surface text-sm transition`}
                                             />
                                         </div>
                                         {(errors.delivery_address || errors.address) && (
@@ -494,7 +508,7 @@ export default function CheckoutShow({
                                                 value={notes}
                                                 onChange={(e) => setNotes(e.target.value)}
                                                 placeholder="E.g. Call before delivery"
-                                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-[#FAF7F2]/50 focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] focus:bg-white text-sm transition"
+                                                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-line bg-page/50 focus:ring-2 focus:ring-highlight/20 focus:border-highlight focus:bg-surface text-sm transition"
                                             />
                                         </div>
                                     </div>
@@ -505,7 +519,7 @@ export default function CheckoutShow({
                             {shippingMethods.length > 0 && (
                                 <div className="pt-2 border-t border-stone-100">
                                     <div className="flex items-center gap-2.5 mb-4 pt-3">
-                                        <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                        <span className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0">
                                             3
                                         </span>
                                         <h2 className="font-serif text-lg font-bold text-gray-900">
@@ -522,19 +536,19 @@ export default function CheckoutShow({
                                                     onClick={() => setSelectedShippingMethodId(method.id)}
                                                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
                                                         isSelected
-                                                            ? 'border-[#F96D16] bg-orange-50/30 ring-1 ring-[#F96D16]'
-                                                            : 'border-stone-200 hover:border-stone-300 bg-white'
+                                                            ? 'border-highlight bg-orange-50/30 ring-1 ring-highlight'
+                                                            : 'border-line hover:border-stone-300 bg-surface'
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-3 min-w-0">
                                                         <div
                                                             className={`w-4 h-4 shrink-0 rounded-full border flex items-center justify-center ${
                                                                 isSelected
-                                                                    ? 'border-[#F96D16] bg-[#F96D16]'
-                                                                    : 'border-stone-300 bg-white'
+                                                                    ? 'border-highlight bg-cta'
+                                                                    : 'border-stone-300 bg-surface'
                                                             }`}
                                                         >
-                                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                                         </div>
                                                         <Truck className="w-5 h-5 text-gray-600 shrink-0" />
                                                         <div className="min-w-0">
@@ -546,7 +560,7 @@ export default function CheckoutShow({
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-xs sm:text-sm font-bold text-[#0B3B2E] shrink-0">
+                                                    <div className="text-xs sm:text-sm font-bold text-heading shrink-0">
                                                         {Number(method.rate) === 0 ? 'Free' : formatBdt(method.rate)}
                                                     </div>
                                                 </div>
@@ -562,7 +576,7 @@ export default function CheckoutShow({
                             {/* Step 4: Payment Method */}
                             <div className="pt-2 border-t border-stone-100">
                                 <div className="flex items-center gap-2.5 mb-4 pt-3">
-                                    <span className="w-6 h-6 rounded-full bg-[#0B3B2E] text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                    <span className="w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shrink-0">
                                         {shippingMethods.length > 0 ? '4' : '3'}
                                     </span>
                                     <h2 className="font-serif text-lg font-bold text-gray-900">
@@ -582,25 +596,25 @@ export default function CheckoutShow({
                                                 }}
                                                 className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-start gap-2.5 ${
                                                     isSelected
-                                                        ? 'border-[#F96D16] bg-orange-50/30 ring-1 ring-[#F96D16]'
-                                                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                                                        ? 'border-highlight bg-orange-50/30 ring-1 ring-highlight'
+                                                        : 'border-line hover:border-stone-300 bg-surface'
                                                 }`}
                                             >
                                                 <div
                                                     className={`w-4 h-4 mt-0.5 shrink-0 rounded-full border flex items-center justify-center ${
                                                         isSelected
-                                                            ? 'border-[#F96D16] bg-[#F96D16]'
-                                                            : 'border-stone-300 bg-white'
+                                                            ? 'border-highlight bg-cta'
+                                                            : 'border-stone-300 bg-surface'
                                                     }`}
                                                 >
-                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-surface" />}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-1.5">
                                                         {pm.code === 'cod' ? (
-                                                            <Wallet className="w-4 h-4 text-[#0B3B2E] shrink-0" />
+                                                            <Wallet className="w-4 h-4 text-heading shrink-0" />
                                                         ) : (
-                                                            <CreditCard className="w-4 h-4 text-[#F96D16] shrink-0" />
+                                                            <CreditCard className="w-4 h-4 text-highlight shrink-0" />
                                                         )}
                                                         <span className="text-xs font-bold text-gray-900 truncate">
                                                             {pm.name}
@@ -621,22 +635,22 @@ export default function CheckoutShow({
                                     return (
                                         <div
                                             key={`trx-${pm.id}`}
-                                            className="mt-3 p-4 rounded-xl bg-[#FAF7F2] border border-stone-200 space-y-2"
+                                            className="mt-3 p-4 rounded-xl bg-page border border-line space-y-2"
                                         >
                                             {pm.account_number && (
                                                 <div className="text-xs font-semibold text-gray-800">
                                                     Account Number:{' '}
-                                                    <span className="font-mono text-[#0B3B2E] font-bold">{pm.account_number}</span>
+                                                    <span className="font-mono text-heading font-bold">{pm.account_number}</span>
                                                 </div>
                                             )}
                                             {pm.instructions && (
-                                                <div className="text-xs text-gray-600 bg-white p-2.5 rounded-lg border border-stone-200">
+                                                <div className="text-xs text-gray-600 bg-surface p-2.5 rounded-lg border border-line">
                                                     {pm.instructions}
                                                 </div>
                                             )}
                                             <div>
                                                 <label htmlFor="checkout_transaction_id" className="block text-xs font-semibold text-gray-700 mb-1">
-                                                    Transaction ID (TrxID) <span className="text-[#F96D16]">*</span>
+                                                    Transaction ID (TrxID) <span className="text-highlight">*</span>
                                                 </label>
                                                 <input
                                                     id="checkout_transaction_id"
@@ -645,7 +659,7 @@ export default function CheckoutShow({
                                                     value={transactionId}
                                                     onChange={(e) => setTransactionId(e.target.value)}
                                                     placeholder="e.g. 8N7A6D..."
-                                                    className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-[#F96D16]/20 focus:border-[#F96D16] text-sm font-mono uppercase bg-white"
+                                                    className="w-full px-3 py-2 rounded-lg border border-stone-300 focus:ring-2 focus:ring-highlight/20 focus:border-highlight text-sm font-mono uppercase bg-surface"
                                                 />
                                                 {errors.payment_transaction_id && (
                                                     <p className="text-xs text-rose-600 mt-1">
@@ -674,15 +688,15 @@ export default function CheckoutShow({
                                         type="checkbox"
                                         checked={agreedTerms}
                                         onChange={(e) => setAgreedTerms(e.target.checked)}
-                                        className="rounded border-stone-300 text-[#F96D16] focus:ring-[#F96D16] accent-[#F96D16]"
+                                        className="rounded border-stone-300 text-highlight focus:ring-highlight accent-highlight"
                                     />
                                     <span>
                                         I agree to the{' '}
-                                        <Link href="/page/terms-conditions" className="text-[#0B3B2E] font-semibold underline">
+                                        <Link href="/page/terms-conditions" className="text-heading font-semibold underline">
                                             Terms &amp; Conditions
                                         </Link>{' '}
                                         and{' '}
-                                        <Link href="/page/privacy-policy" className="text-[#0B3B2E] font-semibold underline">
+                                        <Link href="/page/privacy-policy" className="text-heading font-semibold underline">
                                             Privacy Policy
                                         </Link>
                                         .
@@ -692,7 +706,7 @@ export default function CheckoutShow({
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || activePaymentMethods.length === 0 || !agreedTerms}
-                                    className="inline-flex items-center justify-center gap-2 h-11 px-7 bg-[#F96D16] hover:bg-[#EA580C] text-white font-semibold text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+                                    className="inline-flex items-center justify-center gap-2 h-11 px-7 bg-cta hover:bg-cta-hover text-cta-text font-semibold text-sm rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -713,7 +727,7 @@ export default function CheckoutShow({
                     {/* Right Column: Order Summary & Trust Card (4 cols) */}
                     <div className="lg:col-span-4 space-y-5">
                         {/* Unified Order Summary Card */}
-                        <div className="bg-white rounded-xl border border-stone-200/80 p-6">
+                        <div className="bg-surface rounded-xl border border-line/80 p-6">
                             <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-stone-100">
                                 <h3 className="font-serif text-lg font-bold text-gray-900">Order Summary</h3>
                                 <span className="text-xs font-medium text-gray-500">
@@ -729,7 +743,7 @@ export default function CheckoutShow({
                                             className="pt-3.5 first:pt-0 flex items-center justify-between gap-3"
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-14 h-14 rounded-xl bg-[#F6EDE3] overflow-hidden shrink-0">
+                                                <div className="w-14 h-14 rounded-xl bg-soft overflow-hidden shrink-0">
                                                     <SafeImage
                                                         src={item.image_url}
                                                         alt={item.product_title}
@@ -763,7 +777,7 @@ export default function CheckoutShow({
                                 <div className="space-y-4">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-16 h-16 rounded-xl bg-[#F6EDE3] overflow-hidden shrink-0">
+                                            <div className="w-16 h-16 rounded-xl bg-soft overflow-hidden shrink-0">
                                                 <SafeImage
                                                     src={primaryImage ? (primaryImage.thumb_url || primaryImage.url) : null}
                                                     alt={primaryImage?.alt_text || product.title}
@@ -776,14 +790,20 @@ export default function CheckoutShow({
                                                 <h4 className="text-xs sm:text-sm font-bold text-gray-900 truncate">
                                                     {product.title}
                                                 </h4>
-                                                {selectedVariant && (
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">
-                                                        {selectedVariant.name}
+                                                {comboSummary ? (
+                                                    <p className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1 mt-1 leading-snug">
+                                                        {comboSummary}
                                                     </p>
+                                                ) : (
+                                                    selectedVariant && (
+                                                        <p className="text-[11px] text-gray-500 mt-0.5">
+                                                            {selectedVariant.name}
+                                                        </p>
+                                                    )
                                                 )}
 
                                                 {/* Inline Quantity Stepper */}
-                                                <div className="inline-flex items-center border border-stone-200 rounded-full bg-[#FAF7F2] px-1 py-0.5 mt-2">
+                                                <div className="inline-flex items-center border border-line rounded-full bg-page px-1 py-0.5 mt-2">
                                                     <button
                                                         type="button"
                                                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -817,8 +837,8 @@ export default function CheckoutShow({
                                         </span>
                                     </div>
 
-                                    {/* Multi-Variant Selector */}
-                                    {product.has_variants && product.variants.length > 1 && (
+                                    {/* Multi-Variant Selector (hidden when Combo Pack summary is already chosen) */}
+                                    {!comboSummary && product.has_variants && product.variants.length > 1 && (
                                         <div className="pt-3 border-t border-stone-100">
                                             <label className="block text-[11px] font-semibold text-gray-500 mb-2">
                                                 Select Variant:
@@ -835,8 +855,8 @@ export default function CheckoutShow({
                                                             onClick={() => setSelectedVariant(v)}
                                                             className={`p-2 text-left rounded-xl border text-xs transition-all ${
                                                                 isSelected
-                                                                    ? 'border-[#F96D16] bg-orange-50/40 text-[#EA580C] font-bold'
-                                                                    : 'border-stone-200 hover:border-stone-300 text-gray-700'
+                                                                    ? 'border-highlight bg-orange-50/40 text-price font-bold'
+                                                                    : 'border-line hover:border-stone-300 text-gray-700'
                                                             } ${isOutOfStock ? 'opacity-40 cursor-not-allowed bg-stone-50' : 'cursor-pointer'}`}
                                                         >
                                                             <div className="truncate font-semibold">{v.name}</div>
@@ -870,7 +890,7 @@ export default function CheckoutShow({
                                     <span className="text-sm sm:text-base font-bold text-gray-900">
                                         Total Payable
                                     </span>
-                                    <span className="text-xl font-extrabold text-[#EA580C]">
+                                    <span className="text-xl font-extrabold text-price">
                                         {formatBdt(grandTotal)}
                                     </span>
                                 </div>
@@ -880,7 +900,7 @@ export default function CheckoutShow({
                         {/* Soft Green Trust Card matching Velure Reference */}
                         <div className="bg-emerald-50/70 border border-emerald-200/70 rounded-2xl p-5 space-y-3.5">
                             <div className="flex items-start gap-3">
-                                <Truck className="w-5 h-5 text-[#0B3B2E] shrink-0 mt-0.5" />
+                                <Truck className="w-5 h-5 text-heading shrink-0 mt-0.5" />
                                 <div>
                                     <p className="text-xs font-bold text-gray-900">Fast Delivery</p>
                                     <p className="text-[11px] text-gray-600">
@@ -889,7 +909,7 @@ export default function CheckoutShow({
                                 </div>
                             </div>
                             <div className="flex items-start gap-3">
-                                <RefreshCw className="w-5 h-5 text-[#0B3B2E] shrink-0 mt-0.5" />
+                                <RefreshCw className="w-5 h-5 text-heading shrink-0 mt-0.5" />
                                 <div>
                                     <p className="text-xs font-bold text-gray-900">Easy Return</p>
                                     <p className="text-[11px] text-gray-600">
@@ -898,11 +918,11 @@ export default function CheckoutShow({
                                 </div>
                             </div>
                             <div className="flex items-start gap-3">
-                                <ShieldCheck className="w-5 h-5 text-[#0B3B2E] shrink-0 mt-0.5" />
+                                <ShieldCheck className="w-5 h-5 text-heading shrink-0 mt-0.5" />
                                 <div>
                                     <p className="text-xs font-bold text-gray-900">Secure Payment</p>
                                     <p className="text-[11px] text-gray-600 flex items-center gap-1">
-                                        <Lock className="w-3 h-3 text-[#0B3B2E]" />
+                                        <Lock className="w-3 h-3 text-heading" />
                                         <span>100% secure &amp; multiple payment options</span>
                                     </p>
                                 </div>

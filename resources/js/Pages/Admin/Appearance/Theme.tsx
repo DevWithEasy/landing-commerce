@@ -11,12 +11,19 @@ import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
-import type { ThemeSettingsProps } from '@/types';
+import { StorefrontColorsEditor } from '@/Shared/StorefrontColorsEditor';
+import type { StorefrontColorKey, StorefrontColors, ThemeSettingsProps } from '@/types';
 
 export default function ThemeSettingsPage({
     settings,
     landingPages,
+    storefrontColors: initialStorefrontColors,
+    storefrontColorDefaults,
 }: ThemeSettingsProps) {
+    const [storefrontColors, setStorefrontColors] = useState<StorefrontColors>(initialStorefrontColors);
+    const updateStorefrontColor = (key: StorefrontColorKey, value: string) => {
+        setStorefrontColors((prev) => ({ ...prev, [key]: value }));
+    };
     const [storefrontMode, setStorefrontMode] = useState<'full_storefront' | 'landing_page_home'>(
         settings.storefront_mode || 'full_storefront'
     );
@@ -85,6 +92,10 @@ export default function ThemeSettingsPage({
         formData.append('text_color', textColor);
         formData.append('font_family', fontFamily);
         if (customCss.trim()) formData.append('custom_css', customCss.trim());
+
+        (Object.keys(storefrontColors) as StorefrontColorKey[]).forEach((key) => {
+            formData.append(`storefront_colors[${key}]`, storefrontColors[key]);
+        });
 
         router.post('/admin/appearance/theme', formData, {
             preserveScroll: true,
@@ -297,15 +308,23 @@ export default function ThemeSettingsPage({
                 </div>
 
                 {/* 3. Customize Colors & Typography */}
+                <StorefrontColorsEditor
+                    colors={storefrontColors}
+                    defaults={storefrontColorDefaults}
+                    errors={formErrors}
+                    onChange={updateStorefrontColor}
+                    onResetAll={() => setStorefrontColors({ ...storefrontColorDefaults })}
+                />
+
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
                         <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
                             <Palette className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="text-base font-bold text-gray-900">Customize Colors & Typography</h3>
+                            <h3 className="text-base font-bold text-gray-900">Typography, Custom CSS & Legacy Palette</h3>
                             <p className="text-xs text-gray-500">
-                                Extensible design tokens applied across the full e-commerce storefront.
+                                Font family and custom CSS. The legacy palette below does not affect the storefront — use Storefront Colors above.
                             </p>
                         </div>
                     </div>

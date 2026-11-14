@@ -311,11 +311,25 @@ export function MediaPickerModal({
                                                     <Check className="h-3 w-3" />
                                                 </span>
                                             )}
-                                            {item.is_primary && (
-                                                <span className="absolute left-1.5 top-1.5 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-950">
-                                                    Primary
-                                                </span>
-                                            )}
+                                            <span
+                                                className={`absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-extrabold shadow-xs ${
+                                                    item.is_primary || item.media_type === 'product'
+                                                        ? 'bg-blue-600 text-white'
+                                                        : item.source === 'combo' || item.media_type === 'combo'
+                                                        ? 'bg-amber-400 text-amber-950'
+                                                        : item.media_type === 'gallery'
+                                                        ? 'bg-indigo-600 text-white'
+                                                        : 'bg-emerald-600 text-white'
+                                                }`}
+                                            >
+                                                {item.is_primary || item.media_type === 'product'
+                                                    ? 'Primary'
+                                                    : item.source === 'combo' || item.media_type === 'combo'
+                                                    ? 'Combo'
+                                                    : item.media_type === 'gallery'
+                                                    ? 'Gallery'
+                                                    : 'Library'}
+                                            </span>
                                         </div>
                                         <div className="space-y-0.5 p-2">
                                             <p className="truncate text-[10px] font-bold text-slate-700">

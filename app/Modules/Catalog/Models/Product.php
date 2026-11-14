@@ -37,6 +37,9 @@ class Product extends Model
         'regular_price',
         'sale_price',
         'has_variants',
+        'combo_pack_size',
+        'combo_colors',
+        'combo_sizes',
         'status',
     ];
 
@@ -49,6 +52,9 @@ class Product extends Model
             'regular_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'has_variants' => 'boolean',
+            'combo_pack_size' => 'integer',
+            'combo_colors' => 'array',
+            'combo_sizes' => 'array',
         ];
     }
 
