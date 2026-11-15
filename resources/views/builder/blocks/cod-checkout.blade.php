@@ -1042,7 +1042,7 @@
     {{-- Checkout Combo Color Selection Modal --}}
     <div id="cod-combo-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-xs">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-100" onclick="event.stopPropagation()">
-            <div class="relative z-30 flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50 shrink-0">
+            <div class="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50 shrink-0 shadow-2xs">
                 <div>
                     <span id="cod-combo-modal-eyebrow" class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Combo Pack Selection</span>
                     <h3 id="cod-combo-modal-title" class="text-sm sm:text-base font-bold text-slate-900">বক্স #1-এর জন্য কালার সিলেক্ট করুন</h3>
@@ -1051,7 +1051,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div class="relative z-10 p-4 space-y-4 flex-1 min-h-0 overflow-y-auto">
+            <div class="relative z-10 p-4 space-y-4 flex-1 min-h-0 overflow-y-auto isolate">
                 <div id="cod-combo-modal-slots" class="flex flex-wrap items-center gap-2"></div>
                 <div id="cod-combo-modal-colors" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
                 <div id="cod-combo-modal-sizes-wrap" class="hidden pt-3 border-t border-slate-100">

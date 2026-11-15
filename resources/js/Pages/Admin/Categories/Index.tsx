@@ -1,6 +1,7 @@
 ﻿import { Head, router } from '@inertiajs/react';
 import {
     AlertCircle,
+    FolderOpen,
     FolderTree,
     Pencil,
     Plus,
@@ -10,11 +11,12 @@ import {
 } from 'lucide-react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
+import { MediaPickerModal } from '@/Builder/components/MediaPickerModal';
 import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Button } from '@/Shared/Button';
 import { Pagination } from '@/Shared/Pagination';
 import { SafeImage } from '@/Shared/SafeImage';
-import type { Category, CategoryIndexProps } from '@/types';
+import type { Category, CategoryIndexProps, MediaLibraryItem } from '@/types';
 
 export default function CategoryIndex({
     categories,
@@ -22,6 +24,10 @@ export default function CategoryIndex({
     filters,
 }: CategoryIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
+
+    // Media Picker Target State
+    type MediaTarget = 'create' | 'edit' | null;
+    const [mediaPickerTarget, setMediaPickerTarget] = useState<MediaTarget>(null);
 
     // Create Modal State
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -32,6 +38,7 @@ export default function CategoryIndex({
     const [createSortOrder, setCreateSortOrder] = useState('0');
     const [createIsActive, setCreateIsActive] = useState(true);
     const [createImage, setCreateImage] = useState<File | null>(null);
+    const [createImagePath, setCreateImagePath] = useState<string | null>(null);
     const [createImagePreview, setCreateImagePreview] = useState<string | null>(null);
 
     // Edit Modal State
@@ -44,7 +51,9 @@ export default function CategoryIndex({
     const [editSortOrder, setEditSortOrder] = useState('0');
     const [editIsActive, setEditIsActive] = useState(true);
     const [editImage, setEditImage] = useState<File | null>(null);
+    const [editImagePath, setEditImagePath] = useState<string | null>(null);
     const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+    const [editRemoveImage, setEditRemoveImage] = useState(false);
 
     // Delete Modal State
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -78,7 +87,7 @@ export default function CategoryIndex({
         );
     };
 
-    // Handle Image Selection
+    // Handle Image Selection from File Input
     const handleImageChange = (
         e: ChangeEvent<HTMLInputElement>,
         isEdit: boolean
@@ -88,11 +97,42 @@ export default function CategoryIndex({
 
         if (isEdit) {
             setEditImage(file);
+            setEditImagePath(null);
             setEditImagePreview(URL.createObjectURL(file));
+            setEditRemoveImage(false);
         } else {
             setCreateImage(file);
+            setCreateImagePath(null);
             setCreateImagePreview(URL.createObjectURL(file));
         }
+    };
+
+    // Handle Image Selection from Media Library
+    const handleMediaSelect = (item: MediaLibraryItem) => {
+        if (mediaPickerTarget === 'edit') {
+            setEditImage(null);
+            setEditImagePath(item.file_path);
+            setEditImagePreview(item.url);
+            setEditRemoveImage(false);
+        } else if (mediaPickerTarget === 'create') {
+            setCreateImage(null);
+            setCreateImagePath(item.file_path);
+            setCreateImagePreview(item.url);
+        }
+        setMediaPickerTarget(null);
+    };
+
+    const handleRemoveCreateImage = () => {
+        setCreateImage(null);
+        setCreateImagePath(null);
+        setCreateImagePreview(null);
+    };
+
+    const handleRemoveEditImage = () => {
+        setEditImage(null);
+        setEditImagePath(null);
+        setEditImagePreview(null);
+        setEditRemoveImage(true);
     };
 
     // Open Edit Modal
@@ -105,7 +145,9 @@ export default function CategoryIndex({
         setEditSortOrder(String(cat.sort_order));
         setEditIsActive(cat.is_active);
         setEditImage(null);
+        setEditImagePath(cat.image_path || null);
         setEditImagePreview(cat.image_url || null);
+        setEditRemoveImage(false);
         setFormErrors({});
         setIsEditOpen(true);
     };
@@ -123,7 +165,11 @@ export default function CategoryIndex({
         if (createDescription.trim()) formData.append('description', createDescription.trim());
         formData.append('sort_order', createSortOrder);
         formData.append('is_active', createIsActive ? '1' : '0');
-        if (createImage) formData.append('image', createImage);
+        if (createImage) {
+            formData.append('image', createImage);
+        } else if (createImagePath) {
+            formData.append('image_path', createImagePath);
+        }
 
         router.post('/admin/categories', formData, {
             preserveScroll: true,
@@ -136,6 +182,7 @@ export default function CategoryIndex({
                 setCreateSortOrder('0');
                 setCreateIsActive(true);
                 setCreateImage(null);
+                setCreateImagePath(null);
                 setCreateImagePreview(null);
             },
             onError: (errors) => {
@@ -162,13 +209,24 @@ export default function CategoryIndex({
         if (editDescription.trim()) formData.append('description', editDescription.trim());
         formData.append('sort_order', editSortOrder);
         formData.append('is_active', editIsActive ? '1' : '0');
-        if (editImage) formData.append('image', editImage);
+
+        if (editRemoveImage) {
+            formData.append('remove_image', '1');
+        } else if (editImage) {
+            formData.append('image', editImage);
+        } else if (editImagePath) {
+            formData.append('image_path', editImagePath);
+        }
 
         router.post(`/admin/categories/${editingCategory.id}`, formData, {
             preserveScroll: true,
             onSuccess: () => {
                 setIsEditOpen(false);
                 setEditingCategory(null);
+                setEditImage(null);
+                setEditImagePath(null);
+                setEditImagePreview(null);
+                setEditRemoveImage(false);
             },
             onError: (errors) => {
                 setFormErrors(errors as Record<string, string>);
@@ -498,23 +556,50 @@ export default function CategoryIndex({
                                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
                                     Category Image (WebP, PNG, JPEG)
                                 </label>
-                                <div className="flex items-center gap-4">
-                                    {createImagePreview && (
-                                        <div className="w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        onChange={(e) => handleImageChange(e, false)}
+                                        className="flex-1 min-w-0 text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setMediaPickerTarget('create')}
+                                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition shrink-0 cursor-pointer shadow-xs"
+                                    >
+                                        <FolderOpen className="w-3.5 h-3.5 text-primary-600" />
+                                        <span>Media Library</span>
+                                    </button>
+                                </div>
+
+                                {createImagePreview && (
+                                    <div className="flex items-center gap-3 mt-2.5 p-2 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div className="w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0 bg-white">
                                             <img
                                                 src={createImagePreview}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/webp"
-                                        onChange={(e) => handleImageChange(e, false)}
-                                        className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                    />
-                                </div>
+                                        <div className="flex-1 min-w-0">
+                                            <span className="text-xs font-medium text-gray-800 block truncate">
+                                                {createImage
+                                                    ? createImage.name
+                                                    : createImagePath
+                                                      ? 'Selected from Media Library'
+                                                      : 'New Category Image'}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveCreateImage}
+                                                className="text-xs text-rose-600 hover:text-rose-700 font-semibold hover:underline mt-0.5 cursor-pointer"
+                                            >
+                                                Remove Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 {formErrors.image && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.image}</p>
                                 )}
@@ -662,23 +747,50 @@ export default function CategoryIndex({
                                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
                                     Change Image (WebP, PNG, JPEG)
                                 </label>
-                                <div className="flex items-center gap-4">
-                                    {editImagePreview && (
-                                        <div className="w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        onChange={(e) => handleImageChange(e, true)}
+                                        className="flex-1 min-w-0 text-xs text-gray-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setMediaPickerTarget('edit')}
+                                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition shrink-0 cursor-pointer shadow-xs"
+                                    >
+                                        <FolderOpen className="w-3.5 h-3.5 text-primary-600" />
+                                        <span>Media Library</span>
+                                    </button>
+                                </div>
+
+                                {editImagePreview && (
+                                    <div className="flex items-center gap-3 mt-2.5 p-2 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div className="w-14 h-14 rounded-lg border border-gray-200 overflow-hidden shrink-0 bg-white">
                                             <img
                                                 src={editImagePreview}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/webp"
-                                        onChange={(e) => handleImageChange(e, true)}
-                                        className="text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                                    />
-                                </div>
+                                        <div className="flex-1 min-w-0">
+                                            <span className="text-xs font-medium text-gray-800 block truncate">
+                                                {editImage
+                                                    ? editImage.name
+                                                    : editImagePath
+                                                      ? 'Selected from Media Library'
+                                                      : 'Current Category Image'}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveEditImage}
+                                                className="text-xs text-rose-600 hover:text-rose-700 font-semibold hover:underline mt-0.5 cursor-pointer"
+                                            >
+                                                Remove Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                                 {formErrors.image && (
                                     <p className="text-xs text-red-600 mt-1">{formErrors.image}</p>
                                 )}
@@ -743,6 +855,13 @@ export default function CategoryIndex({
                     </div>
                 </div>
             )}
+
+            <MediaPickerModal
+                open={mediaPickerTarget !== null}
+                onClose={() => setMediaPickerTarget(null)}
+                onSelect={handleMediaSelect}
+                title="Select Category Image from Media Library"
+            />
         </AdminLayout>
     );
 }

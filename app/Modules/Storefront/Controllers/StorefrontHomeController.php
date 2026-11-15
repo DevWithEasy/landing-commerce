@@ -12,6 +12,7 @@ use App\Modules\PageBuilder\Controllers\PublicLandingPageController;
 use App\Modules\PageBuilder\Models\LandingPage;
 use App\Modules\PageBuilder\Services\BlockRendererService;
 use App\Modules\Settings\Services\SettingsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Throwable;
@@ -61,15 +62,7 @@ class StorefrontHomeController extends Controller
 
             $categories = Category::toTree(true);
 
-            // Featured Products (active, with images & variants)
-            $featuredProducts = Product::query()
-                ->active()
-                ->with(['primaryImage', 'variants' => fn ($q) => $q->orderBy('id')])
-                ->latest('id')
-                ->take(8)
-                ->get();
-
-            // New Arrivals
+            // New Arrivals (active, with images & variants)
             $newArrivals = Product::query()
                 ->active()
                 ->with(['primaryImage', 'variants' => fn ($q) => $q->orderBy('id')])
@@ -77,29 +70,43 @@ class StorefrontHomeController extends Controller
                 ->take(8)
                 ->get();
 
-            // Best Sellers
-            $bestSellers = Product::query()
-                ->active()
-                ->with(['primaryImage', 'variants' => fn ($q) => $q->orderBy('id')])
-                ->orderBy('id', 'asc')
-                ->take(8)
-                ->get();
+            // Featured & Best Sellers are no longer displayed on homepage
+            $featuredProducts = collect();
+            $bestSellers = collect();
 
-            // Category Collections (up to 3 root categories with up to 4 active products each)
-            $categorySections = Category::query()
+            // Main (Root) categories that have active products either directly or through subcategories
+            $allMainCategories = Category::query()
                 ->root()
                 ->active()
-                ->with(['products' => function ($q) {
-                    $q->active()->with(['primaryImage', 'variants' => fn ($v) => $v->orderBy('id')]);
-                }])
-                ->whereHas('products', fn ($q) => $q->active())
-                ->take(3)
-                ->get()
-                ->map(function ($cat) {
-                    $cat->setRelation('products', $cat->products->take(4));
+                ->where(function ($query) {
+                    $query->whereHas('products', fn ($q) => $q->active())
+                        ->orWhereHas('children.products', fn ($q) => $q->active());
+                })
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
 
-                    return $cat;
-                });
+            $allCategoryIds = $allMainCategories->pluck('id')->all();
+
+            // Load initial 2 main categories for fast initial render; remaining are lazy-loaded on scroll
+            $initialIds = array_slice($allCategoryIds, 0, 2);
+            $remainingCategoryIds = array_slice($allCategoryIds, 2);
+
+            $categorySections = $allMainCategories
+                ->whereIn('id', $initialIds)
+                ->values()
+                ->each(fn ($cat) => $this->loadCategoryFamilyProducts($cat))
+                ->filter(fn ($cat) => $cat->products->isNotEmpty())
+                ->values();
+
+            // Uncategorized active products ("Others Product" section at the end of category streams)
+            $otherProducts = Product::query()
+                ->active()
+                ->whereDoesntHave('categories')
+                ->with(['primaryImage', 'variants' => fn ($v) => $v->orderBy('id')])
+                ->latest('id')
+                ->take(8)
+                ->get();
 
             $theme = [
                 'store_name' => (string) $this->settingsService->get('store.name', config('app.name', 'Landing Commerce')),
@@ -132,6 +139,8 @@ class StorefrontHomeController extends Controller
                 'newArrivals' => $newArrivals,
                 'bestSellers' => $bestSellers,
                 'categorySections' => $categorySections,
+                'remainingCategoryIds' => $remainingCategoryIds,
+                'otherProducts' => $otherProducts,
                 'theme' => $theme,
                 'sectionsConfig' => $sectionsConfig,
             ]);
@@ -141,5 +150,58 @@ class StorefrontHomeController extends Controller
             }
             throw $e;
         }
+    }
+
+    /**
+     * Get a single main category and its up to 8 active products (including subcategories) for lazy-loading.
+     */
+    public function getCategorySection(int $id): JsonResponse
+    {
+        $category = Category::query()
+            ->root()
+            ->active()
+            ->find($id);
+
+        if (! $category) {
+            return response()->json([
+                'status' => 'empty',
+                'category' => null,
+            ]);
+        }
+
+        $this->loadCategoryFamilyProducts($category);
+
+        if ($category->products->isEmpty()) {
+            return response()->json([
+                'status' => 'empty',
+                'category' => null,
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'category' => $category,
+        ]);
+    }
+
+    /**
+     * Load up to 8 active products for a main category, including products assigned to its subcategories.
+     */
+    protected function loadCategoryFamilyProducts(Category $category): void
+    {
+        $familyCategoryIds = Category::query()
+            ->where('id', $category->id)
+            ->orWhere('parent_id', $category->id)
+            ->pluck('id');
+
+        $products = Product::query()
+            ->active()
+            ->whereHas('categories', fn ($q) => $q->whereIn('categories.id', $familyCategoryIds))
+            ->with(['primaryImage', 'variants' => fn ($v) => $v->orderBy('id')])
+            ->latest('id')
+            ->take(8)
+            ->get();
+
+        $category->setRelation('products', $products);
     }
 }

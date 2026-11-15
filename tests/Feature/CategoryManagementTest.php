@@ -189,3 +189,73 @@ test('Category::toTree returns structured 2-level hierarchy', function () {
     expect($tree->first()->children)->toHaveCount(2);
     expect($tree->last()->children)->toHaveCount(0);
 });
+
+test('can create category with image picked from media library', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+    \Illuminate\Support\Facades\Storage::disk('public')->put('media/category-sample.webp', 'sample image content');
+
+    $admin = makeCategoryTestUser('super_admin');
+
+    $response = $this->actingAs($admin)->post('/admin/categories', [
+        'name' => 'Home & Living',
+        'image_path' => 'media/category-sample.webp',
+        'is_active' => 1,
+    ]);
+
+    $response->assertRedirect('/admin/categories');
+    $this->assertDatabaseHas('categories', [
+        'name' => 'Home & Living',
+        'image_path' => 'media/category-sample.webp',
+    ]);
+});
+
+test('can update category with image picked from media library and can remove image', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+    \Illuminate\Support\Facades\Storage::disk('public')->put('media/picked-image.webp', 'sample content');
+
+    $admin = makeCategoryTestUser('super_admin');
+
+    $category = Category::create([
+        'name' => 'Outdoor & Sports',
+        'slug' => 'outdoor-sports',
+        'is_active' => true,
+    ]);
+
+    // 1. Update with media image
+    $response = $this->actingAs($admin)->put("/admin/categories/{$category->id}", [
+        'name' => 'Outdoor & Sports Updated',
+        'image_path' => 'media/picked-image.webp',
+    ]);
+
+    $response->assertRedirect('/admin/categories');
+    expect($category->fresh()->image_path)->toBe('media/picked-image.webp');
+
+    // 2. Remove image
+    $removeResponse = $this->actingAs($admin)->put("/admin/categories/{$category->id}", [
+        'name' => 'Outdoor & Sports Updated',
+        'remove_image' => 1,
+    ]);
+
+    $removeResponse->assertRedirect('/admin/categories');
+    expect($category->fresh()->image_path)->toBeNull();
+});
+
+test('deleting category does not delete shared media library image', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+    \Illuminate\Support\Facades\Storage::disk('public')->put('media/shared-banner.webp', 'banner content');
+
+    $admin = makeCategoryTestUser('super_admin');
+
+    $category = Category::create([
+        'name' => 'Seasonal Deals',
+        'slug' => 'seasonal-deals',
+        'image_path' => 'media/shared-banner.webp',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($admin)->delete("/admin/categories/{$category->id}")
+        ->assertRedirect('/admin/categories');
+
+    $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+    expect(\Illuminate\Support\Facades\Storage::disk('public')->exists('media/shared-banner.webp'))->toBeTrue();
+});

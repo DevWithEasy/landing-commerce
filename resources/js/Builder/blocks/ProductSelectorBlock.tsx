@@ -446,7 +446,7 @@ export function ProductSelectorBlock({
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className="relative z-30 p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                        <div className="sticky top-0 z-40 p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 shadow-2xs">
                             <div>
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">
                                     {isComboProduct(variantModalProduct)
@@ -470,7 +470,7 @@ export function ProductSelectorBlock({
                         </div>
 
                         {/* Modal Body */}
-                        <div className="relative z-10 p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
+                        <div className="relative z-10 p-5 space-y-4 overflow-y-auto flex-1 min-h-0 isolate">
                             {isComboProduct(variantModalProduct)
                                 ? (() => {
                                       const packSize = getComboPackSize(variantModalProduct);
@@ -529,7 +529,7 @@ export function ProductSelectorBlock({
                                                                       setComboModalActiveSlot(idx);
                                                                   }
                                                               }}
-                                                              className={`relative w-18 h-22 rounded-xl border-2 transition cursor-pointer flex flex-col items-center justify-center overflow-hidden select-none ${
+                                                              className={`relative w-20 h-24 rounded-xl border-2 transition cursor-pointer flex flex-col items-center justify-center overflow-hidden select-none shrink-0 ${
                                                                   isActive
                                                                       ? 'border-emerald-600 ring-2 ring-emerald-500/30 bg-emerald-50/40'
                                                                       : slot
@@ -537,7 +537,7 @@ export function ProductSelectorBlock({
                                                                         : 'border-dashed border-amber-400 bg-amber-100/60'
                                                               }`}
                                                           >
-                                                              <span className="absolute top-1 left-1 z-[2] w-4 h-4 rounded-full bg-slate-900/75 text-white text-[9px] font-bold flex items-center justify-center">
+                                                              <span className="absolute top-1.5 left-1.5 z-[2] w-4 h-4 rounded-full bg-slate-900/75 text-white text-[9px] font-bold flex items-center justify-center">
                                                                   {idx + 1}
                                                               </span>
                                                               {slot ? (
@@ -545,7 +545,7 @@ export function ProductSelectorBlock({
                                                                       <SafeImage
                                                                           src={slot.imageUrl}
                                                                           alt={slot.name}
-                                                                          className="w-full h-14 object-cover"
+                                                                          className="w-full h-16 object-cover"
                                                                           fallbackIconSize="w-4 h-4"
                                                                           fallbackText=""
                                                                       />
@@ -557,7 +557,7 @@ export function ProductSelectorBlock({
                                                                           onClick={(e) =>
                                                                               handleClearSlot(variantModalProduct, idx, e)
                                                                           }
-                                                                          className="absolute top-1 right-1 z-[2] w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-700"
+                                                                          className="absolute top-1.5 right-1.5 z-[2] w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center hover:bg-rose-700 shadow-xs"
                                                                       >
                                                                           <X className="w-2.5 h-2.5" />
                                                                       </button>
@@ -990,7 +990,7 @@ export function ProductSelectorBlock({
                         className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-150"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="relative z-30 flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0">
+                        <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0 shadow-2xs">
                             <div>
                                 <h3 className="text-sm sm:text-base font-bold text-gray-900">
                                     বক্স #{colorPickerModal.slotIndex + 1}-এর জন্য কালার সিলেক্ট করুন
@@ -1008,7 +1008,7 @@ export function ProductSelectorBlock({
                             </button>
                         </div>
 
-                        <div className="relative z-10 p-5 overflow-y-auto flex-1 min-h-0">
+                        <div className="relative z-10 p-5 overflow-y-auto flex-1 min-h-0 isolate">
                             {(() => {
                                 const comboColors = getComboColors(colorPickerModal.product);
                                 const currentSlots = getSlotsForProduct(colorPickerModal.product);

@@ -142,7 +142,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
         : 'Administrator';
 
     return (
-        <div className="min-h-screen bg-[#FAF7F2] flex flex-col md:flex-row">
+        <div className="h-screen bg-[#FAF7F2] flex flex-col md:flex-row overflow-hidden">
             {/* Mobile backdrop */}
             {sidebarOpen && (
                 <div
@@ -153,13 +153,13 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
 
             {/* Sidebar (Velure Deep Forest Green) */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0B3B2E] text-emerald-50 transform transition-transform duration-200 ease-in-out md:static md:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0B3B2E] text-emerald-50 transform transition-transform duration-200 ease-in-out md:static md:translate-x-0 md:h-screen md:shrink-0 flex flex-col ${
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
             >
                 <div className="flex flex-col h-full">
                     {/* Brand header */}
-                    <div className="flex items-center justify-between px-6 h-16 border-b border-[#145240]">
+                    <div className="flex items-center justify-between px-6 h-16 border-b border-[#145240] shrink-0">
                         <Link href="/admin/products" className="flex items-center space-x-2.5">
                             <div className="w-8 h-8 rounded-lg bg-[#F96D16] flex items-center justify-center text-white shadow-xs font-bold text-lg">
                                 <Store className="w-4 h-4" />
@@ -210,7 +210,7 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                     </div>
 
                     {/* User profile footer */}
-                    <div className="p-4 border-t border-[#145240] bg-[#082B21]">
+                    <div className="p-4 border-t border-[#145240] bg-[#082B21] shrink-0">
                         <div className="flex items-center space-x-3">
                             <div className="w-9 h-9 rounded-full bg-[#124D3C] border border-[#1B6B54] flex items-center justify-center text-emerald-100">
                                 <Shield className="w-4 h-4 text-[#F96D16]" />
@@ -235,9 +235,9 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
             </aside>
 
             {/* Main content area */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 {/* Top header */}
-                <header className="bg-white border-b border-stone-200/80 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+                <header className="bg-white border-b border-stone-200/80 h-16 shrink-0 flex items-center justify-between px-4 sm:px-6 lg:px-8 z-30">
                     <div className="flex items-center space-x-3">
                         <button
                             type="button"
@@ -275,43 +275,46 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
                     </div>
                 </header>
 
-                {/* Flash Messages */}
-                {!dismissFlash && flash?.success && (
-                    <div className="mx-4 sm:mx-6 lg:mx-8 mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
-                        <div className="flex items-center space-x-3">
-                            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                            <p className="text-sm font-medium">{flash.success}</p>
+                {/* Page body wrapper that scrolls independently */}
+                <div className="flex-1 overflow-y-auto">
+                    {/* Flash Messages */}
+                    {!dismissFlash && flash?.success && (
+                        <div className="mx-4 sm:mx-6 lg:mx-8 mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+                            <div className="flex items-center space-x-3">
+                                <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                                <p className="text-sm font-medium">{flash.success}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setDismissFlash(true)}
+                                className="text-emerald-600 hover:text-emerald-800"
+                                aria-label="Dismiss alert"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setDismissFlash(true)}
-                            className="text-emerald-600 hover:text-emerald-800"
-                            aria-label="Dismiss alert"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
+                    )}
 
-                {!dismissFlash && flash?.error && (
-                    <div className="mx-4 sm:mx-6 lg:mx-8 mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between shadow-xs">
-                        <div className="flex items-center space-x-3">
-                            <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
-                            <p className="text-sm font-medium">{flash.error}</p>
+                    {!dismissFlash && flash?.error && (
+                        <div className="mx-4 sm:mx-6 lg:mx-8 mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center justify-between shadow-xs">
+                            <div className="flex items-center space-x-3">
+                                <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                                <p className="text-sm font-medium">{flash.error}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setDismissFlash(true)}
+                                className="text-rose-600 hover:text-rose-800"
+                                aria-label="Dismiss alert"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setDismissFlash(true)}
-                            className="text-rose-600 hover:text-rose-800"
-                            aria-label="Dismiss alert"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
+                    )}
 
-                {/* Page body */}
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">{children}</main>
+                    {/* Page body */}
+                    <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+                </div>
             </div>
         </div>
     );

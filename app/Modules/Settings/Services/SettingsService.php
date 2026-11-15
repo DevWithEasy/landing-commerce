@@ -505,4 +505,42 @@ class SettingsService
             ],
         ];
     }
+
+    /**
+     * Get configured homepage category showcase IDs in order.
+     *
+     * @return list<int>
+     */
+    public function getHomepageCategoryShowcaseIds(): array
+    {
+        $raw = $this->get('homepage.category_showcase_ids', null);
+
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+
+        if (is_array($raw)) {
+            return array_values(array_filter(array_map('intval', $raw)));
+        }
+
+        $decoded = json_decode((string) $raw, true);
+        if (is_array($decoded)) {
+            return array_values(array_filter(array_map('intval', $decoded)));
+        }
+
+        $parts = explode(',', (string) $raw);
+
+        return array_values(array_filter(array_map('intval', $parts)));
+    }
+
+    /**
+     * Set configured homepage category showcase IDs in order.
+     *
+     * @param  list<int>  $ids
+     */
+    public function setHomepageCategoryShowcaseIds(array $ids): void
+    {
+        $clean = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        $this->set('homepage.category_showcase_ids', json_encode($clean), 'homepage');
+    }
 }

@@ -1208,6 +1208,8 @@ export default function SliderIndex({
                         </div>
                     </div>
                 </form>
+
+
             </div>
 
             {/* Create Modal */}

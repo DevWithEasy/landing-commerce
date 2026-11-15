@@ -6,27 +6,110 @@ import {
     ShieldCheck,
     Truck,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StorefrontLayout } from '@/Layouts/StorefrontLayout';
 import { HeroSlider } from '@/Shared/HeroSlider';
-import { ProductCard, formatBdt } from '@/Shared/ProductCard';
+import { ProductCard } from '@/Shared/ProductCard';
 import { SafeImage } from '@/Shared/SafeImage';
 import { SeoHead } from '@/Shared/SeoHead';
-import type { Product } from '@/types';
+import type { Category } from '@/types';
 import type { StorefrontHomeProps } from '@/types/storefront';
+
+function CategorySectionSkeleton() {
+    return (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-pulse">
+            <div className="flex items-center justify-between mb-6">
+                <div className="h-8 w-44 bg-stone-200/80 rounded-lg" />
+                <div className="h-4 w-20 bg-stone-200/80 rounded" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="rounded-2xl border border-stone-200/80 bg-white p-3 space-y-3 shadow-2xs"
+                    >
+                        <div className="w-full aspect-[4/5] bg-stone-100 rounded-xl" />
+                        <div className="h-4 bg-stone-100 rounded w-3/4" />
+                        <div className="h-4 bg-stone-100 rounded w-1/3" />
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+}
 
 export default function Home({
     sliders,
     defaultHero,
     promoBanners,
     categories,
-    featuredProducts,
     newArrivals,
-    bestSellers,
     categorySections,
+    remainingCategoryIds = [],
+    otherProducts = [],
     theme,
     sectionsConfig,
 }: StorefrontHomeProps) {
+    const [loadedCategorySections, setLoadedCategorySections] = useState<Category[]>(categorySections);
+    const [pendingCategoryIds, setPendingCategoryIds] = useState<number[]>(remainingCategoryIds);
+    const [isLoadingNextCategory, setIsLoadingNextCategory] = useState<boolean>(false);
+    const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        setLoadedCategorySections(categorySections);
+    }, [categorySections]);
+
+    useEffect(() => {
+        setPendingCategoryIds(remainingCategoryIds);
+    }, [remainingCategoryIds]);
+
+    useEffect(() => {
+        if (!sectionsConfig.category_sections_enabled || pendingCategoryIds.length === 0) {
+            return;
+        }
+
+        const currentSentinel = sentinelRef.current;
+        if (!currentSentinel) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const target = entries[0];
+                if (target?.isIntersecting && !isLoadingNextCategory && pendingCategoryIds.length > 0) {
+                    const nextId = pendingCategoryIds[0];
+                    setIsLoadingNextCategory(true);
+
+                    fetch(`/storefront/home/category-section/${nextId}`, {
+                        headers: {
+                            Accept: 'application/json',
+                        },
+                    })
+                        .then((res) => res.json())
+                        .then((data) => {
+                            if (data.status === 'ok' && data.category) {
+                                setLoadedCategorySections((prev) => [...prev, data.category]);
+                            }
+                            setPendingCategoryIds((prev) => prev.filter((id) => id !== nextId));
+                        })
+                        .catch(() => {
+                            setPendingCategoryIds((prev) => prev.filter((id) => id !== nextId));
+                        })
+                        .finally(() => {
+                            setIsLoadingNextCategory(false);
+                        });
+                }
+            },
+            {
+                rootMargin: '350px 0px',
+                threshold: 0.05,
+            }
+        );
+
+        observer.observe(currentSentinel);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [pendingCategoryIds, isLoadingNextCategory, sectionsConfig.category_sections_enabled]);
     const homeJsonLd = useMemo(() => {
         const origin = typeof window !== 'undefined' ? window.location.origin : '';
         return [
@@ -132,107 +215,86 @@ export default function Home({
                 </section>
             )}
 
-            {/* 4. Category Collection Horizontal Showcase Rows (matching mockup) */}
-            {sectionsConfig.category_sections_enabled && categorySections.length > 0 && (
-                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-                    {categorySections.map((catSection) => {
+            {/* 4. Category Collection Product Showcases (with Lazy Infinite Scroll) */}
+            {sectionsConfig.category_sections_enabled && loadedCategorySections.length > 0 && (
+                <div className="space-y-4">
+                    {loadedCategorySections.map((catSection) => {
                         if (!catSection.products || catSection.products.length === 0) return null;
 
                         return (
-                            <div
+                            <section
                                 key={catSection.id}
-                                className="bg-surface rounded-xl border border-line/80 p-4 sm:p-6"
+                                className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
                             >
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-                                    {/* Left Category Feature Card */}
-                                    <div className="lg:col-span-4 flex items-center gap-4">
-                                        <div className="w-24 h-30 sm:w-28 sm:h-34 shrink-0 rounded-lg overflow-hidden bg-soft border border-line/60">
-                                            <SafeImage
-                                                src={catSection.image_url || catSection.products[0]?.primary_image?.url}
-                                                alt={catSection.name}
-                                                className="w-full h-full object-cover"
-                                                fallbackText=""
-                                                fallbackIcon={
-                                                    <span className="text-heading font-serif font-bold text-2xl">
-                                                        {catSection.name.charAt(0)}
-                                                    </span>
-                                                }
-                                            />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <h3 className="text-lg sm:text-xl font-serif font-bold text-ink leading-snug">
-                                                {catSection.name}
-                                            </h3>
-                                            <p className="text-xs text-muted mt-1 line-clamp-2 leading-relaxed">
-                                                {catSection.description ||
-                                                    `Explore our curated ${catSection.name.toLowerCase()} collection for everyday style.`}
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
+                                            {catSection.name}
+                                        </h2>
+                                        {catSection.description && (
+                                            <p className="text-xs text-muted mt-1 max-w-xl line-clamp-1">
+                                                {catSection.description}
                                             </p>
-                                            <Link
-                                                href={`/category/${catSection.slug}`}
-                                                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg border border-stone-300 text-xs font-semibold text-stone-800 hover:bg-brand hover:text-white hover:border-brand transition"
-                                            >
-                                                <span>View All</span>
-                                                <ArrowRight className="w-3.5 h-3.5" />
-                                            </Link>
-                                        </div>
+                                        )}
                                     </div>
-
-                                    {/* Right 6-Product Mini Grid */}
-                                    <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                                        {catSection.products.slice(0, 6).map((product: Product) => {
-                                            const regular =
-                                                typeof product.regular_price === 'string'
-                                                    ? parseFloat(product.regular_price)
-                                                    : product.regular_price;
-                                            const sale = product.sale_price
-                                                ? typeof product.sale_price === 'string'
-                                                    ? parseFloat(product.sale_price)
-                                                    : product.sale_price
-                                                : null;
-                                            const currentPrice =
-                                                sale !== null && sale < regular ? sale : regular;
-                                            const imgUrl =
-                                                product.primaryImage?.url ||
-                                                product.primary_image?.url ||
-                                                product.images?.[0]?.url ||
-                                                '/placeholder.png';
-
-                                            return (
-                                                <Link
-                                                    key={product.id}
-                                                    href={`/product/${product.slug}`}
-                                                    className="group text-center flex flex-col items-center"
-                                                >
-                                                    <div className="w-full aspect-[4/5] rounded-lg bg-soft overflow-hidden mb-2">
-                                                        <SafeImage
-                                                            src={imgUrl}
-                                                            alt={product.title}
-                                                            className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
-                                                        />
-                                                    </div>
-                                                    <span className="text-[11px] font-medium text-stone-800 group-hover:text-heading line-clamp-1">
-                                                        {product.title}
-                                                    </span>
-                                                    <span className="text-xs font-bold text-price mt-0.5">
-                                                        {formatBdt(currentPrice)}
-                                                    </span>
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
+                                    <Link
+                                        href={`/category/${catSection.slug}`}
+                                        className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-price transition shrink-0"
+                                    >
+                                        <span>View All</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
                                 </div>
-                            </div>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                                    {catSection.products.slice(0, 8).map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                </div>
+                            </section>
                         );
                     })}
-                </section>
+
+                    {/* Shimmer Skeleton Loader when fetching next category */}
+                    {isLoadingNextCategory && <CategorySectionSkeleton />}
+
+                    {/* Sentinel target for IntersectionObserver */}
+                    {pendingCategoryIds.length > 0 && (
+                        <div ref={sentinelRef} className="h-6 w-full pointer-events-none" />
+                    )}
+
+                    {/* 4.b Others Product Section (renders at the very end of category streams) */}
+                    {pendingCategoryIds.length === 0 && otherProducts.length > 0 && (
+                        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
+                                    Others Product
+                                </h2>
+                                <Link
+                                    href="/shop"
+                                    className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-price transition"
+                                >
+                                    <span>View All</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+                                {otherProducts.slice(0, 8).map((product) => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
             )}
 
-            {/* 5. Featured Products (when enabled) */}
-            {sectionsConfig.featured_enabled && featuredProducts.length > 0 && (
+            {/* If category sections disabled but uncategorized products exist */}
+            {!sectionsConfig.category_sections_enabled && otherProducts.length > 0 && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
-                            Featured Collection
+                            Others Product
                         </h2>
                         <Link
                             href="/shop"
@@ -244,38 +306,14 @@ export default function Home({
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                        {featuredProducts.slice(0, 8).map((product) => (
+                        {otherProducts.slice(0, 8).map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 </section>
             )}
 
-            {/* 6. Best Sellers (when enabled) */}
-            {sectionsConfig.best_sellers_enabled && bestSellers.length > 0 && (
-                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl sm:text-[28px] font-serif font-bold text-ink tracking-tight">
-                            Best Sellers
-                        </h2>
-                        <Link
-                            href="/shop?sort=popular"
-                            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-stone-700 hover:text-price transition"
-                        >
-                            <span>View All</span>
-                            <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                        {bestSellers.slice(0, 8).map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* 7. Dual Promo Banners (Seasonal Sale + Combo Deals) */}
+            {/* 5. Dual Promo Banners (Seasonal Sale + Combo Deals) */}
             {(promoBanners?.enabled ?? true) && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -365,7 +403,7 @@ export default function Home({
                 </section>
             )}
 
-            {/* 8. 4-Column Trust & Value Proposition Badges */}
+            {/* 6. 4-Column Trust & Value Proposition Badges */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-2">
                 <div className="bg-surface rounded-xl border border-line/80 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-5">
                     <div className="flex items-center gap-3">

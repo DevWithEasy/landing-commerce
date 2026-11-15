@@ -430,7 +430,7 @@
                                     <div id="single-combo-slots" class="flex flex-wrap items-center gap-2.5">
                                         @for($sIdx = 0; $sIdx < $comboPackSize; $sIdx++)
                                             <div role="button" tabindex="0"
-                                                class="ps-single-combo-slot relative w-18 h-22 rounded-xl border-2 border-dashed border-amber-400 bg-amber-100/50 hover:bg-amber-100/80 transition cursor-pointer flex flex-col items-center justify-center overflow-hidden select-none"
+                                                class="ps-single-combo-slot relative w-20 h-24 rounded-xl border-2 border-dashed border-amber-400 bg-amber-100/50 hover:bg-amber-100/80 transition cursor-pointer flex flex-col items-center justify-center overflow-hidden select-none shrink-0"
                                                 data-slot-index="{{ $sIdx }}">
                                                 <span class="slot-num-badge absolute top-1 left-1 z-[2] w-4 h-4 rounded-full bg-slate-900/75 text-white text-[9px] font-bold flex items-center justify-center">{{ $sIdx + 1 }}</span>
                                                 <div class="slot-empty-state flex flex-col items-center justify-center gap-1 text-amber-900">
@@ -511,7 +511,7 @@
     {{-- Shared Modal 1: Variant OR Multi-Product Combo Selection Modal --}}
     <div id="ps-variant-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-100" onclick="event.stopPropagation()">
-            <div class="relative z-30 p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+            <div class="sticky top-0 z-40 p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 shadow-2xs">
                 <div>
                     <span id="ps-vmodal-eyebrow" class="text-[10px] font-bold uppercase tracking-wider text-primary-700 block">Select Variation</span>
                     <h4 id="ps-vmodal-title" class="text-sm font-bold text-gray-900 truncate max-w-[300px]">Product Title</h4>
@@ -520,7 +520,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div class="relative z-10 p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
+            <div class="relative z-10 p-5 space-y-4 overflow-y-auto flex-1 min-h-0 isolate">
                 <div class="flex items-center space-x-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
                     <div class="w-14 h-14 rounded-lg bg-gray-50 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                         <img id="ps-vmodal-img" src="" alt="Variant" class="w-full h-full object-cover hidden" />
@@ -646,7 +646,7 @@
     {{-- Shared Modal 3: Standalone Color Selection Modal (opened when clicking `[ + ]` slot boxes) --}}
     <div id="ps-combo-color-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-slate-900/65 backdrop-blur-xs">
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden border border-gray-100" onclick="event.stopPropagation()">
-            <div class="relative z-30 flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0">
+            <div class="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0 shadow-2xs">
                 <div>
                     <h3 id="ps-ccmodal-title" class="text-sm sm:text-base font-bold text-gray-900">বক্স #1-এর জন্য কালার সিলেক্ট করুন</h3>
                     <p id="ps-ccmodal-subtitle" class="text-xs text-gray-500 mt-0.5">যেকোনো ছবির উপর ক্লিক করলে বক্স #1-এ অ্যাড হয়ে যাবে</p>
@@ -655,7 +655,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div id="ps-ccmodal-body" class="relative z-10 p-5 overflow-y-auto flex-1 min-h-0 grid grid-cols-2 sm:grid-cols-3 gap-3.5"></div>
+            <div id="ps-ccmodal-body" class="relative z-10 p-5 overflow-y-auto flex-1 min-h-0 isolate grid grid-cols-2 sm:grid-cols-3 gap-3.5"></div>
         </div>
     </div>
 </section>
@@ -995,13 +995,13 @@
                 var box = document.createElement('div');
                 box.setAttribute('role', 'button');
                 box.setAttribute('tabindex', '0');
-                box.className = 'relative w-18 h-22 rounded-xl border-2 transition cursor-pointer flex flex-col items-center justify-center overflow-hidden select-none ' +
+                box.className = 'relative w-20 h-24 rounded-xl border-2 transition cursor-pointer flex flex-col items-center justify-center overflow-hidden select-none shrink-0 ' +
                     (isActive
                         ? 'border-primary-600 ring-2 ring-primary-500/30 bg-primary-50/40'
                         : (slot ? 'border-gray-300 bg-white' : 'border-dashed border-amber-400 bg-amber-100/60'));
 
                 var badgeNum = document.createElement('span');
-                badgeNum.className = 'absolute top-1 left-1 z-[2] w-4 h-4 rounded-full bg-slate-900/75 text-white text-[9px] font-bold flex items-center justify-center';
+                badgeNum.className = 'absolute top-1.5 left-1.5 z-[2] w-4 h-4 rounded-full bg-slate-900/75 text-white text-[9px] font-bold flex items-center justify-center';
                 badgeNum.textContent = String(idx + 1);
                 box.appendChild(badgeNum);
 
@@ -1009,13 +1009,13 @@
                     var sImg = document.createElement('img');
                     sImg.src = slot.image_url || prodData.main_image || '';
                     sImg.alt = slot.name;
-                    sImg.className = 'w-full h-14 object-cover';
+                    sImg.className = 'w-full h-16 object-cover';
                     var sLabel = document.createElement('span');
                     sLabel.className = 'w-full px-1 py-0.5 text-[9px] font-bold text-gray-800 text-center truncate bg-white/95 border-t border-gray-100';
                     sLabel.textContent = slot.name;
                     var xBtn = document.createElement('button');
                     xBtn.type = 'button';
-                    xBtn.className = 'absolute top-1 right-1 z-[2] w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center hover:bg-rose-700';
+                    xBtn.className = 'absolute top-1.5 right-1.5 z-[2] w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center hover:bg-rose-700 shadow-xs';
                     xBtn.textContent = '×';
                     xBtn.addEventListener('click', function(e) {
                         e.stopPropagation();

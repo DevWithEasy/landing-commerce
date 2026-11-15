@@ -36,10 +36,12 @@ export interface StorefrontHomeProps extends SharedProps {
     defaultHero?: DefaultHeroConfig;
     promoBanners?: PromoBannersConfig;
     categories: Category[];
-    featuredProducts: Product[];
+    featuredProducts?: Product[];
     newArrivals: Product[];
-    bestSellers: Product[];
+    bestSellers?: Product[];
     categorySections: Category[];
+    remainingCategoryIds?: number[];
+    otherProducts?: Product[];
     theme: StorefrontTheme;
     sectionsConfig: SectionsConfig;
 }

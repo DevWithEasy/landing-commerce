@@ -1339,7 +1339,7 @@ export default function ProductDetail({
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 bg-surface">
+                        <div className="sticky top-0 z-40 flex items-center justify-between px-5 py-4 border-b border-stone-100 bg-surface shrink-0 shadow-2xs">
                             <div>
                                 <h3 className="text-sm sm:text-base font-bold text-ink">
                                     বক্স #{activeSlotIndex + 1}-এর জন্য কালার সিলেক্ট করুন
@@ -1358,7 +1358,7 @@ export default function ProductDetail({
                         </div>
 
                         {/* Modal Body: Grid of Color Images & Names */}
-                        <div className="p-5 max-h-[70vh] overflow-y-auto">
+                        <div className="relative z-10 p-5 max-h-[70vh] overflow-y-auto isolate">
                             {colorOptions.length === 0 ? (
                                 <div className="text-center py-8 text-xs text-stone-500">
                                     কোনো কালার অপশন পাওয়া যায়নি।

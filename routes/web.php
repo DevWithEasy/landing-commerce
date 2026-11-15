@@ -20,6 +20,7 @@ use App\Modules\Storefront\Controllers\StorefrontShopController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontHomeController::class, 'index'])->name('home');
+Route::get('/storefront/home/category-section/{id}', [StorefrontHomeController::class, 'getCategorySection'])->name('storefront.home.category-section');
 
 // Storefront Catalog & Product Routes
 Route::get('/shop', [StorefrontShopController::class, 'index'])->name('shop.index');

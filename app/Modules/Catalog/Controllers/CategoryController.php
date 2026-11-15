@@ -12,6 +12,7 @@ use App\Modules\Media\Services\MediaUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -61,6 +62,31 @@ class CategoryController extends Controller
     }
 
     /**
+     * Sanitize a relative storage path selected from the Media Library.
+     */
+    protected function sanitizeMediaPath(?string $path): ?string
+    {
+        if ($path === null) {
+            return null;
+        }
+
+        $trimmed = ltrim(trim($path), '/');
+        if (
+            $trimmed === ''
+            || str_contains($trimmed, '..')
+            || preg_match('#^(https?:|javascript:|data:|vbscript:)#i', $trimmed) === 1
+        ) {
+            return null;
+        }
+
+        if (str_starts_with($trimmed, 'storage/')) {
+            $trimmed = substr($trimmed, strlen('storage/'));
+        }
+
+        return Storage::disk('public')->exists($trimmed) ? $trimmed : null;
+    }
+
+    /**
      * Store a newly created category.
      */
     public function store(StoreCategoryRequest $request): RedirectResponse
@@ -74,6 +100,8 @@ class CategoryController extends Controller
         if ($request->hasFile('image')) {
             $upload = $this->mediaUploadService->upload($request->file('image'), 'categories');
             $imagePath = $upload['file_path'];
+        } elseif (! empty($validated['image_path'])) {
+            $imagePath = $this->sanitizeMediaPath($validated['image_path']);
         }
 
         $category = Category::create([
@@ -106,12 +134,26 @@ class CategoryController extends Controller
         }
 
         $imagePath = $category->image_path;
-        if ($request->hasFile('image')) {
-            if ($category->image_path) {
+
+        if ($request->boolean('remove_image')) {
+            if ($category->image_path && str_starts_with($category->image_path, 'categories/')) {
+                $this->mediaUploadService->delete($category->image_path);
+            }
+            $imagePath = null;
+        } elseif ($request->hasFile('image')) {
+            if ($category->image_path && str_starts_with($category->image_path, 'categories/')) {
                 $this->mediaUploadService->delete($category->image_path);
             }
             $upload = $this->mediaUploadService->upload($request->file('image'), 'categories');
             $imagePath = $upload['file_path'];
+        } elseif (! empty($validated['image_path'])) {
+            $mediaPath = $this->sanitizeMediaPath($validated['image_path']);
+            if ($mediaPath) {
+                if ($category->image_path && $category->image_path !== $mediaPath && str_starts_with($category->image_path, 'categories/')) {
+                    $this->mediaUploadService->delete($category->image_path);
+                }
+                $imagePath = $mediaPath;
+            }
         }
 
         $category->update([
@@ -138,8 +180,8 @@ class CategoryController extends Controller
 
         $name = $category->name;
 
-        // If this category has an image, clean up media assets
-        if ($category->image_path) {
+        // Only delete files originally stored in categories/ (avoid deleting shared media library files)
+        if ($category->image_path && str_starts_with($category->image_path, 'categories/')) {
             $this->mediaUploadService->delete($category->image_path);
         }
 
